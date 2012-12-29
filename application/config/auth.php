@@ -3,8 +3,8 @@
 return array(
 
 	'driver'       => 'ORM',
-	'hash_method'  => 'sha1',
-	'hash_key'     => NULL,
+	'hash_method'  => 'sha256',
+	'hash_key'     => 'as',
 	'lifetime'     => 28800,
 	'session_type' => Session::$default,
 	'session_key'  => 'auth_user1',
@@ -13,5 +13,4 @@ return array(
 	'users' => array(
 		'admin' => 'b3154acf3a344170077d11bdb5fff31532f679a1919e716a02',
 	),
-
 );

@@ -1,0 +1,33 @@
+Building view with regular controller:
+
+Class Controller_Hello extends Controller
+{
+    public function action_index()
+    {   
+        $view = View::factory('page');
+        $view->page_title = 'My Hello App';
+        $view->content = 'hello, world!';
+        $view->sidebar = View::factory('parts/sidebar');
+        $this->response->body($view);
+    }
+}
+
+
+Building view with template controller:
+
+Class Controller_Hello extends Controller_Template
+{
+    public $template = 'page';
+
+    public function action_index()
+    {   
+        $this->template->page_title = 'My Hello App';
+        $this->template->content = 'hello, world!';
+        $this->template->sidebar = View::factory('parts/sidebar');
+    }
+}
+
+//$this->template->head = View::factory('parts/sidebar');
+is equivalent to
+//$view = View::factory('parts/sidebar');
+//$this->template->set('head',$view);

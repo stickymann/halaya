@@ -1,0 +1,53 @@
+body{padding:20px; font:12px Verdana, Geneva, sans-serif; color:#333;}
+#container {width:755px; margin:0 auto; padding:13px 10px; border:1px solid #999;}
+a.btnsignin, a.btnsignout {background:#999; padding:5px 8px; color:#fff; text-decoration:none; font-weight:bold; border-radius:4px; radius:4px; border-radius:4px;}
+a.btnsignin:hover, a.btnsignout:hover {background:#666;}
+a.btnsigninon {	background:#ccc!important; color:#666!important; outline:none;}
+#frmsignin {
+	display:none;
+	background-color:#ccc;
+	position:absolute;
+	top: 59px;
+	width:215px;
+	padding:12px;
+	*margin-top: 5px;
+	font-size:11px;
+	border-radius:5px;
+	border-radius-topleft:0;
+	border-radius:5px;
+	border-top-left-radius:0;
+	border-radius:5px;
+	border-top-left-radius:0;
+	z-index:100;
+}
+#frmsignin input[type=text], #frmsignin input[type=password] {
+	display:block;
+	border-radius:4px;
+	border-radius:4px;
+	border-radius:4px;
+	border:1px solid #666;
+	margin:0 0 5px;
+	padding:5px;
+	width:203px;
+}
+#frmsignin p {margin:0;}
+#frmsignin label {font-weight:normal;}
+#submitbtn {
+	border-radius:4px;
+	border-radius:4px;
+	border-radius:4px;
+	background-color:#333;
+	text-decoration:none;
+	border:1px solid #fff;
+	color:#fff;
+	padding:5px 8px;
+	margin:0 5px 0 0;
+	font-weight:bold;
+}
+#submitbtn:hover, #submitbtn:focus {border:1px solid #000; cursor:pointer;}
+.submit {padding-top:5px;}
+#msg {color:#F00;}
+.errmsg {color:#F00; margin:0 0 0 5px;}
+#msg img {margin-bottom:-3px;}
+#msg p {margin:5px 0;}
+#msg p:last-child {margin-bottom:0px;}
