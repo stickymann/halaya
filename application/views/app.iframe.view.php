@@ -7,7 +7,6 @@
 	print $head; 
 	$orgname = sprintf('title="%s"',$orgname);
 ?>
-
 </head>
 	<body class="easyui-layout">
 		<div region="west" split="true" <?php print $orgname; ?> style="width:250px;overflow:hidden;">
@@ -19,7 +18,7 @@
 					<iframe src="menuuser" style="width:100%;height:100%" frameborder="0" scrolling="auto"></iframe>
 				</div>
 				<div region="south" border="true" split="true" title=" " style="height:200px;overflow:hidden;">
-					<iframe src="cmdbox" style="width:100%;height:100%" frameborder="0" scrolling="auto"></iframe>
+					<iframe src="core_cmdbox" style="width:100%;height:100%" frameborder="0" scrolling="auto"></iframe>
 				</div>
 			</div>
 		</div>

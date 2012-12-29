@@ -73,7 +73,9 @@ class Controller_Include extends Controller_Template
 
 	public function get_htmlhead_title()
 	{
-		return sprintf('<title>%s</title>',$this->global_app_title)."\n";
+		$head = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'."\n";
+		$head .= sprintf('<title>%s</title>',$this->global_app_title)."\n";
+		return $head;
 	}
 
 } // End Include
