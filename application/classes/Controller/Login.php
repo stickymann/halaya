@@ -20,7 +20,8 @@ class Controller_Login extends Controller_Include
 		$this->template->form = array('username' => '','password' => '');
 		$this->template->isLoginOk = FALSE;
 		$this->template->status = NULL;
-		$this->template->head = $this->get_htmlhead($this->global_app_title);
+		$this->template->head = $this->get_htmlhead();
+		$this->template->logo_front = $this->img['logo_front'];
 	}
 		
 	public function action_index()
@@ -65,10 +66,9 @@ class Controller_Login extends Controller_Include
 		}
 	}
 
-	function get_htmlhead($title="")
+	function get_htmlhead()
 	{	
-		$head = sprintf('<title>%s</title>',$title)."\n";
-		$head .= sprintf('%s',HTML::style($this->css['jqeasy'], array('screen')))."\n"; 
+		$head = sprintf('%s',HTML::style($this->css['jqeasy'], array('screen')))."\n"; 
 		if(!$this->template->isLoginOk)
 		{
 			$head .= sprintf('%s',HTML::script($this->js['jquery']))."\n";

@@ -18,14 +18,14 @@ class Controller_App extends Controller_Include
 	{
 		parent::before();
 		$this->template->head = $this->get_htmlhead($this->global_app_title);
+		$this->template->orgname = $this->global_app_title;
 	}
 	
     public function action_index() {}
 	
-	function get_htmlhead($title="")
+	function get_htmlhead()
 	{	
-		$head = sprintf('<title>%s</title>',$title)."\n";
-		$head .= sprintf('%s',HTML::style($this->css['site'], array('screen')))."\n"; 
+		$head = sprintf('%s',HTML::style($this->css['site'], array('screen')))."\n"; 
 		$head .= sprintf('%s',HTML::style($this->css['easyui_gray'], array('screen')))."\n"; 
 		$head .= sprintf('%s',HTML::style($this->css['easyui_icon'], array('screen')))."\n"; 
 		$head .= sprintf('%s',HTML::script($this->js['jquery']))."\n";

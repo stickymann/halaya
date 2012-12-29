@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<?php print $head; ?> 
+<?php 
+	print $title; 
+	print $head; 
+?> 
 </head>
 <body>
 	<div id="container">
 <?php
 if(!$isLoginOk)
 {
-	$urlbase = URL::base();
 	print "\t".'<div id="signbtn"><a href="login" class="btnsignin">Sign In</a><span class="errmsg">'.$status.'</span></div>'."\n";
-	print "\t".'<br><img src="'.$urlbase.'/media/img/login/halaya.750w.png" border=0 align=middle><br>'."\n";
+	print "\t".'<br><img src="'.$logo_front.'" border=0 align=middle><br>'."\n";
 	print "\t".'<div id="frmsignin">'."\n";
     print "\t".Form::open('login',array('autocomplete'=>'off'))."\n";
     print "\t".'<p id="puser">'."\n";

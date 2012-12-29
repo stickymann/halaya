@@ -38,23 +38,42 @@ class Controller_Include extends Controller_Template
 		'jqeasy' => 'media/css/jqeasy.css'
 	);
 
+	//site logos. icons and others images
+	public $img = array(
+		'logo_front' => 'media/img/login/halaya.750w.png',
+		'logo_app' => 'media/img/banner/halaya.logo.small.png',
+		'signout' => 'media/img/banner/logout7525.jpg'
+	);
+
 	public function before()
     {
-        parent::before();
+		parent::before();
      	/** 
 		 *	Random string injection to prevent javascript caching
 		 */
+		$this->template->title = $this->get_htmlhead_title();
+		$this->template->head = "";
+		foreach($this->img as $key => $value)
+		{
+			$this->img[$key] = URL::base().$value;
+		}
+		
 		$rs = new Controller_Core_Siterandstr();
 		$this->randomstring	= sprintf('?rash=%s',$rs->get_random_string());
 		foreach($this->js as $key => $value)
 		{
 			$this->js[$key] = $this->randomize($value);
 		}
-    }
+	}
 	
 	public function randomize($str)
 	{
 		return $str.$this->randomstring;
+	}
+
+	public function get_htmlhead_title()
+	{
+		return sprintf('<title>%s</title>',$this->global_app_title)."\n";
 	}
 
 } // End Include

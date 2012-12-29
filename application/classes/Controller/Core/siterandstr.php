@@ -1,20 +1,21 @@
 <?php defined('SYSPATH') or die('No direct script access.');
-
 /**
+ * Generates random text string. 
  *
- * @application		Halaya
- * @author 			Dunstan Nesbit (dunstan.nesbit@gmail.com)
- * @date			2012-12-28
+ * $Id: Siteradstr.php 2012-12-28 00:00:00 dnesbit $
  *
+ * @application Halaya Core
+ * @module	    core
+ * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
+ * @copyright   (c) 2013
+ * @license    
  */
-
 class Controller_Core_Siterandstr extends Controller
 {
 	private $randstr = '';
 	
 	public function __construct($length=10)
 	{
-		//parent::__construct();
 		$this->randstr_gen($length);
 	}
 
@@ -44,5 +45,6 @@ class Controller_Core_Siterandstr extends Controller
 		}  
 		$this->randstr = $random;
 	}
-}
+
+} //End Core_Siterandstr
 

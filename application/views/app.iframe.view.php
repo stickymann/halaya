@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <?php print $head; ?>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<?php
+	print $title;
+	print $head; 
+	$orgname = sprintf('title="%s"',$orgname);
+?>
+
 </head>
 	<body class="easyui-layout">
-		<div region="west" split="true" title="$title" style="width:250px;overflow:hidden;">
+		<div region="west" split="true" <?php print $orgname; ?> style="width:250px;overflow:hidden;">
 			<div class="easyui-layout" fit="true">
 				<div region="north" border="false" split="false" title="" style="height:56px;overflow:hidden;">
-					<iframe src="logo" style="width:100%;height:100%" frameborder="0" scrolling="no"></iframe>
+					<iframe src="core_logo" style="width:100%;height:100%" frameborder="0" scrolling="no"></iframe>
 				</div>
 				<div region="center" border="false" split="false" title=" " style="overflow:hidden;">
 					<iframe src="menuuser" style="width:100%;height:100%" frameborder="0" scrolling="auto"></iframe>
