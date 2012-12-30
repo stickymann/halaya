@@ -4,7 +4,7 @@
  *
  * $Id: Include.php 2012-12-28 00:00:00 dnesbit $
  *
- * @application Halaya Core
+ * @package		Halaya Core
  * @module	    core
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
  * @copyright   (c) 2013
@@ -25,7 +25,9 @@ class Controller_Include extends Controller_Template
 		'easyui' => 'media/js/jquery.easyui.min.js',
 		'datepick' => 'media/js/jquery.datepick.js',
 		'jquery_form' => 'media/js/jquery.form-2.4.0.min.js',
-		'jqeasy_dropdown' => 'media/js/jqeasy.dropdown.min.js'
+		'jqeasy_dropdown' => 'media/js/jqeasy.dropdown.min.js',
+		'cookie' => 'media/js/jquery.cookie.js',
+		'treeview' => 'media/js/jquery.treeview.js'
 	);
 
 	//css
@@ -35,7 +37,9 @@ class Controller_Include extends Controller_Template
 		'easyui_gray' => 'media/css/easyui/gray/easyui.css',
 		'site' => 'media/css/site.css',
 		'datepick' => 'media/css/custom.datepick.css',
-		'jqeasy' => 'media/css/jqeasy.css'
+		'jqeasy' => 'media/css/jqeasy.css',
+		'treeview' => 'media/css/jquery.treeview.css',
+		'screen' => 'media/css/screen.css'
 	);
 
 	//site logos. icons and others images

@@ -4,7 +4,7 @@
  *
  * $Id: Siteradstr.php 2012-12-28 00:00:00 dnesbit $
  *
- * @application Halaya Core
+ * @package		Halaya Core
  * @module	    core
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
  * @copyright   (c) 2013
