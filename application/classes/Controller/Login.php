@@ -32,7 +32,7 @@ class Controller_Login extends Controller_Include
 		{
 			$myuser = $this->request->post('username');
 			$mypass = $this->request->post('password');
-	       	$user = ORM::factory('User')->where('username','=',$myuser)->find();
+			$user = ORM::factory('User')->where('username','=',$myuser)->find();
 			if(!($user->username == '')) //id == 0, user not found
 			{	
 		        $exdate = strtotime(str_replace('/','-',$user->expiry_date)); 

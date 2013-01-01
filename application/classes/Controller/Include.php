@@ -27,7 +27,13 @@ class Controller_Include extends Controller_Template
 		'jquery_form' => 'media/js/jquery.form-2.4.0.min.js',
 		'jqeasy_dropdown' => 'media/js/jqeasy.dropdown.min.js',
 		'cookie' => 'media/js/jquery.cookie.js',
-		'treeview' => 'media/js/jquery.treeview.js'
+		'treeview' => 'media/js/jquery.treeview.js',
+		'tablesorter' => 'media/js/jquery.tablesorter.js',
+		'datevalidate' => 'media/js/jquery.datevalidate.js',
+		'siteutils' => 'media/js/core.siteutils.js',
+		'sideinfo' => 'media/js/core.sideinfo.js',
+		'enquiry' => 'media/js/core.enquiry.js',
+		'popout' => 'media/js/core.popoutselector.js'
 	);
 
 	//css
@@ -39,7 +45,9 @@ class Controller_Include extends Controller_Template
 		'datepick' => 'media/css/custom.datepick.css',
 		'jqeasy' => 'media/css/jqeasy.css',
 		'treeview' => 'media/css/jquery.treeview.css',
-		'screen' => 'media/css/screen.css'
+		'screen' => 'media/css/screen.css',
+		'tablesorterblue' => 'media/css/tablesorterblue.css',
+		'tablesortergreen' => 'media/css/tablesortergreen.css'
 	);
 
 	//site logos. icons and others images

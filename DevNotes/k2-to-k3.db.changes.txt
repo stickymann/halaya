@@ -1,0 +1,39 @@
+ALTER TABLE `halaya`.`users`     
+CHANGE `password` `password` CHAR(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL ;
+UPDATE `halaya`.`users` SET `password` = '2c2a34b9972dafcd29f246df5d8604ad25d93dfd4dd9384f1ffb0d9eaa2e3343'
+
+ALTER TABLE `halaya`.`params`     
+ADD COLUMN `param_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
+
+UPDATE `halaya`.`params` SET `module` = "useraccount" WHERE `controller` = "message";
+UPDATE `halaya`.`params` SET `param_id` = CONCAT("core_",`module`,"_",REPLACE(`controller`,"_","")),`dflag` = "Y";
+UPDATE `halaya`.`params` SET `param_id` = "core_site" WHERE `param_id` = "core_core_site";
+UPDATE `halaya`.`params` SET `indexfield` = "param_id" WHERE `controller` = "param";
+UPDATE `halaya`.`params` SET `primarymodel` = "Model_SiteDB"; 
+
+ALTER TABLE `halaya`.`params` CHANGE `primarymodel`  `primarymodel` VARCHAR(255) DEFAULT 'Model_SiteDB' NULL ;
+ALTER TABLE `halaya`.`params` ADD UNIQUE `uniq_param_id` (`param_id`);
+ALTER TABLE `halaya`.`params` ADD INDEX `controller` (`controller`);
+
+DELETE FROM `halaya`.`params_hs`;
+ALTER TABLE `halaya`.`params_hs`     
+ADD COLUMN `param_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `default` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`;  
+ALTER TABLE `halaya`.`params_hs` CHANGE `primarymodel`  `primarymodel` VARCHAR(255) DEFAULT 'Model_SiteDB' NULL ;
+
+DELETE FROM `halaya`.`params_is`;
+ALTER TABLE `halaya`.`params_is`     
+ADD COLUMN `param_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `default` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`;  
+ALTER TABLE `halaya`.`params_is` CHANGE `primarymodel`  `primarymodel` VARCHAR(255) DEFAULT 'Model_SiteDB' NULL ;
+
+UPDATE `halaya`.`menudefs` SET `module` = "useraccount" WHERE `module` = "login";
+UPDATE `halaya`.`menudefs` 
+SET 
+`url_input` = IF(url_input="","",CONCAT("core_",module,"_",REPLACE(REPLACE(REPLACE(`url_input`,"_rpt",""),"_enq",""),"_",""))),
+`url_enquiry` = IF(url_enquiry="","",CONCAT("core_",module,"_",REPLACE(REPLACE(REPLACE(`url_enquiry`,"_rpt",""),"_enq",""),"_","")));
+
+
+
+/* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */

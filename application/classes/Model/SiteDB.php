@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Main application model, non ORM. 
+ * Main application model, non ORM.
  *
  * $Id: SiteDB.php 2012-12-29 00:00:00 dnesbit $
  *
@@ -48,13 +48,13 @@ class Model_SiteDB extends Model
 	{
 		if($result = $this->db->query($querytype,$querystr))
 		{
-print "<b>[DEBUG]---></b> "; print_r($result); print "<br><b>[non_select_result]</b><hr>";
+//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			$this->set_ns_totalrows($result);
 			return TRUE;
 		}
 		$str = '<div class="frmmsg">An Error Occurred, Please Try Again.</div>';
 		$this->set_db_err_msg($str);
-print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b><hr>";		
+//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		return FALSE;
 	}
 	
@@ -78,8 +78,8 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	
 	public function execute_select_query($querystr)
 	{
-		$result = $this->db->query(Database::SELECT,$querystr);
-//print "<b>[DEBUG]---></b> "; print_r($result); print "<br><b>[obj_select_result]</b><hr>";
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$arr = array();
 		$i=0;
 		foreach ($result as $row)
@@ -87,7 +87,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 			$arr[$i] = $row;
 			$i++;
 		}
-//print "<b>[DEBUG]---></b> "; print_r($arr); print "<br><b>[arr_select_result]</b><hr>";
+//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		return $arr;
 	}
 
@@ -95,33 +95,34 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$this->table = 'params';
 		$fields = array(
-			'id','controller','module','auth_mode_on','indexview','viewview','inputview','authorizeview','deleteview','enquiryview',
-			'indexfield','indexfieldvalue','indexlabel','appheader','primarymodel','tb_live','tb_inau','tb_hist','errormsgfile'			
+			'id','param_id','controller','dflag','module','auth_mode_on','index_field_on','indexview','viewview','inputview','authorizeview',
+			'deleteview','enquiryview','indexfield','indexfieldvalue','indexlabel','appheader','primarymodel','tb_live','tb_inau','tb_hist','errormsgfile'			
 		);
-		$querystr = sprintf('SELECT %s FROM %s WHERE controller = "%s"', join(',',$fields),$this->table,$controller);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$querystr = sprintf('SELECT %s FROM %s WHERE controller = "%s" AND dflag = "Y"', join(',',$fields),$this->table,$controller);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
-		$idField = $fields[1];
+		$idField = $fields[2];
 		foreach ($result as $row)
 		{
-			$arr[$row->$idField] = $row;
+			$arr[ $row->$idField ] = $row;
 		}
 		return $arr;
 	}
 
-	function get_controller_params($controller)
+	public function get_controller_params($controller)
 	{
 		$arrobj = $this->get_params(trim($controller));
+//print "<b>[DEBUG]---></b> "; print_r($arrobj); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$arr = (array) $arrobj[trim($controller)];
 		return $arr;
 	}
 
-	public function get_form_defs($controller)
+	public function get_formdefs($controller)
 	{
 		$this->table = 'params';
-		$fields = array('id','controller','module','formfields');
-		$querystr = sprintf('SELECT %s FROM %s WHERE controller = "%s"', join(',',$fields),$this->table,$controller);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$fields = array('id','param_id','controller','module','formfields');
+		$querystr = sprintf('SELECT %s FROM %s WHERE controller = "%s" AND dflag = "Y"', join(',',$fields),$this->table,$controller);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
 		return $row;
 	}
@@ -130,7 +131,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$querystr = sprintf('SELECT * FROM %s',$table);
         $idField = 'id';
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		foreach ($result as $row)
 		{
@@ -213,7 +214,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	public function get_all_history_recs_all_fields($table)
 	{
 		$querystr = sprintf('SELECT * FROM %s',$table);
-        $result = $this->db->query(Database::SELECT,$querystr);
+        $result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		foreach ($result as $row)
 		{
@@ -233,7 +234,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		{
 			$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"',$fields,$table,$idfield,$id);
 		}
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 		{
 			return $row;
@@ -244,7 +245,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$querystr = sprintf('SELECT * FROM %s WHERE %s ="%s"',$table,$field,$url);
         $idField = 'id';
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
 		return $row;
 	}
@@ -253,7 +254,9 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$querystr = sprintf('SELECT * FROM %s WHERE %s ="%s" AND inputter = "%s" ',$table,$field,$url,$user);
 		$idField = 'id';
-		$result = $this->db->query(Database::SELECT,$querystr);
+//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+//print "<b>[DEBUG]---></b> "; print_r($result); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$row = $result[0];
 		return $row;
 	}
@@ -262,7 +265,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$idfield = $field;
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE id = "%s" AND %s = "%s"',$table,$id,$idfield,$unique_id);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
 		if ($row['count'] > 0 )
 		{
@@ -272,7 +275,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		{
 			$idfield = 'id';
 			$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE id = "%s" AND %s = "%s"',$table,$id,$idfield,$unique_id);
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			$row = $result[0];
 			if ($row['count'] > 0 )
 			{
@@ -287,9 +290,9 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	public function record_exist_dual_key($table,$field1,$field2,$value1,$value2)
 	{
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE %s = "%s" AND %s = "%s"',$table,$field1,$value1,$field2,$value2);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
-		if ($row['count'] > 0 )
+		if ($row->count > 0 )
 		{
 			return TRUE;
 		}
@@ -303,7 +306,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$idfield = $field;
 		$querystr = sprintf('SELECT id FROM %s WHERE %s = "%s"',$table,$idfield,$unique_id);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 		{
 			if(!($row->id == $id)){return TRUE;}
@@ -323,7 +326,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		$where  = substr_replace($WHERE, '', -5);
 		
 		$querystr = sprintf('SELECT id FROM %s %s',$table,$WHERE);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 		{
 			if(!($row->id == $id)){return TRUE;}
@@ -337,7 +340,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$idfield = $unique_id;
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"', join(',', $fields),$table,$idfield,$id);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 		{
 			if($lockedrec=$this->is_record_locked($table,$row->id))
@@ -355,7 +358,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		{
 			$idfield = 'id';
 			$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"', join(',', $fields),$table,$idfield,$id);
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if ($row = $result[0])
 			{
 				if($lockedrec=$this->is_record_locked($table,$row->id))
@@ -381,7 +384,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		$idfield = $unique_id;
 		$table = $tb_inau;
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"', join(',', $fields),$table,$idfield,$id);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 		{
 			if($formtype=='i' || $formtype=='w')
@@ -408,7 +411,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 			/*if not unique field try id*/
 			$idfield = 'id';
 			$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"', join(',', $fields),$table,$idfield,$id);
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if ($row = $result[0])
 			{
 	
@@ -437,7 +440,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 				$idfield = $unique_id;
 				$table = $tb_live;
 				$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"', join(',', $fields),$table,$idfield,$id);
-				$result = $this->db->query(Database::SELECT,$querystr);
+				$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 				if ($row = $result[0])
 				{
 					if($formtype=='i')
@@ -459,7 +462,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 					/*if not unquie field try id*/
 					$idfield = 'id';
 					$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"', join(',', $fields),$table,$idfield,$id);
-					$result = $this->db->query(Database::SELECT,$querystr);
+					$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 					if ($row = $result[0])
 					{
 						if($formtype=='i')
@@ -490,7 +493,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		list($idfield,$cur_no) = preg_split('/;/',$id);
 		$table = $tb_hist;
 		$querystr = sprintf('SELECT %s FROM %s WHERE id = "%s" AND current_no = "%s"', join(',', $fields),$table,$idfield,$cur_no);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 		{
 			return $row;
@@ -500,12 +503,12 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		return NULL;
 	}
 
-	public function get_form_fields($controller,&$labelarr=NULL)
+	public function get_formfields($controller,&$labelarr=NULL)
 	{
 		$labels = FALSE; 
 		if(isset($labelarr)){ $labels = TRUE; }
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$row = $result[0];
 		
@@ -528,7 +531,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		$labels = FALSE; 
 		if(isset($labelarr)){ $labels = TRUE; }
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$row = $result[0];
 		
@@ -551,7 +554,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		$labels = FALSE; 
 		if(isset($labelarr)){ $labels = TRUE; }
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$row = $result[0];
 
@@ -602,7 +605,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	{
 		$labels = FALSE; 
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$row = $result[0];
 		$formfields = new SimpleXMLElement($row->formfields);
@@ -631,7 +634,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	public function get_subform_controller($controller)
 	{
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$row = $result[0];
 		
@@ -651,7 +654,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	public function get_xmlfield_data_by_idval($table,$idfield,$idval,$field,$prefix="")
 	{
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"',$field,$table,$idfield,$idval);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$xml = $result[0]->$field;
 		
@@ -705,7 +708,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		$str = '<div class="frmmsg">An Error Occurred, Please Try Again.</div>';
 				
 		$querystr = sprintf('SELECT counter FROM _sys_autoids WHERE tb_inau = "%s"',$tb_inau);
-		if($result = $this->db->query(Database::SELECT,$querystr))
+		if($result = $this->db->query(Database::SELECT,$querystr,TRUE))
 		{
 			$row_1 = $result[0];
 			if(isset($row_1->counter))
@@ -720,7 +723,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 				if($result = $this->execute_non_select_query(Database::INSERT,$querystr))
 				{
 					$querystr = sprintf('SELECT counter FROM _sys_autoids WHERE tb_inau = "%s"',$tb_inau);
-					if($result = $this->db->query(Database::SELECT,$querystr))
+					if($result = $this->db->query(Database::SELECT,$querystr,TRUE))
 					{
 						$row_2 = $result[0];
 						$counter = $row_2->counter;
@@ -754,7 +757,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 				if($result = $this->execute_non_select_query(Database::INSERT,$querystr))
 				{
 					$querystr = sprintf('SELECT * FROM `%s` ORDER BY id DESC LIMIT 1',$tb_inau);
-					$result = $this->db->query(Database::SELECT,$querystr);
+					$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 					if($row = $result[0])
 					{
 						return $row;
@@ -772,7 +775,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		if($result = $this->execute_non_select_query(Database::INSERT,$querystr))
 		{
 			$querystr = sprintf('SELECT * FROM `%s` ORDER BY id DESC LIMIT 1',$tb_inau);
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if($row = $result[0])
 			{
 				return $row;
@@ -800,14 +803,14 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	public function get_record_lock($idname,$locktable,$rec_id)
 	{
 		$querystr = sprintf('SELECT * FROM `recordlocks` WHERE `idname`="%s" AND `lock_table`="%s" AND `record_id`="%s"',$idname,$locktable,$rec_id);	
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0]){return $row;} else {return FALSE;} 
 	}
 	
 	public function get_record_lock_by_id($id)
 	{
 		$querystr = sprintf('SELECT * FROM `recordlocks` WHERE `id`="%s"',$id);	
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0]){return $row;} else {return FALSE;} 
 	}
 
@@ -877,7 +880,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	public function is_record_locked($locktable,$rec_id)
 	{
 		$querystr = sprintf('SELECT idname,lock_table,record_id,pre_status FROM recordlocks WHERE lock_table="%s" AND record_id="%s"',$locktable,$rec_id);	
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 		{ return $row; } else { return FALSE; } 
 	}
@@ -885,7 +888,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 	public function is_record_locked_by_id($id)
 	{
 		$querystr = sprintf('SELECT idname,lock_table,record_id,pre_status FROM recordlocks WHERE id="%s"',$id);	
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0]){ return $row; } else { return FALSE; } 
 	}
 
@@ -927,7 +930,7 @@ print "<b>[DEBUG]---></b> "; print "FALSE"; print "<br><b>[non_select_result]</b
 		$vals = substr($vals,0,-1);
 		$fields = substr($fields,0,-1);
 		$querystr = sprintf('INSERT into `%s` (%s) VALUES(%s)',$table,$fields,$vals);			
-print "<b>[DEBUG]---></b> ".$querystr."<br><b>[non_select_result]</b><hr>";
+//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$result = $this->execute_non_select_query(Database::INSERT,$querystr);
 		return $result;
 	}
@@ -944,7 +947,7 @@ print "<b>[DEBUG]---></b> ".$querystr."<br><b>[non_select_result]</b><hr>";
 	
 		$querystr = sprintf('SELECT id,vw,recipient,sender,subject,input_date,auth_date,record_status,current_no FROM %s WHERE %s = "%s" order by id desc',$table,$type,$idname);
         $idField = 'id';
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		foreach ($result as $row)
 		{
@@ -963,7 +966,7 @@ print "<b>[DEBUG]---></b> ".$querystr."<br><b>[non_select_result]</b><hr>";
 	public function get_record_count($table,$where="")
 	{
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s %s;',$table,$where);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
 		return $row->count;
 	}
@@ -971,7 +974,7 @@ print "<b>[DEBUG]---></b> ".$querystr."<br><b>[non_select_result]</b><hr>";
 	public function get_record_count_unread_messages($table,$idname)
 	{
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE vw="N" AND recipient="%s";',$table,$idname);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
 		return $row->count;
 	}
@@ -979,7 +982,7 @@ print "<b>[DEBUG]---></b> ".$querystr."<br><b>[non_select_result]</b><hr>";
 	public function get_record_count_unsent_messages($table,$idname)
 	{
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE sender ="%s" OR inputter="%s";',$table,$idname,$idname);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
 		return $row->count;
 	}

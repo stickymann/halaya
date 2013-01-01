@@ -32,10 +32,9 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 	   	$this->template ->usermenu = "<ul class='treeview' id='tree'>\n";
 		foreach($this->topmenu as $key=>$rec) 
 		{
-			$this->template ->usermenu .= $this->make_list_items_from_nodes($this->tree->get_children($rec['menu_id'],true));
+			$this->template ->usermenu .= $this->make_list_items_from_nodes($this->tree->get_children($rec->menu_id,true));
 		}
 		$this->template ->usermenu .= "</ul>\n";
-		print $this->render;
 		if($this->render == "1"){$this->auto_render = true;}
 	}
 
@@ -44,28 +43,37 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 		$this->template ->usermenu = '';
 		foreach($this->topmenu as $key => $rec) 
 		{
-			if($rec['module'] != 'login'){ $rec['module'] = $rec['module']."_super";}
-			$header = "[<b>".$rec['module']."</b>]<br />";
-			$nodes = $this->tree->get_children($rec['menu_id'],true);
+			if($rec->module == 'useraccount')
+			{
+				//rolename 'login' is required by Kohana Auth module
+				$rolename = 'login'; 
+			}
+			else
+			{ 
+				$rolename = $rec->module."_super";
+			}
+			$nodes = $this->tree->get_children($rec->menu_id,true);
 			$security_profile = $this->make_security_profile($nodes);
-			$security_profile = str_replace("<","&lt;", $security_profile);
-			$security_profile = str_replace(">","&gt;",  $security_profile);
-			$security_profile = str_replace("\n","\n<br />",  $security_profile);
-			//$security_profile = htmlspecialchars($security_profile);
-			$this->template ->usermenu .= $header.$security_profile;
-			$this->template ->usermenu .= '<hr />';
+			$this->security_profile_info($rolename,$security_profile);
 		}
 		if($this->render == "1"){$this->auto_render = true;}
 	}
 
-	public function action_updatesupers($print=false)
+	public function action_updatesupers()
 	{
 		$this->template ->usermenu = '';
 		foreach($this->topmenu as $key => $rec) 
 		{
-			if($rec['module'] == 'login'){$rolename = $rec['module'];}else {$rolename = $rec['module']."_super";}
-			$header = "[<b>".$rolename."</b>]<br />";
-			$security_profile = $this->make_security_profile($this->tree->get_children($rec['menu_id'],true));
+			if($rec->module == 'useraccount')
+			{  
+				//rolename 'login' is required by Kohana Auth module
+				$rolename = 'login'; 
+			}
+			else
+			{ 
+				$rolename = $rec->module."_super";
+			}
+			$security_profile = $this->make_security_profile($this->tree->get_children($rec->menu_id,true));
 			$role = ORM::factory('Role')->where('name','=',$rolename)->find();
 			if($role->name == '') //role not found
 			{
@@ -87,13 +95,19 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 				$role->securityprofile = $security_profile;
 				$role->update();
 			}
-			$security_profile = str_replace("<","&lt;", $security_profile);
-			$security_profile = str_replace(">","&gt;",  $security_profile);
-			$security_profile = str_replace("\n","\n<br />",  $security_profile);
-			$this->template ->usermenu .= $header.$security_profile;
-			$this->template ->usermenu .= '<hr />';
+			$this->security_profile_info($rolename,$security_profile);
 		}
 		if($this->render == "1"){$this->auto_render = true;}
+	}
+
+	public function security_profile_info($rolename,$security_profile)
+	{
+		$header = "[<b>".$rolename."</b>]<br />";
+		$security_profile = str_replace("<","&lt;", $security_profile);
+		$security_profile = str_replace(">","&gt;",  $security_profile);
+		$security_profile = str_replace("\n","\n<br />",  $security_profile);
+		$this->template ->usermenu .= $header.$security_profile;
+		$this->template ->usermenu .= '<hr />';
 	}
 
 	public function action_roleselect($print=false,$spid='',$current_no='1')
@@ -127,7 +141,7 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 		$this->template ->usermenu ="<ul class='treeview' id='tree'>\n";
 		foreach($this->topmenu_nologin as $key=>$rec) 
 		{
-			$this->template ->usermenu .= $this->make_menu_selection_list($this->tree->get_children($rec['menu_id'],true),$sparr);
+			$this->template ->usermenu .= $this->make_menu_selection_list($this->tree->get_children($rec->menu_id,true),$sparr);
 		}
 		$this->template ->usermenu .= "</ul>\n";
 		if($this->render == "1"){$this->auto_render = true;} else {return $this->template->usermenu;}

@@ -71,7 +71,7 @@ class Model_MenuTreeAll extends Model
                                                                 $this->table,
                                                                 $this->fields['id'],
                                                                 $id);
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if ($row = $result[0])
                 return $row;
             return null;
@@ -101,9 +101,9 @@ class Model_MenuTreeAll extends Model
                 $parent_id = 0;
             }
             else {
-                $nleft = $node['nleft'];
-                $nright = $node['nright'];
-                $parent_id = $node[$idField];
+                $nleft = $node->nleft;
+                $nright = $node->nright;
+                $parent_id = $node->$idField;
             }
  
             if ($childrenOnly) {
@@ -146,11 +146,11 @@ class Model_MenuTreeAll extends Model
                 }
             }
  
-            $result = $this->db->query(Database::SELECT,$querystr);
+            $result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			$arr = array();
 			foreach ($result as $row)
 			{
-				$arr[ $row[$idField] ] = $row;
+				$arr[ $row->$idField ] = $row;
 			}
 			return $arr;
 	     }
@@ -201,11 +201,11 @@ class Model_MenuTreeAll extends Model
             }
  			
             $idField = $this->fields['id'];
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			$arr = array();
 			foreach ($result as $row)
 			{
-				$arr[ $row[$idField] ] = $row;
+				$arr[ $row->$idField ] = $row;
 			}
 			return $arr;
         }
@@ -231,10 +231,10 @@ class Model_MenuTreeAll extends Model
                              $node->nleft,
                              $node->nright);
 			
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if ($row = $result[0])
 			{
-				return $row['is_descendant'] > 0;
+				return $row->is_descendant > 0;
 			}
 			return false;
         }
@@ -256,10 +256,10 @@ class Model_MenuTreeAll extends Model
                              $this->fields['parent'],
                              $parent_id);
  
-            $result = $this->db->query(Database::SELECT,$querystr);
+            $result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if ($row = $result[0])
 			{
-				return $row['is_descendant'] > 0;
+				return $row->is_descendant > 0;
 			}
 			return false;
         }
@@ -275,10 +275,10 @@ class Model_MenuTreeAll extends Model
             if ($id == 0) 
 			{
                 $querystr = sprintf('SELECT COUNT(*) AS num_descendants FROM %s', $this->table);
-                $result = $this->db->query(Database::SELECT,$querystr);
+                $result = $this->db->query(Database::SELECT,$querystr,TRUE);
 				if ($row = $result[0])
 				{
-					return (int) $row['num_descendants'];
+					return (int) $row->num_descendants;
 				}
             }
             else 
@@ -304,10 +304,10 @@ class Model_MenuTreeAll extends Model
                              $this->table,
                              $this->fields['parent'],
                              $id);
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if ($row = $result[0])
 			{
-				return (int) $row['num_descendants'];
+				return (int) $row->num_descendants;
 			}
             return -1;
         }
@@ -327,16 +327,16 @@ class Model_MenuTreeAll extends Model
                              $this->table,
                              $this->fields['sort']);
 
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			
-            // create a root node to hold child data about first level items
-            //$root = new stdClass;
-            //$root->$idField = 0;
-            //$root->children = array();
+            //create a root node to hold child data about first level items
+            $root = new stdClass;
+            $root->$idField = 0;
+            $root->children = array();
 			
-			$root = array();
-            $root[$idField] = 0;
-            $root['children'] = array();
+			//$root = array();
+            //$root[$idField] = 0;
+            //$root['children'] = array();
 
             $arr = array($root);
  
@@ -344,14 +344,14 @@ class Model_MenuTreeAll extends Model
 			
 			foreach ($result as $row)
 			{
-				$row['children'] = array();
-				$arr[ $row[$idField] ] = $row;
+				$arr[ $row->$idField ] = $row;
+				$arr[$row->$idField]->children = array();
 			}
 
 			// now process the array and build the child data
             foreach ($arr as $id => $row) {
-                if (isset( $row[$parentField] ))
-                    $arr[ $row[$parentField] ]['children'][$id] = $id;
+                if (isset( $row->$parentField ))
+                    $arr[ $row->$parentField ]->children[$id] = $id;
             }
              return $arr;
         }
@@ -374,15 +374,15 @@ class Model_MenuTreeAll extends Model
          */
         function _generate_tree_data(&$arr, $id, $level, &$n)
         {
-            $arr[$id]['nlevel'] = $level;
-            $arr[$id]['nleft'] = $n++;
+            $arr[$id]->nlevel = $level;
+            $arr[$id]->nleft = $n++;
  
             // loop over the node's children and process their data
             // before assigning the nright value
-            foreach ($arr[$id]['children'] as $child_id) {
+            foreach ($arr[$id]->children as $child_id) {
                 $this->_generate_tree_data($arr, $child_id, $level + 1, $n);
             }
-            $arr[$id]['nright'] = $n++;
+            $arr[$id]->nright = $n++;
         }
 				
 		/**
@@ -413,9 +413,9 @@ class Model_MenuTreeAll extends Model
  
                 $querystr = sprintf('UPDATE %s SET nlevel = %d, nleft = %d, nright = %d WHERE %s = %d',
                                  $this->table,
-                                 $row['nlevel'],
-                                 $row['nleft'],
-                                 $row['nright'],
+                                 $row->nlevel,
+                                 $row->nleft,
+                                 $row->nright,
                                  $this->fields['id'],
                                  $id);
 				$result = $this->db->query(Database::UPDATE,$querystr);	
@@ -434,10 +434,10 @@ class Model_MenuTreeAll extends Model
 							$this->table,
                             $this->fields['parent']
                             );
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			if ($row = $result[0])
 			{
-				return (int) $row['num'];
+				return (int) $row->num;
 			}
         }
 		
@@ -449,10 +449,10 @@ class Model_MenuTreeAll extends Model
 		public function get_top_level_menus()
         {
             $querystr = sprintf('SELECT menu_id,module,url_input FROM %s WHERE %s = 0 ORDER BY sortpos',$this->table,$this->fields['parent']);
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			foreach ($result as $row)
 			{
-				$arr[ $row['menu_id'] ] = $row;
+				$arr[ $row->menu_id ] = $row;
 			}
 			return $arr;
         }
@@ -464,11 +464,11 @@ class Model_MenuTreeAll extends Model
          */
 		public function get_all_top_level_menus_nologin()
 		{
-			$querystr = sprintf('SELECT menu_id,module,url_input FROM %s WHERE %s = 0 AND module <> "%s" ORDER BY sortpos',$this->table,$this->fields['parent'],"login");  		
-			$result = $this->db->query(Database::SELECT,$querystr);
+			$querystr = sprintf('SELECT menu_id,module,url_input FROM %s WHERE %s = 0 AND module <> "%s" ORDER BY sortpos',$this->table,$this->fields['parent'],"useraccount");  		
+			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			foreach ($result as $row)
 			{
-				$arr[ $row['menu_id'] ] = $row;
+				$arr[ $row->menu_id ] = $row;
 			}
 			return $arr;
 		}

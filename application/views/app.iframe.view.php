@@ -24,10 +24,10 @@
 		<div region="center" title="" style="overflow:hidden;">
 			<div class="easyui-layout" fit="true">
 				<div region="north" split="true" title=" " style="height:230px;overflow:hidden;">
-					<iframe src="message/inbox" name="enquiry" style="width:100%;height:100%" frameborder="0" scrolling="auto"></iframe>
+					<iframe src="core_useraccount_message/inbox" name="enquiry" style="width:100%;height:100%" frameborder="0" scrolling="auto"></iframe>
 				</div>
 				<div region="center" split="true" title="" style="overflow:hidden;">
-					<iframe src="message" name="input" style="width:100%;height:100%;color:green" frameborder="0" scrolling="auto"></iframe>
+					<iframe src="core_useraccount_message" name="input" style="width:100%;height:100%;color:green" frameborder="0" scrolling="auto"></iframe>
 				</div>
 			</div>
 		</div>	

@@ -31,7 +31,7 @@ class Model_MenuTreeUserProfile extends Model
 	function get_node($id)
 	{
 		$querystr = sprintf('SELECT %s FROM %s WHERE %s = %d AND inputter = "%s"', join(',', $this->_get_fields()),$this->table,$this->fields['id'],$id,$this->inputter);
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		if ($row = $result[0])
 			return $row;
          return null;
@@ -49,9 +49,9 @@ class Model_MenuTreeUserProfile extends Model
 		}
 		else 
 		{
-			$nleft = $node['nleft'];
-			$nright = $node['nright'];
-			$parent_id = $node[$idField];
+			$nleft = $node->nleft;
+			$nright = $node->nright;
+			$parent_id = $node->$idField;
 		}
  
 		if ($childrenOnly) 
@@ -106,11 +106,11 @@ class Model_MenuTreeUserProfile extends Model
 			}
 		}
  
-		$result = $this->db->query(Database::SELECT,$querystr);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		foreach ($result as $row)
 		{
-			$arr[ $row[$idField] ] = $row;
+			$arr[ $row->$idField ] = $row;
 		}
 		return $arr;
 	}
@@ -123,11 +123,11 @@ class Model_MenuTreeUserProfile extends Model
 	public function get_top_level_menus()
 	{
 		$querystr = sprintf('SELECT menu_id,module,url_input FROM %s where %s = 0 AND inputter = "%s" ORDER BY sortpos',$this->table,$this->fields['parent'],$this->inputter);
-     	$result = $this->db->query(Database::SELECT,$querystr);
+     	$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		foreach ($result as $row)
 		{
-			$arr[ $row['menu_id'] ] = $row;
+			$arr[ $row->menu_id ] = $row;
 		}
 		return $arr;
 	}

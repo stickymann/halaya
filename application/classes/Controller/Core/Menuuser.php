@@ -36,7 +36,7 @@ class Controller_Core_Menuuser extends Controller_Core_Menufunc
 			{
 				foreach($rolearr as $key => $rec)
 				{
-					$role = ORM::factory('Role',$rec['role_id']);
+					$role = ORM::factory('Role',$rec->role_id);
 				
 					//get security profle from role record, data is xml
 					$xml = new SimpleXMLElement($role->securityprofile);
@@ -94,14 +94,20 @@ class Controller_Core_Menuuser extends Controller_Core_Menufunc
 				}
 			}
 		}
-
+		
+		//delay load
+		if($site->get_ns_totalrows() > 0)
+		{
+			if(substr(getenv("HTTP_REFERER"),-3) == "app") { usleep(3000000); }
+		}
+				
 		//get root menus for user
 		$usertree = new Model_MenuTreeUserProfile('menudefs_users',Auth::instance()->get_user()->idname, 'menu_id', 'parent_id', 'sortpos');
 		$topmenu = $usertree->get_top_level_menus();
 		$this->template->usermenu ="<ul class='treeview' id='tree'>\n";
 		foreach($topmenu as $key=>$rec) 
 		{
-			$this->template->usermenu .= $this->make_list_items_from_nodes($usertree->get_children($rec['menu_id'],true));
+			$this->template->usermenu .= $this->make_list_items_from_nodes($usertree->get_children($rec->menu_id,true));
 		}
 		$this->template->usermenu .= "</ul>\n";
 	}
