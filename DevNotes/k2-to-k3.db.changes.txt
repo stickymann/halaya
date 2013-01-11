@@ -19,20 +19,42 @@ ALTER TABLE `halaya`.`params` ADD INDEX `controller` (`controller`);
 DELETE FROM `halaya`.`params_hs`;
 ALTER TABLE `halaya`.`params_hs`     
 ADD COLUMN `param_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
-ADD COLUMN `default` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`;  
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`;  
 ALTER TABLE `halaya`.`params_hs` CHANGE `primarymodel`  `primarymodel` VARCHAR(255) DEFAULT 'Model_SiteDB' NULL ;
 
 DELETE FROM `halaya`.`params_is`;
 ALTER TABLE `halaya`.`params_is`     
 ADD COLUMN `param_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
-ADD COLUMN `default` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`;  
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`;  
 ALTER TABLE `halaya`.`params_is` CHANGE `primarymodel`  `primarymodel` VARCHAR(255) DEFAULT 'Model_SiteDB' NULL ;
+
+
 
 UPDATE `halaya`.`menudefs` SET `module` = "useraccount" WHERE `module` = "login";
 UPDATE `halaya`.`menudefs` 
 SET 
 `url_input` = IF(url_input="","",CONCAT("core_",module,"_",REPLACE(REPLACE(REPLACE(`url_input`,"_rpt",""),"_enq",""),"_",""))),
 `url_enquiry` = IF(url_enquiry="","",CONCAT("core_",module,"_",REPLACE(REPLACE(REPLACE(`url_enquiry`,"_rpt",""),"_enq",""),"_","")));
+
+
+
+ALTER TABLE `halaya`.`enquirydefs` DROP KEY `uniq_controller`, ADD INDEX `controller` (`controller`);
+ALTER TABLE `halaya`.`enquirydefs`     
+ADD COLUMN `enquirydef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
+UPDATE `halaya`.`enquirydefs` 
+SET `enquirydef_id` = CONCAT("core_enquiry_",REPLACE(REPLACE(`controller`,"_enq",""),"_",""));
+ALTER TABLE `halaya`.`enquirydefs` ADD KEY `uniq_enquirydef_id` (`enquirydef_id`);
+
+ALTER TABLE `halaya`.`enquirydefs_hs`     
+ADD COLUMN `enquirydef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
+
+ALTER TABLE `halaya`.`enquirydefs_is`     
+ADD COLUMN `enquirydef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
+UPDATE `halaya`.`enquirydefs` SET `dflag` = "Y";
+
 
 
 

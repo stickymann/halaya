@@ -14,10 +14,10 @@ class Controller_Core_Menuuser extends Controller_Core_Menufunc
 {
 	public $template = 'menutree.view';
     
-	public function before()
+	public function __construct()
 	{
-		parent::before();
-		$this->template->head = $this->get_htmlhead();
+		parent::__construct();
+		$this->template->head = $this->get_htmlhead($this->global_app_title);
 	}
 		
 	public function action_index()
@@ -98,7 +98,7 @@ class Controller_Core_Menuuser extends Controller_Core_Menufunc
 		//delay load
 		if($site->get_ns_totalrows() > 0)
 		{
-			if(substr(getenv("HTTP_REFERER"),-3) == "app") { usleep(3000000); }
+			//if(substr(getenv("HTTP_REFERER"),-3) == "app") { usleep(3000000); }
 		}
 				
 		//get root menus for user

@@ -14,9 +14,9 @@ class Controller_App extends Controller_Include
 {
 	public $template = 'app.iframe.view';
 	
-	public function before()
+	public function __construct()
 	{
-		parent::before();
+		parent::__construct();
 		$this->template->head = $this->get_htmlhead($this->global_app_title);
 		$this->template->orgname = $this->global_app_title;
 	}

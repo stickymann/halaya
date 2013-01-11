@@ -14,9 +14,9 @@ class Controller_Core_Cmdbox extends Controller_Include
 {
 	public $template = 'cmdbox.view';
 
-	public function before()
+	public function __construct()
     {
-		parent::before();
+		parent::__construct();
 		$this->template->head = $this->get_htmlhead();
 		$this->template->idname = HTML::chars(Auth::instance()->get_user()->idname);
 		$this->template->username = HTML::chars(Auth::instance()->get_user()->username);

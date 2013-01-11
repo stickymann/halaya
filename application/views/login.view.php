@@ -17,14 +17,14 @@ if(!$isLoginOk)
 	print "\t".'<div id="frmsignin">'."\n";
     print "\t".Form::open('login',array('autocomplete'=>'off'))."\n";
     print "\t".'<p id="puser">'."\n";
-	print "\t".Form::label('username', 'Username:')."\n";
-	print "\t".Form::input('username', $form['username'])."\n";
+	print "\t".Form::label('username','Username:')."\n";
+	print "\t".Form::input('username',$form['username'],array('id'=>'username'))."\n";
 	print "\t".'</p><p>'."\n";
-	print "\t".Form::label('password', 'Password:')."\n"; 
-	print "\t".Form::password('password',$form['password'])."\n";
+	print "\t".Form::label('password','Password:')."\n"; 
+	print "\t".Form::password('password',$form['password'],array('id'=>'password'))."\n";
 	print "\t".'</p><p class="submit">'."\n";
-	print "\t".Form::submit('submitbtn', 'Login')."\n";
-	print "\t".Form::hidden('status',$status,array('disabled'))."\n";
+	print "\t".Form::submit('submitbtn', 'Login',array('id'=>'submitbtn'))."\n";
+	print "\t".Form::hidden('status',$status,array('id'=>'status'))."\n";
 	print "\t".'</p>'."\n";
 	print "\t".Form::close()."\n";
 }

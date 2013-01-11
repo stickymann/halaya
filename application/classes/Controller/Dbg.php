@@ -10,7 +10,7 @@
  * @copyright   (c) 2013
  * @license      
  */
-class Controller_Debug extends Controller
+class Controller_Dbg extends Controller
 {	
 	public static function info() 
 	{ 

@@ -1,3 +1,4 @@
+
 $(document).ready(function()
 {
 	if($('#current_no').val() == '0')

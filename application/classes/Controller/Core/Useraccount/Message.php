@@ -12,43 +12,48 @@
  */
 class Controller_Core_Useraccount_Message extends Controller_Core_Site
 {   
-	//public $template = "template";
-
-	//public function __construct()
-    public function before()
-	{	
-		$this->set_start_controller("message");
-		$this->delay_load();
-		parent::before();
-		$this->param['htmlhead'] .= $this->insert_head_js();
-	}	
-		
-	public function action_index($opt="")
+    public function __construct()
     {
-		$this->param['indexfieldvalue'] = strtoupper($opt);
+		parent::__construct("message");
+		$this->param['htmlhead'] .= $this->insert_head_js();
+	}
+		
+	public function action_index()
+    {
+		$this->delay_load();
+		$this->param['indexfieldvalue'] = strtoupper( $this->request->param('opt') );
 		$this->process_index();
 	}
 	
 	function insert_head_js()
 	{
-		return HTML::script( $this->randomize('media/js/message.js') );
+		return HTML::script( $this->randomize('media/js/core.message.js') );
 	}
 
 	function input_validation()
 	{
 		$post = $_POST;	
 		//validation rules
+		//array_map($post,'trim');
 		$validation = new Validation($post);
-		$validation->pre_filter('trim', TRUE);
-		$validation->add_rules('id','required','standard_text');
-		//$validation->add_rules('vw','required', 'length[1]', 'standard_text');
-		$validation->add_rules('recipient','required', 'length[1,50]', 'standard_text');
-		$validation->add_rules('sender','required', 'length[1,50]', 'standard_text');	
-		$validation->add_rules('subject','required', 'length[1,255]','standard_text');
-		$validation->add_rules('body','required', 'length[1,8192]');
+		$validation
+			->rule('id','not_empty')
+			->rule('id','numeric');
+		$validation
+			->rule('recipient','not_empty')
+			->rule('recipient','min_length', array(':value', 1))->rule('recipient','max_length', array(':value', 50));
+		$validation
+			->rule('sender','not_empty')	
+			->rule('sender','min_length', array(':value', 1))->rule('sender','max_length', array(':value', 50));
+		$validation
+			->rule('subject','not_empty')
+			->rule('subject','min_length', array(':value', 1))->rule('subject','max_length', array(':value', 255));
+		$validation
+			->rule('body','not_empty')
+			->rule('body','min_length', array(':value', 1))->rule('subject','max_length', array(':value', 8192));
 
-		$this->param['isinputvalid'] = $validation->validate();
-		$this->param['validatedpost'] = $validation->as_array();
+		$this->param['isinputvalid'] = $validation->check();
+		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
 		
@@ -59,7 +64,7 @@ class Controller_Core_Useraccount_Message extends Controller_Core_Site
 	
 	function action_inbox()
 	{
-		$this->param['url'] = $this->param['controller'].'/inbox';
+		$this->param['url'] = $this->param['param_id'].'/inbox';
 		$this->param['pageheader'] = '<div id="msgcon" >Inbox</div>';
 		$arr = $this->param['primarymodel']->get_messages($this->param['tb_live'],'recipient',Auth::instance()->get_user()->idname);
 		$this->process_enquiry($arr);
@@ -67,7 +72,7 @@ class Controller_Core_Useraccount_Message extends Controller_Core_Site
 	
 	function action_sent()
 	{
-		$this->param['url'] = $this->param['controller'].'/sent';
+		$this->param['url'] = $this->param['param_id'].'/sent';
 		$this->param['pageheader'] = '<div id="msgcon">Sent</div>';
 		$arr = $this->param['primarymodel']->get_messages($this->param['tb_live'],'sender',Auth::instance()->get_user()->idname);
 		$this->process_enquiry($arr);
@@ -75,7 +80,7 @@ class Controller_Core_Useraccount_Message extends Controller_Core_Site
 
 	function action_drafts()
 	{	
-		$this->param['url'] = $this->param['controller'].'/drafts';
+		$this->param['url'] = $this->param['param_id'].'/drafts';
 		$this->param['pageheader'] = '<div id="msgcon">Drafts</div>';
 		$arr = $this->param['primarymodel']->get_messages($this->param['tb_inau'],'sender',Auth::instance()->get_user()->idname);
 		$this->process_enquiry($arr);

@@ -109,10 +109,48 @@ class Model_SiteDB extends Model
 		return $arr;
 	}
 
+	public function get_param_id($controller)
+	{
+		$this->table = 'params';
+		$querystr = sprintf('SELECT param_id FROM %s WHERE controller = "%s" AND dflag = "Y"',$this->table,$controller);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+		$row = $result[0];
+		return $row->param_id;
+	}
+
+	public function get_controller($param_id)
+	{
+		$this->table = 'params';
+		$querystr = sprintf('SELECT controller FROM %s WHERE param_id = "%s"',$this->table,$param_id);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+		$row = $result[0];
+		return $row->controller;
+	}
+
+	public function get_param_keys()
+	{
+		$querystr = sprintf('SELECT id,param_id,controller,dflag FROM %s','params');
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+		$arr = array();
+		$idField = 'param_id';
+		
+		foreach ($result as $row)
+		{
+			$arr[ $row->$idField ] = $row; 
+		}
+
+		$querystr = sprintf('SELECT id,enquirydef_id as param_id,controller,dflag FROM %s','enquirydefs');
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+		foreach ($result as $row)
+		{
+			$arr[ $row->$idField ] = $row; 
+		}
+		return $arr;
+	}
+
 	public function get_controller_params($controller)
 	{
 		$arrobj = $this->get_params(trim($controller));
-//print "<b>[DEBUG]---></b> "; print_r($arrobj); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$arr = (array) $arrobj[trim($controller)];
 		return $arr;
 	}
@@ -267,7 +305,7 @@ class Model_SiteDB extends Model
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE id = "%s" AND %s = "%s"',$table,$id,$idfield,$unique_id);
 		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$row = $result[0];
-		if ($row['count'] > 0 )
+		if ($row->count > 0 )
 		{
 			return TRUE;
 		}
@@ -277,7 +315,7 @@ class Model_SiteDB extends Model
 			$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE id = "%s" AND %s = "%s"',$table,$id,$idfield,$unique_id);
 			$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 			$row = $result[0];
-			if ($row['count'] > 0 )
+			if ($row->count > 0 )
 			{
 				return TRUE;
 			}
@@ -944,7 +982,6 @@ class Model_SiteDB extends Model
 
 	public function get_messages($table,$type,$idname)
 	{
-	
 		$querystr = sprintf('SELECT id,vw,recipient,sender,subject,input_date,auth_date,record_status,current_no FROM %s WHERE %s = "%s" order by id desc',$table,$type,$idname);
         $idField = 'id';
 		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
@@ -958,7 +995,7 @@ class Model_SiteDB extends Model
 
 	public function get_user_enquiry_tables($user)
 	{
-		$querystr = sprintf('SELECT url_input,module,label_input FROM menudefs_users WHERE inputter="%s" AND (url_input !="" || url_input !=NULL) AND url_input NOT LIKE "%senquiry%s" ORDER BY  url_input;',$user,"%","%");
+		$querystr = sprintf('SELECT url_input,module,label_input FROM menudefs_users WHERE inputter="%s" AND (url_input !="" || url_input !=NULL) AND url_input NOT LIKE "%sreport%s" ORDER BY  url_input;',$user,"%","%");
 		$arr = $this->execute_select_query($querystr);
 		return $arr;
 	}

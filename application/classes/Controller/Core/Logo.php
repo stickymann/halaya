@@ -14,10 +14,9 @@ class Controller_Core_Logo extends Controller_Include
 {
     public $template = 'logo.view';
 
-	public function before()
+	public function __construct()
     {
-		parent::before();
-		$this->template->head = $this->get_htmlhead();
+		parent::__construct();
 		$this->template->logo_app = $this->img['logo_app'];
 		$this->template->img_signout = $this->img['signout'];
 	}

@@ -24,7 +24,6 @@ class Controller_Core_Sitecontrol extends Controller
 		$this->param['globalauthmodeon'] = false;
 		$this->param['controllerauthmodeon'] = false;
 		$this->param['globalindexfldon'] = false;
-print "<b>[DEBUG]---></b> "; print_r($this->param); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 	}
 	
 	public function set_global_auth_mode_on($val)
@@ -47,7 +46,6 @@ print "<b>[DEBUG]---></b> "; print_r($this->param); print( sprintf('<br><b>[line
 		
 		$control = array('if'=>false,'vw'=>false,'pr'=>false,'nw'=>false,'cp'=>false,'iw'=>false,'in'=>false,'ao'=>false,'as'=>false,'rj'=>false,'de'=>false,'hd'=>false,'va'=>false,'df'=>false,'ls'=>false,'hs'=>false,'is'=>false,'ex'=>false);
 		$menu = $this->param['primarymodel']->get_user_menu_controls('menudefs_users','url_input',$this->param['url_input'],Auth::instance()->get_user()->idname);
-print "<b>[DEBUG]---></b> "; print_r($menu); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		if($menu)
 		{
 			$lookup = preg_split('/,/',$menu->controls_input);
@@ -85,37 +83,37 @@ print "<b>[DEBUG]---></b> "; print_r($menu); print( sprintf('<br><b>[line %s - %
 		$func='?';
 		
 		$ctrl = $this->param['controls'];
-print "<b>[DEBUG]---></b> "; print_r($ctrl); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+//print "<b>[DEBUG]---></b> "; print_r($ctrl); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		if(!$post)
 		{
 			if( isset($ctrl['if']) )
 			{
-				$controls .= Form::submit('submit','Submit',array('class="bttn"')).'&nbsp</td><td>';
+				$controls .= Form::submit('submit','Submit',array('id'=>'submit','class="bttn"')).'&nbsp</td><td>';
 				//should i check for if key exist in controls array? with frontend errors should never occur 
 				//if (array_key_exists('vw', $this->param['controls']->control['vw']))
 			
 				if($ctrl['vw']) 
-					$controls .= Form::radio('func','v',TRUE).Form::label('func','view').'&nbsp';
+					$controls .= Form::radio('func','v',TRUE,array('id'=>'func')).Form::label('func','view').'&nbsp';
 			
 				if($ctrl['nw']) 
-					$controls .= Form::radio('func','n').Form::label('func','new').'&nbsp';
+					$controls .= Form::radio('func','n',FALSE,array('id'=>'func')).Form::label('func','new').'&nbsp';
 			
 				if($ctrl['cp']) 
-					$controls .= Form::radio('func','c').Form::label('func','copy').'&nbsp';
+					$controls .= Form::radio('func','c',FALSE,array('id'=>'func')).Form::label('func','copy').'&nbsp';
 						
 				if($ctrl['in']) 
-					{$controls .= Form::radio('func','i').Form::label('func','edit').'&nbsp';}
+					{$controls .= Form::radio('func','i',FALSE,array('id'=>'func')).Form::label('func','edit').'&nbsp';}
 				else if($ctrl['iw']) 
-					{$controls .= Form::radio('func','w').Form::label('func','edit new').'&nbsp';}
+					{$controls .= Form::radio('func','w',FALSE,array('id'=>'func')).Form::label('func','edit new').'&nbsp';}
 
 				if($ctrl['ao'] || $ctrl['as']) 
 				{
-					$controls .= Form::radio('func','a').Form::label('func','authorize').'&nbsp';
-					$controls .=Form::hidden('auth','y');
+					$controls .= Form::radio('func','a',FALSE,array('id'=>'func')).Form::label('func','authorize').'&nbsp';
+					$controls .=Form::hidden('auth','y',array('id'=>'auth'));
 				}
 				else
 				{
-					$controls .=Form::hidden('auth','');
+					$controls .=Form::hidden('auth','',array('id'=>'func'));
 				}
 			}
 			else
@@ -127,17 +125,17 @@ print "<b>[DEBUG]---></b> "; print_r($ctrl); print( sprintf('<br><b>[line %s - %
 			{
 				if(!($ctrl['ao'] && $ctrl['as']))
 				{
-					$controls .= Form::radio('func','a').Form::label('func','reject').'&nbsp';
+					$controls .= Form::radio('func','a',FALSE,array('id'=>'func')).Form::label('func','reject').'&nbsp';
 				}
-				$controls .=Form::hidden('rjct','y');
+				$controls .=Form::hidden('rjct','y',array('id'=>'rjct'));
 			}
 			else
 			{
-				$controls .=Form::hidden('rjct','');
+				$controls .=Form::hidden('rjct','',array('id'=>'rjct'));
 			}
 
 			if($ctrl['de']) 
-				$controls .= Form::radio('func','d').Form::label('func','delete').'&nbsp';
+				$controls .= Form::radio('func','d',FALSE,array('id'=>'func')).Form::label('func','delete').'&nbsp';
 			
 			if($ctrl['is'] || $this->param['controller'] == "message")
 			{
@@ -175,38 +173,44 @@ print "<b>[DEBUG]---></b> "; print_r($ctrl); print( sprintf('<br><b>[line %s - %
 			// setButtonClicked() function need to manage recordlocks when navigating away from page
 			if($ctrl['hd'])
 			{
-				$controls .= Form::submit('submit','Hold',array('class="bttn" onclick=window.siteutils.setButtonClicked("Hold");')).'';
+				$controls .= $this->input_form_button('Hold');
 			}
 			if($ctrl['va'])
 			{
-				$controls .= Form::submit('submit','Validate',array('class="bttn" onclick=window.siteutils.setButtonClicked("Validate");')).'';
+				$controls .= $this->input_form_button('Validate');
 			}
-			$controls .= Form::submit('submit','Commit',array('class="bttn" onclick=window.siteutils.setButtonClicked("Commit"));')).'';
-			$controls .= Form::submit('submit','Cancel',array('class="bttn" onclick=window.siteutils.setButtonClicked("Cancel");')).'';
+			$controls .= $this->input_form_button('Commit');
+			$controls .= $this->input_form_button('Cancel');
 		}
 		else if($post['func']=='a')
 		{
 			if($post['auth']=='y')
 			{
-				$controls .= Form::submit('submit','Authorize',array('class="bttn" onclick=window.siteutils.setButtonClicked("Authorize");')).'';
+				$controls .= $this->input_form_button('Authorize');
 			}
 
 			if($post['rjct']=='y')
 			{
-					$controls .= Form::submit('submit','Reject',array('class="bttn" onclick=window.siteutils.setButtonClicked("Reject");')).'';
+				$controls .= $this->input_form_button('Reject');
 			}
-			$controls .= Form::submit('submit','Cancel',array('class="bttn" onclick=window.siteutils.setButtonClicked("Cancel");')).'';
+			$controls .= $this->input_form_button('Cancel');
 		}
 		else if($post['func']=='v')
 		{
-			$controls .= Form::submit('submit','Cancel',array('class="bttn" onclick=window.siteutils.setButtonClicked("Cancel");')).'';
+			$controls .= $this->input_form_button('Cancel');
 		}
 		else if($post['func']=='d')
 		{
-			$controls .= Form::submit('submit','Delete',array('class="bttn" onclick=window.siteutils.setButtonClicked("Delete");')).'&nbsp';
-			$controls .= Form::submit('submit','Cancel',array('class="bttn" onclick=window.siteutils.setButtonClicked("Cancel");')).'';
+			$controls .= $this->input_form_button('Delete');
+			$controls .= $this->input_form_button('Cancel');
 		}
 		return $controls;
+	}
+	
+	public function input_form_button($bttnval)
+	{
+		$html = sprintf('<input type="submit" id="submit" name="submit" class="bttn" value="%s" onclick=window.siteutils.setButtonClicked("Hold") />',$bttnval,$bttnval)."\n"; 
+		return $html;
 	}
 
 	public function get_enqform_controls()
@@ -235,25 +239,31 @@ print "<b>[DEBUG]---></b> "; print_r($ctrl); print( sprintf('<br><b>[line %s - %
 						
 		if($ctrl['ls']) 
 		{
-			$controls .= Form::radio('enqfunc','ls',TRUE).Form::label('enqfunc','live').'&nbsp';
+			$controls .= Form::radio('enqfunc','ls',TRUE,array('id'=>'enqfunc')).Form::label('enqfunc','live').'&nbsp';
 		}
 		else if($ctrl['df']) 
 		{
-			$controls .= Form::radio('enqfunc','df',TRUE).Form::label('enqfunc','default').'&nbsp';
+			$controls .= Form::radio('enqfunc','df',TRUE,array('id'=>'enqfunc')).Form::label('enqfunc','default').'&nbsp';
 		}
 
-		if($ctrl['is']) 
-			$controls .= Form::radio('enqfunc','is').Form::label('enqfunc','inau').'&nbsp';
-						
-		if($ctrl['hs']) 
-			$controls .= Form::radio('enqfunc','hs').Form::label('enqfunc','hist').'&nbsp';
-				
-		if($ctrl['ex']) 
-			$controls .= Form::checkbox('enqexport','0').Form::label('enqexport','export').'&nbsp';
+		if($ctrl['is'])
+		{
+			$controls .= Form::radio('enqfunc','is',FALSE,array('id'=>'enqfunc')).Form::label('enqfunc','inau').'&nbsp';
+		}
 		
-			$controls .= Form::checkbox('fieldnames','0').Form::label('fieldnames','fieldnames').'&nbsp';
-			$controls .= Form::input('limit','500','size=8 class="ff"').Form::label('limit','limit').'&nbsp';
-			$controls .= '<input type="hidden" id="js_exportid" name="js_exportid">';	
+		if($ctrl['hs'])
+		{
+			$controls .= Form::radio('enqfunc','hs',FALSE,array('id'=>'enqfunc')).Form::label('enqfunc','hist').'&nbsp';
+		}		
+		
+		if($ctrl['ex'])
+		{ 
+			$controls .= Form::checkbox('enqexport','0',FALSE,array('id'=>'enqexport')).Form::label('enqexport','export').'&nbsp';
+		}			
+		$controls .= Form::checkbox('fieldnames','0',FALSE,array('id'=>'fieldnames')).Form::label('fieldnames','fieldnames').'&nbsp';
+		$controls .= Form::input('limit','500',array('size'=>'8','class'=>'ff')).Form::label('limit','limit').'&nbsp';
+		$controls .= Form::checkbox('pager','1',TRUE,array('id'=>'pager')).Form::label('pager','pager').'&nbsp';
+		$controls .= '<input type="hidden" id="js_exportid" name="js_exportid">';	
 		return $controls;
 	}
 
@@ -263,51 +273,59 @@ print "<b>[DEBUG]---></b> "; print_r($ctrl); print( sprintf('<br><b>[line %s - %
 		return $this->param['controls'];
 	}
 
-	public function show_tabs($controller,$enqtype='default')
+	public function show_tabs($param_id,$controller,$enqtype='default')
 	{
+		$lookup = $this->param['primarymodel']->get_param_keys();
 		(array) $result = $this->param['primarymodel']->get_user_enquiry_tables(Auth::instance()->get_user()->idname);
 		$result = (array) $result;
+		$selarr = array();
 		$SELECT	= '<select id="controllersel" class="ff" onChange=enquiry.makeFilter()>'."\n";
 		foreach ($result as $key => $row)
 		{
 			$row = (array) $row;
-			if($row['url_input'] == $controller){$selected = "selected";} else {$selected = "";}
-			$HTML = sprintf('<option value="%s,%s" %s>%s</option>',$row['url_input'],$row['module'],$selected,$row['label_input'])."\n";
-			$SELECT .= $HTML;
+			$keymatch = '#';
+			if( array_key_exists( $row['url_input'], $lookup) )
+			{
+				$keymatch = $lookup[ $row['url_input'] ]->controller;
+			}
+			if($row['url_input'] == $param_id){$selected = "selected";} else {$selected = "";}
+			$selarr[ $row['label_input'] ] = sprintf('<option value="%s,%s,%s" %s>%s</option>',$row['url_input'],$keymatch,$row['module'],$selected,$row['label_input'])."\n";
 		}
+		ksort($selarr);
+		$SELECT .= join("",$selarr);
+		
 		$SELECT .= '</select>'."\n";
 		$BTTN = '<input class="bttn" type="submit" name="ButtonGet" value="   Get   " onclick=enquiry.GetResults()>'."\n";
 		$baseurl = URL::base(TRUE,'http');
 		$_idname = Auth::instance()->get_user()->idname;
 		
-		$url = sprintf('%sindex.php/ajaxtodb?option=enqctrl&controller=%s&user=%s',$baseurl,$controller,$_idname);
+		$url = sprintf('%sindex.php/core_ajaxtodb?option=enqctrl&param_id=%s&controller=%s&user=%s',$baseurl,$param_id,$controller,$_idname);
 		$RADIO = Controller_Core_Sitehtml::get_html_from_url($url); 
 		
-		$url = sprintf('%sindex.php/ajaxtodb?option=filterform&controller=%s&user=%s&enqtype=%s&loadfixedvals=1&rochk=0',$baseurl,$controller,$_idname,$enqtype);
+		$url = sprintf('%sindex.php/core_ajaxtodb?option=filterform&controller=%s&user=%s&enqtype=%s&loadfixedvals=1&rochk=0',$baseurl,$controller,$_idname,$enqtype);
 		$FILTERFORM = Controller_Core_Sitehtml::get_html_from_url($url); 
 		
 		$HTML=<<<_HTML_
 		<div id="pagebody">
 			<div id="tabs" class="easyui-tabs">
-				<div id="filter" title="filter" closable="false" style="padding:10px;">
+				<div id="filter" title="filter" closable="false">
 					<div id="filtersel">$BTTN $SELECT <span id="radios">$RADIO</span></div>
 					<div id="filterurl"></div>
 					<div id="filterform">$FILTERFORM</div>
 				</div>
 				
-				<div id="live" title="live" closable="false" style="padding:10px;">
+				<div id="live" title="live" closable="false" style="border:0px solid blue;overlow:hidden;">
 					<div id="resultlive"></div>
 				</div>
 				
-				<div id="inau" title="inau" closable="false" style="padding:10px;">
+				<div id="inau" title="inau" closable="false" style="border:0px solid blue;overlow:hidden;">
 					<div id="resultinau"></div>
 				</div>
 				
-				<div id="hist" title="hist" closable="false" style="padding:10px;">
+				<div id="hist" title="hist" closable="false" style="border:0px solid blue;overlow:hidden;">
 					<div id="resulthist"></div>
 				</div>
-			
-			</div> <!--tabs pagebody -->
+				</div> <!--tabs pagebody -->
 			<input type="hidden" id="js_idname" name="js_idame" value="$_idname">
 	</div> <!--end pagebody -->
 _HTML_;

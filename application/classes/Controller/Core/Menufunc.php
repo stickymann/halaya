@@ -12,9 +12,9 @@
  */
 class Controller_Core_Menufunc extends Controller_Include
 {
-	public function before()
+	public function __construct()
 	{
-		parent::before();
+		parent::__construct();
 	}
 		
 	function make_list_items_from_nodes($nodes)

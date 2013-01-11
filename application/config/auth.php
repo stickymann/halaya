@@ -6,8 +6,8 @@ return array(
 	'hash_method'  => 'sha256',
 	'hash_key'     => 'as',
 	'lifetime'     => 28800,
-	'session_type' => Session::$default,
-	'session_key'  => 'auth_user1',
+	'session_type' => 'cookie',
+	'session_key'  => 'auth_user',
 
 	// Username/password combinations for the Auth File driver
 	'users' => array(

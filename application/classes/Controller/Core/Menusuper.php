@@ -15,16 +15,16 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 {
 	public $template = "menutree.view";
 	public $render;
-    public function before()
+    public function __construct()
 	{
-		parent::before();
+		parent::__construct();
 		$this->template->head = $this->get_htmlhead();
 		$this->tree = new Model_MenuTreeAll('menudefs', 'menu_id', 'parent_id', 'sortpos');
 		$this->tree->rebuild();
 		$this->topmenu = $this->tree->get_top_level_menus();
 		$this->topmenu_nologin = $this->tree->get_all_top_level_menus_nologin();
 		$this->auto_render = false;
-		$this->render = $this->request->param('args');
+		$this->render = $this->request->param('opt');
 	}
 	
 	public function action_index()

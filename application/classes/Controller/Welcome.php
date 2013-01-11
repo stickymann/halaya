@@ -5,7 +5,9 @@ class Controller_Welcome extends Controller
 
 	public function action_index()
 	{
-		$this->response->body('<h1>Welcome To Halaya</h1>');
+		//$this->response->body('<h1>Welcome To Halaya</h1>');
+		$this->response->body( phpinfo() );
+
 	}
 
 } // End Welcome

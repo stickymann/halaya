@@ -15,7 +15,7 @@ var siteutils = new function()
 {
 	this.getAjaxURL = function()
 	{
-		url_ajax = this.getBaseURL() + "index.php/ajaxtodb?";
+		url_ajax = this.getBaseURL() + "index.php/core_ajaxtodb?";
 		return url_ajax; 
 	}
 

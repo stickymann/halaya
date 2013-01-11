@@ -10,7 +10,7 @@ var enquiry = new function()
 		var csv_id = $('#js_exportid').val();
 		var tmparr = csv_id.split(delimiter);
 		csv_id = tmparr[0];
-		var url = window.siteutils.getBaseURL() + "index.php/csvexport/index/" + csv_id;
+		var url = window.siteutils.getBaseURL() + "index.php/core_csvexport/index/" + csv_id;
 		window.open(url,'','width=1,height=1');
 	}
 
@@ -18,18 +18,24 @@ var enquiry = new function()
 	{
 		var str = $('#controllersel').val();
 		var arr = str.split(",");
-		var controller = arr[0];
-		if(arr[1]=="enquiry"){enqtype = "custom";} else {enqtype = "default";}
-		
+		var param_id = arr[0];
+		var controller = arr[1];
+		if(arr[2]=="enquiry"){enqtype = "custom";} else {enqtype = "default";}
 		if ( $('#enqexport').val() != null)
 		{
-			if( $('#enqexport').attr("checked")=="checked" ){enqexport = 1;} else {enqexport = 0;}
+			if( $('#enqexport').attr("checked")=="checked" ){ enqexport = 1; } else { enqexport = 0;}
 		}
 		else {enqexport = 0;}
 		
 		if ( $('#fieldnames').val() != null)
 		{
-			if( $('#fieldnames').attr("checked")=="checked" ){fieldnames= 1;} else {fieldnames = 0;}
+			if( $('#fieldnames').attr("checked")=="checked" ){fieldnames = 1;} else {fieldnames = 0;}
+		}
+		else {pager = 0;}
+
+		if ( $('#pager').val() != null)
+		{
+			if( $('#pager').attr("checked")=="checked" ){pager = 1;} else {pager = 0;}
 		}
 		else {fieldnames = 0;}
 		
@@ -79,7 +85,7 @@ var enquiry = new function()
 		opvals = opvals.substring(0,opvals.lastIndexOf(","));
 		limit = $('#limit').val();
 		if(isNaN(limit) || limit==""){ limit = '500';} else {limit = parseInt(limit);}
-		var param = 'option=enquiry&controller=' + controller  + '&user=' + user + '&tabletype=' + tabletype + '&export=' + enqexport  + '&limit=' + limit + '&fieldnames=' + fieldnames + '&enqtype=' + enqtype + '&opvals=' + opvals + '&fieldvals=' + fieldvals;
+		var param = 'option=enquiry&param_id=' + param_id + '&controller=' + controller  + '&user=' + user + '&tabletype=' + tabletype + '&export=' + enqexport  + '&limit=' + limit + '&fieldnames=' + fieldnames + '&enqtype=' + enqtype + '&pager=' + pager + '&opvals=' + opvals + '&fieldvals=' + fieldvals;
 		var tabs = $('#tabs').tabs('tabs');
 		$('#tabs').tabs('select', tabs[seltab].panel('options').title);
 		var winheight = $(window).height() - 55;
@@ -114,11 +120,11 @@ var enquiry = new function()
 		var str = document.getElementById('controllersel').value;
 		var user = document.getElementById('js_idname').value;
 		var arr = str.split(",");
-		var controller = arr[0];
-		
-		if(arr[1]=="enquiry"){enqtype = "custom";} else {enqtype = "default";}
-		param1 = 'option=filterform&controller=' + controller +  '&user=' + user  + '&enqtype='+ enqtype + '&loadfixedvals=1&rochk=0';
-		param2 = 'option=enqctrl&controller=' + controller + '&user=' + user;
+		var param_id = arr[0];
+		var controller = arr[1];
+		if(arr[2]=="enquiry"){enqtype = "custom";} else {enqtype = "default";}
+		param1 = 'option=filterform&param_id=' + param_id + '&controller=' + controller +  '&user=' + user  + '&enqtype='+ enqtype + '&loadfixedvals=1&rochk=0';
+		param2 = 'option=enqctrl&param_id=' + param_id + '&controller=' + controller + '&user=' + user;
 		setTimeout('window.siteutils.runQuery(param1,"filterform","html")',500);
 		window.siteutils.runQuery(param2,"radios","html");
 	}

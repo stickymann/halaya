@@ -13,10 +13,10 @@
 class Controller_Login extends Controller_Include
 {
 	public $template = 'login.view';
-
-	public function before()
+	
+	public function __construct()
 	{
-		parent::before();
+		parent::__construct();
 		$this->template->form = array('username' => '','password' => '');
 		$this->template->isLoginOk = FALSE;
 		$this->template->status = NULL;

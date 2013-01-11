@@ -10,18 +10,19 @@
  * @copyright   (c) 2013
  * @license     
  */
-class Controller_Include extends Controller_Template 
+abstract class Controller_Include extends Controller 
 {
 	/**
 	 *  Setup routine.
 	 */
-	
 	public $global_app_title = "Halaya";
-	
+	public $auto_render = TRUE;
+
 	//javascript
 	public $randomstring = ""; 
 	public $js = array(
-		'jquery' => 'media/js/jquery-1.8.3.min.js',
+		//'jquery' => 'media/js/jquery-1.8.3.min.js',
+		'jquery' => 'media/js/jquery-1.7.min.js',
 		'easyui' => 'media/js/jquery.easyui.min.js',
 		'datepick' => 'media/js/jquery.datepick.js',
 		'jquery_form' => 'media/js/jquery.form-2.4.0.min.js',
@@ -29,6 +30,7 @@ class Controller_Include extends Controller_Template
 		'cookie' => 'media/js/jquery.cookie.js',
 		'treeview' => 'media/js/jquery.treeview.js',
 		'tablesorter' => 'media/js/jquery.tablesorter.js',
+		'tablesorterpager' => 'media/js/jquery.tablesorter.pager.js',
 		'datevalidate' => 'media/js/jquery.datevalidate.js',
 		'siteutils' => 'media/js/core.siteutils.js',
 		'sideinfo' => 'media/js/core.sideinfo.js',
@@ -57,14 +59,21 @@ class Controller_Include extends Controller_Template
 		'signout' => 'media/img/banner/logout7525.jpg'
 	);
 
-	public function before()
+	public function __construct()
     {
-		parent::before();
+		parent::__construct(Request::initial(),new Response);
      	/** 
 		 *	Random string injection to prevent javascript caching
 		 */
-		$this->template->title = $this->get_htmlhead_title();
-		$this->template->head = "";
+		if ($this->auto_render === TRUE)
+		{
+			// Load the template
+			
+			$this->template = View::factory($this->template);
+			$this->template->title = $this->get_htmlhead_title();
+			$this->template->head = "";
+		}
+	
 		foreach($this->img as $key => $value)
 		{
 			$this->img[$key] = URL::base().$value;
@@ -88,6 +97,15 @@ class Controller_Include extends Controller_Template
 		$head = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'."\n";
 		$head .= sprintf('<title>%s</title>',$this->global_app_title)."\n";
 		return $head;
+	}
+	
+	public function after()
+	{
+		if ($this->auto_render === TRUE)
+		{
+			$this->response->body( $this->template->render() );
+		}
+		parent::after();
 	}
 
 } // End Include

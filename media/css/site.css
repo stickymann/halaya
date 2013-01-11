@@ -107,9 +107,9 @@ display:block;  white-space: nowrap;}
 #enqprt {border: red solid 0px; width:20%; color: #000000; background-color: #ffffff; position: relative; margin:0px 0px 0px 0px;  padding: 10px 0px 10px 2px; text-align: left; float: left;}
 #enq_display {border: red solid 0px;}
 
-#resultlive {border: #000066 solid 0px; color: #0000ad; background-color: #ebf2f9; font-family:  verdana,arial, helvetica, sans-serif; font-size: 8pt; margin: 1px 1px 1px 1px;  padding: 0px 0px 3px 0px; text-align: left; position: relative;  overflow: scroll; height:70%;}
-#resultinau {border: #000066 solid 0px; color: #0000ad; background-color: #ebf2f9; font-family:  verdana,arial, helvetica, sans-serif; font-size: 8pt; margin: 1px 1px 1px 1px;  padding: 0px 0px 0px 0px; text-align: left; position: relative;  overflow: scroll; height:70%;}
-#resulthist {border: #000066 solid 0px; color: #0000ad; background-color: #ebf2f9; font-family:  verdana,arial, helvetica, sans-serif; font-size: 8pt; margin: 1px 1px 1px 1px;  padding: 0px 0px 0px 0px; text-align: left; position: relative;  overflow: scroll; height:70%;}
+#resultlive {border: green solid 0px; color: #0000ad; background-color: #ebf2f9; font-family:  verdana,arial, helvetica, sans-serif; font-size: 8pt; margin: 1px 1px 1px 1px;  padding: 0px 0px 3px 0px; text-align: left; position: relative; overflow: auto; height:70%; width:98%;}
+#resultinau {border: green solid 0px; color: #0000ad; background-color: #ebf2f9; font-family:  verdana,arial, helvetica, sans-serif; font-size: 8pt; margin: 1px 1px 1px 1px;  padding: 0px 0px 0px 0px; text-align: left; position: relative;  overflow: auto; height:70%; width:98%;}
+#resulthist {border: green solid 0px; color: #0000ad; background-color: #ebf2f9; font-family:  verdana,arial, helvetica, sans-serif; font-size: 8pt; margin: 1px 1px 1px 1px;  padding: 0px 0px 0px 0px; text-align: left; position: relative;  overflow: auto; height:70%; width:98%;}
 
 .bttn {border:1px solid #fff; color:#ffffff; background-color:#000066; border-radius:5px; -moz-border-radius:5px; -webkit-border-radius:5px; padding:4px 7px; margin:0 5px 0 0; font-weight:bold;}
 .bttn:hover, .bttn:focus {border:1px solid #000; cursor:pointer;}
