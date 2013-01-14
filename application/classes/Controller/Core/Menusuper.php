@@ -87,8 +87,8 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 				$newrole->input_date = date('Y-m-d H:i:s'); 
 				$newrole->auth_date = date('Y-m-d H:i:s');  
 				$newrole->record_status = 'LIVE';
-				$role->current_no = '1';
-				$role->save();
+				$newrole->current_no = '1';
+				$newrole->save();
 			}
 			else
 			{

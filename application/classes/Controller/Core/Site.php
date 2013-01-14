@@ -691,7 +691,7 @@ class Controller_Core_Site extends Controller_Include
 			//create new record, copy existing record
 			$empty = array();
 			$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$empty);
-			$formarr=$this->param['primarymodel']->getRecordByLookUp($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields'],$_POST['func']);
+			$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields'],$_POST['func']);
 			$newarr=$this->param['primarymodel']->create_blank_record($this->param['tb_live'],$this->param['tb_inau']);
 			$arr = (array)$newarr;
 			$this->form = array_merge($arr,(array)$formarr);
@@ -908,7 +908,7 @@ class Controller_Core_Site extends Controller_Include
 								$selection = array_combine(explode(",",$arrval),explode(",",$arrtxt));
 								$pagebody->add('<tr valign="center"><td>'.Form::label($key,$this->label[$key]).$this->colon.'</td>');
 								$pagebody->add('<td>');
-								$pagebody->add(Form::dropdown($key,$selection,$this->form[$key],array('id'=>$key)));
+								$pagebody->add(Form::select($key, $selection, NULL, array('id'=>$key) ))."\n";
 								$pagebody->add('</td></tr>'."\n"); 
 							break;
 
@@ -2288,7 +2288,7 @@ _text_;
 	public function get_formless_record($idval)
 	{
 		$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$this->frmaudtfields);
-		$formarr=$this->param['primarymodel']->getRecordByLookUp($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$idval,$this->param['defaultlookupfields'],'i');
+		$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$idval,$this->param['defaultlookupfields'],'i');
 		$this->form = (array)$formarr;
 		if($this->form)
 		{
