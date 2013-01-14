@@ -21,8 +21,8 @@ abstract class Controller_Include extends Controller
 	//javascript
 	public $randomstring = ""; 
 	public $js = array(
-		//'jquery' => 'media/js/jquery-1.8.3.min.js',
-		'jquery' => 'media/js/jquery-1.7.min.js',
+		'jquery' => 'media/js/jquery-1.8.3.min.js',
+		//'jquery' => 'media/js/jquery-1.7.min.js',
 		'easyui' => 'media/js/jquery.easyui.min.js',
 		'datepick' => 'media/js/jquery.datepick.js',
 		'jquery_form' => 'media/js/jquery.form-2.4.0.min.js',

@@ -303,7 +303,7 @@ class Controller_Core_Site extends Controller_Include
 		$this->param['recordstatusmsg']="<p><b>&nbsp Record  [ ".$_post['id']." ] ".$_action." ".$_post['record_status']." successfully, <a href=".$this->param['param_id']."/index/".$_post['id'].">Continue.</a></b></p>"; 
 	}
 
-	public function set_record_status_message_IHLD($_post,$_msg="in IHLD, cannot be Authorized,")
+	public function set_record_status_message_ihld($_post,$_msg="in IHLD, cannot be Authorized,")
 	{
 		$this->param['recordstatusmsg']="<p><b>&nbsp Record  [ ".$_post['id']." ] ".$_msg." <a href=".$this->param['param_id']."/index/".$_post['id'].">Continue.</a></b></p>"; 
 	}
@@ -618,7 +618,7 @@ class Controller_Core_Site extends Controller_Include
 						}
 						else if($this->formopts[$key]['inputtype'] == "xmltable")
 						{
-							$XMLTABLE_HTML = $this->view_XML_table($key,$this->form[$key],"brown");
+							$XMLTABLE_HTML = $this->view_xml_table($key,$this->form[$key],"brown");
 							$pagebody->add('<td>'.Form::label($key,$this->label[$key]).$this->colon.'</td>');
 							$pagebody->add('<td>');
 							$pagebody->add(sprintf('<input type="hidden" id="%s" name="%s" value="%s"/>',$key,$key,$this->form[$key]));
@@ -896,7 +896,7 @@ class Controller_Core_Site extends Controller_Include
 							break;
 							
 							case 'xmltable':
-								$XMLTABLE_HTML = $this->edit_XML_table($key,"black");
+								$XMLTABLE_HTML = $this->edit_xml_table($key,"black");
 								$pagebody->add('<td valign="top">'.Form::label($key,$this->label[$key]).$this->colon.'</td>');
 								$pagebody->add('<td>');
 								$pagebody->add(sprintf('<input type="hidden" id="%s" name="%s" value="%s" />',$key,$key,$this->form[$key]));
@@ -929,7 +929,7 @@ class Controller_Core_Site extends Controller_Include
 								{
 									if($_func == 'l')
 									{
-										$SUBFORM_HTML = $this->create_subform_from_XML($key,$_POST[$key]);
+										$SUBFORM_HTML = $this->create_subform_from_xml($key,$_POST[$key]);
 									}
 									else
 									{
@@ -1264,7 +1264,7 @@ class Controller_Core_Site extends Controller_Include
 			}
 			else
 			{
-				$this->set_record_status_message_IHLD($_POST);
+				$this->set_record_status_message_ihld($_POST);
 				$this->param['htmlbody']->pagebody =  $this->get_record_status_message();
 				$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 			}
@@ -1310,7 +1310,7 @@ class Controller_Core_Site extends Controller_Include
 								}
 								else if($this->formopts[$key]['inputtype']=='xmltable')
 								{
-									$livetext = $this->view_XML_table($key,$this->form[$key],"green");
+									$livetext = $this->view_xml_table($key,$this->form[$key],"green");
 								}
 							}
 						}
@@ -1336,7 +1336,7 @@ class Controller_Core_Site extends Controller_Include
 						}
 						else if($this->formopts[$key]['inputtype']=='xmltable')
 						{
-							$txtval = $this->view_XML_table($key,$this->form[$key],"brown");
+							$txtval = $this->view_xml_table($key,$this->form[$key],"brown");
 							$pagebody->add("<td>".Form::label($key,$this->label[$key]).$this->colon."</td><td>".Form::hidden($key,$this->form[$key],array('id'=>$key))."<span class='viewtext'>".$txtval."<br></span>");
 							
 						}
@@ -1505,7 +1505,7 @@ class Controller_Core_Site extends Controller_Include
 						}
 						else if($this->formopts[$key]['inputtype']=='xmltable')
 						{
-							$XMLTABLE_HTML = $this->view_XML_table($key,$this->form[$key],"red");
+							$XMLTABLE_HTML = $this->view_xml_table($key,$this->form[$key],"red");
 							$pagebody->add("<td>".Form::label($key,$this->label[$key]).$this->colon."</td><td>".Form::hidden($key,$this->form[$key],array('id'=>$key))."<span class='viewtext'>".$XMLTABLE_HTML."</span>");
 						}
 						else
@@ -1916,7 +1916,7 @@ _text_;
 		return $TEXT;
 	}
 
-	public function create_subform_JSON_load($key,$current_no,$subtable_type=false)
+	public function create_subform_json_load($key,$current_no,$subtable_type=false)
 	{
 		$TABLE = ""; $TABLEHEAD = ""; $TABLEROWS = ""; $columnfield = array(); $columnlabel = array(); 
 		$subcontroller = $this->subform[$key]['subformcontroller'];
@@ -2006,7 +2006,7 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 		return $TABLE;
 	}
 
-	public function create_subform_from_XML($key,$xml)
+	public function create_subform_from_xml($key,$xml)
 	{
 		$TABLE = ""; $TABLEHEAD = ""; $TABLEROWS = "";
 		$subcontroller = $this->subform[$key]['subformcontroller'];
@@ -2063,7 +2063,7 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 		return $TABLE;
 	}
 	
-	public function  view_XML_table($key,$xml,$color)
+	public function  view_xml_table($key,$xml,$color)
 	{
 		$controller = $this->param['controller'];
 		$TABLEHEADER = ""; $TABLEROWS ="";
@@ -2095,7 +2095,7 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 		return $HTML;
 	}
 
-	public function  editXMLTable($key)
+	public function  edit_xml_table($key)
 	{
 		$TABLEHEADER = ""; $TABLEROWS ="";
 		$subtable_id = "subform_table_".$key;
@@ -2111,12 +2111,12 @@ $JSURL = sprintf('<script type="text/javascript">%s_dataurl="%s"</script>',$subt
 $HTML = "\n".'<div id="sf" class="sf">'.sprintf('<table id="%s" class="easyui-datagrid" resizable="true" singleSelect="true"  style="width:800px; height:auto;">',$subtable_id)."\n";
 $HTML .= "</table></div>"."\n";
 
-		$COLDEF = $this->xmlSubFormColDef($controller,$key);
+		$COLDEF = $this->xml_subform_columndef($controller,$key);
 		$HTML .= $HTML.$JSURL."\n".$COLDEF."\n";
 		return $HTML;
 	}
 	
-	public function xmlSubFormColDef($controller,$key)
+	public function xml_subform_columndef($controller,$key)
 	{
 		$COLDEFROW = ""; $coldef = "";
 		$subopt  = $this->param['primarymodel']->getFormSubTableOptions($controller,$key);
@@ -2151,7 +2151,7 @@ $COLDEFROW
 		}
 		</script>
 _text_;
-		$ADDTIONALTEXT = $this->xmlSubFormAdditionalColDef();
+		$ADDTIONALTEXT = $this->xml_subform_additional_columndef();
 		return $TEXT.$ADDTIONALTEXT;
 	}
 
@@ -2162,12 +2162,12 @@ _text_;
 		$idval =  $this->form[$idfield];
 
 		$results = $this->param['primarymodel']->getSubFormViewRecords($subcontroller,$idfield,$idval,$current_no,$subtable_type,$labels);
-		$HTML  = $this->subFormHTML($results,$labels,$color);
-		$HTML .= $this->subFormSummaryHTML($results,$labels,$color);
+		$HTML  = $this->subform_html($results,$labels,$color);
+		$HTML .= $this->subform_summary_html($results,$labels,$color);
 		return $HTML;
 	}
 	
-	public function  subFormHTML($results,$labels,$color)
+	public function  subform_html($results,$labels,$color)
 	{
 		$HTML = "<table id='subformview' width='90%'>"."\n";
 		$TABLEHEADER = ""; $TABLEROWS ="";
@@ -2285,7 +2285,7 @@ _text_;
 	} 
 
 	/*formless functions*/
-	public function getFormlessRecord($idval)
+	public function get_formless_record($idval)
 	{
 		$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$this->frmaudtfields);
 		$formarr=$this->param['primarymodel']->getRecordByLookUp($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$idval,$this->param['defaultlookupfields'],'i');
@@ -2299,7 +2299,7 @@ _text_;
 		return false;
 	}
 	
-	public function updateFormlessRecord($form) 
+	public function update_formless_record($form) 
 	{
 		$_POST = $form;
 		//setup authorization data
@@ -2336,8 +2336,8 @@ _text_;
 	public function view_pre_open_existing_record(){}		
 	public function view_post_open_existing_record(){}
 
-	public function subFormSummaryHTML($results=null,$labels=null) {}
-	public function subFormFieldExclusionList() { return false;}
-	public function xmlSubFormAdditionalColDef() { return "";}
+	public function subform_summary_html($results=null,$labels=null) {}
+	public function subform_field_exclusion_list() { return false;}
+	public function xml_subform_additional_columndef() { return "";}
 }
 ?>

@@ -225,7 +225,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				//$stmt = $appdb->query($querystr);
 				//$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 				$result = $this->sitedb->execute_select_query($querystr);
-				$this->printPopListResult($result);
+				$this->print_poplist_result($result);
 			break;
 		
 			case 'pofilter':
@@ -277,7 +277,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				//$stmt = $appdb->query($querystr);
 				//$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 				$result =  $this->sitedb->execute_select_query($querystr);
-				$this->printPopListResult($result);
+				$this->print_poplist_result($result);
 			break;
 
 			case 'enquiry':
@@ -415,7 +415,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				$result =  $this->sitedb->execute_select_query($querystr);
 				if($export)
 				{
-					$this->print_CSV_id($param_id,$controller,$result,$tabletype,$label,$fn,$user,$enqtype);
+					$this->print_csv_id($param_id,$controller,$result,$tabletype,$label,$fn,$user,$enqtype);
 				}
 				else
 				{
@@ -447,51 +447,51 @@ class Controller_Core_Ajaxtodb extends Controller
 				$firstname	= $_REQUEST['firstname'];
 				$lastname	= $_REQUEST['lastname'];
 				$controller = $_REQUEST['controller'];
-				$RESULT		= $this->getCustomerId($id,$firstname,$lastname,$controller);
+				$RESULT		= $this->get_customer_id($id,$firstname,$lastname,$controller);
 				print $RESULT;
 			break;
 
-			case 'orderid':
+			case 'altid':
 				$controller = $_REQUEST['controller'];
 				$ctrl_id	= $_REQUEST['ctrlid'];
 				$prefix		= $_REQUEST['prefix'];
-				$RESULT		= $this->getNextDateTypeId($controller,$ctrl_id,$prefix,true);
+				$RESULT		= $this->create_alternate_id($controller,$ctrl_id,$prefix,true);
 				print $RESULT;
 			break;
 			
 			case 'orderstatus':
 				$fldval = $_REQUEST['fldval'];
-				$this->printOrderStatusForm($fldval);
+				$this->print_order_status_form($fldval);
 			break;
 				
 			case 'ordertotal';
 				$order_id	 = $_REQUEST['order_id'];
-				$order_total = $this->getOrderTotal($order_id);
+				$order_total = $this->get_order_total($order_id);
 				print number_format($order_total, 2, '.', '');
 			break;
 
 			case 'orderpaymenttotal';
 				$order_id		= $_REQUEST['order_id'];
-				$payment_total	= $this->getOrderPaymentTotal($order_id);
+				$payment_total	= $this->get_order_payment_total($order_id);
 				print number_format($payment_total, 2, '.', '');
 			break;
 
 			case 'orderbalance';
 				$order_id	= $_REQUEST['order_id'];
-				$order_total = $this->getOrderTotal($order_id);
-				$payment_total	= $this->getOrderPaymentTotal($order_id);
+				$order_total = $this->get_order_total($order_id);
+				$payment_total	= $this->get_order_payment_total($order_id);
 				$balance = $order_total - $payment_total;
 				print number_format($balance, 2, '.', '');
 			break;
 
 			case 'userrolechkbox':
-				$this->printUserRoleCheckBoxes();
+				$this->print_userrole_checkboxes();
 			break;
 			
 			case 'roleadminchkbox':
 				$spid		= $_REQUEST['spid'];
 				$current_no = $_REQUEST['current_no'];
-				$this->printRoleAdminCheckBoxes($spid,$current_no);
+				$this->print_roleadmin_checkboxes($spid,$current_no);
 			break;
 
 			case 'productpopoutchkbox':
@@ -500,7 +500,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				$table		= $_REQUEST['table'];
 				$fields		= $_REQUEST['fields'];
 				$querystr	= sprintf('select %s from %s order by %s asc %s;',$fields,$table,$idfield,$limit);
-				$this->printPopOutCheckBoxes($querystr,$fields,$table,$idfield,$limit,$items,true);
+				$this->print_popout_checkboxes($querystr,$fields,$table,$idfield,$limit,$items,true);
 			break;
 
 			case 'idname':
@@ -509,12 +509,12 @@ class Controller_Core_Ajaxtodb extends Controller
 			break;
 
 			case 'changepasswordform':
-				$this->printChangePasswordForm();
+				$this->print_change_password_form();
 			break;
 
 			case 'userbranch':
 				$idname	= $_REQUEST['idname'];
-				$RESULT	= $this->getUserBranch($idname);
+				$RESULT	= $this->get_user_branch($idname);
 				print $RESULT;
 			break;
 
@@ -601,7 +601,7 @@ _TEXT_;
 		print $RESULT;
 	}
 	
-	function printPopListResult($result)
+	function print_poplist_result($result)
 	{
 		$idfield = $_REQUEST['idfield'];
 		$RESULT = '<table id="potable" class="tablesorter" border="0" cellpadding="0" cellspacing="1" >'."\n";
@@ -645,7 +645,7 @@ _TEXT_;
 		print $RESULT;
 	}
 
-	function printCustomPopOutResult($result)
+	function print_custom_popout_result($result)
 	{
 		$idfield = $_REQUEST['idfield'];
 		$func	 = $_REQUEST['func'];
@@ -760,7 +760,7 @@ _TEXT_;
 					}
 					else
 					{
-						$data .= '<td>'.html::anchor($$param_id.'/index/'.$value,$value,array('target'=>'input'));
+						$data .= '<td>'.HTML::anchor($param_id.'/index/'.$value,$value,array('target'=>'input'));
 					}
 				}
 				else
@@ -808,9 +808,9 @@ _TEXT_;
 		}
 	}
 	
-	function print_CSV_id($param_id,$controller,$result,$tabletype,$label,$fn,$idname,$type)
+	function print_csv_id($param_id,$controller,$result,$tabletype,$label,$fn,$idname,$type)
 	{
-		$csv_id = $this->create_CSV($CSV,$result,$tabletype,$label,$fn);
+		$csv_id = $this->create_csv($CSV,$result,$tabletype,$label,$fn);
 		$csv = new Controller_Core_Csv();
 		$csv->insert_into_CSV_table($csv_id,$CSV,$controller,$idname,$type);
 		//$RESULT = str_replace("\r\n","<br>", $CSV);
@@ -818,7 +818,7 @@ _TEXT_;
 		print $csv_id.DELIMITER;
 	}
 
-	function create_CSV(&$CSV,$result,$tabletype,$label,$fn)
+	function create_csv(&$CSV,$result,$tabletype,$label,$fn)
 	{
 		$RESULT = '';
 		$firstpass = true;
@@ -968,7 +968,7 @@ _HTML_;
 
 			if($rochk)
 			{
-				$ro = "\n".sprintf('<input onChange="window.fixedselection.setFS();" type="checkbox" id="%s" name="%s" class="ff" checked/>',$input."_rochk",$input."_rochk").form::label($input."_rochk",'readonly')."\n";
+				$ro = "\n".sprintf('<input onChange="window.fixedselection.setFS();" type="checkbox" id="%s" name="%s" class="ff" checked/>',$input."_rochk",$input."_rochk"). Form::label($input."_rochk",'readonly')."\n";
 				$FORMTXT .= sprintf('<tr><td><label for="%s">%s :</label></td><td>'."\n".'%s</td><td><input onChange="window.fixedselection.setFS();" type="text" id="%s" size=30 value="" class="ff"> %s </td></tr>',$input,$label[$key],$select,$input,$ro);
 			}
 			else
@@ -987,19 +987,19 @@ _HTML_;
 		print $html;
 	}
 	
-	function printOrderStatusForm($fldval)
+	function print_order_status_form($fldval)
 	{
 		$RESULT = "";
 		$where = sprintf('WHERE progession_id >= (SELECT progession_id FROM _sys_orderstatus WHERE order_status_id = "%s")AND progession_id < (SELECT progession_id FROM _sys_orderstatus WHERE order_status_id = "INVOICE.PART.PAID")',$fldval);
-		$querystr = sprintf('SELECT progession_id as id ,order_status_id FROM _sys_orderstatus %s AND progession_id > 1',$where);
+		$querystr = sprintf('SELECT progession_id AS id ,order_status_id FROM _sys_orderstatus %s AND progession_id > 1',$where);
 		if($result = $this->sitedb->execute_select_query($querystr))
 		{
-			$this->printCustomPopOutResult($result);
+			$this->print_custom_popout_result($result);
 		}
 		print $RESULT;
 	}
 
-	function printUserRoleCheckBoxes()
+	function print_userrole_checkboxes()
 	{
 		$selection = ''; $allroles='';
 		$roles = $_REQUEST['roles'];
@@ -1017,7 +1017,7 @@ _HTML_;
 				//$html .= '<script type="text/javascript"> alert("'.$rolekey.'");</script>';
 				$allroles .= $rolekey.",";
 				$selection .= $html;	
-				$html = '<td>'.form::label($rolekey,$rolekey).'</td>';
+				$html = '<td>'. Form::label($rolekey,$rolekey).'</td>';
 				$selection .= $html;
 				$html = sprintf('<td> -> %s </td>',$roledesc);
 				$selection .= $html;	
@@ -1031,7 +1031,7 @@ _HTML_;
 		print $selection;
 	}
 	
-	function printRoleAdminCheckBoxes($spid,$current_no)
+	function print_roleadmin_checkboxes($spid,$current_no)
 	{
 		$treemenu = new Menusuper_Controller();
 $HTML=<<<_HTML_
@@ -1067,20 +1067,21 @@ _HTML_;
 		print ($HTML);
 	}
 	
-	function printChangePasswordForm()
+	function print_change_password_form()
 	{
 		$HTML = '';
-		$HTML = "<table cellspacing=2 class='ff'>\n";
-		$HTML .= "<tr valign='center'><td class='ff'>".form::label("cp_oldpasswd","Old Password")." :</td><td>".form::password("cp_oldpasswd","","")."</td></tr>\n"; 
-		$HTML .= "<tr valign='center'><td class='ff'>".form::label("cp_newpasswd","New Password")." :</td><td>".form::password("cp_newpasswd","","")."</td></tr>\n";
-		$HTML .= "<tr valign='center'><td class='ff'>".form::label("cp_conpasswd","Confirm Password")." :</td><td>".form::password("cp_conpasswd","","")."</td></tr>\n";
-		$HTML .= "</table>";
-		$HTML .= "<span id='cp_logintext'></span><span id='cp_passtext'></span>";
+		$HTML = '<table cellspacing=2 class="ff">'."\n";
+		$HTML .= '<tr valign="center"><td class="ff">'. Form::label('cp_oldpasswd','Old Password').' :</td><td>'. Form::password('cp_oldpasswd','',array('id'=>'cp_oldpasswd')).'</td></tr>'."\n"; 
+		$HTML .= '<tr valign="center"><td class="ff">'. Form::label('cp_newpasswd','New Password').' :</td><td>'. Form::password('cp_newpasswd','',array('id'=>'cp_newpasswd')).'</td></tr>'."\n";
+		$HTML .= '<tr valign="center"><td class="ff">'. Form::label('cp_conpasswd','Confirm Password').' :</td><td>'. Form::password('cp_conpasswd','',array('id'=>'cp_conpasswd')).'</td></tr>'."\n";
+		$HTML .= '</table>';
+		$HTML .= '<span id="cp_logintext"></span><span id="cp_passtext"></span>';
 		$HTML .= '<input type="hidden" id="cp_isloginok" name="cp_isloginok" value="-1"/>';
+		$HTML .= '<script>userchangepassword.SetChangeInputs();</script>';
 		print $HTML;
 	}
 	
-	function printPopOutCheckBoxes($querystr,$fields,$table,$idfield,$limit,$items,$inpfld=false)
+	function print_popout_checkboxes($querystr,$fields,$table,$idfield,$limit,$items,$inpfld=false)
 	{
 		$selection = ''; $selected_ids=''; $checklist = array();
 		$result = $this->sitedb->execute_select_query($querystr);
@@ -1126,7 +1127,7 @@ _HTML_;
 		print $selection;
 	}
 
-	function getUserBranch($idname,$active="Y")
+	function get_user_branch($idname,$active="Y")
 	{
 		$querystr	= sprintf('select branch_id from vw_userbranches where idname="%s" and active="%s";',$idname,$active);
 		$result		= $this->sitedb->execute_select_query($querystr);
@@ -1134,7 +1135,7 @@ _HTML_;
 		return $branch_id;
 	}
 
-	function getCustomerId($id,$firstname,$lastname,$controller)
+	function get_customer_id($id,$firstname,$lastname,$controller)
 	{
 		$lastname = str_replace(" ","",$lastname);
 		$lastname = str_replace("'","",$lastname); 
@@ -1165,10 +1166,10 @@ _HTML_;
 		return $customer_id;
 	}
 		
-	function getNextDateTypeId($controller,$ctrl_id,$prefix,$setid=false)
+	function create_alternate_id($controller,$ctrl_id,$prefix,$setid=false)
 	{
 		$id = "";
-		$querystr = sprintf('select indexfield,tb_live,tb_inau from params where controller = "%s"',$controller);
+		$querystr = sprintf('SELECT indexfield,tb_live,tb_inau FROM params WHERE controller = "%s" AND dflag = "Y"',$controller);
 		if($result = $this->sitedb->execute_select_query($querystr))
 		{
 			$table = $result[0]->tb_live;
@@ -1181,7 +1182,7 @@ _HTML_;
 			$N = str_pad($count, 4, "0", STR_PAD_LEFT);
 			$gen_id = strtoupper($P.$D."-".$N);
 	
-			while($this->sitedb->isDuplicateUniqueId($table,$field,$gen_id,$gen_id) || $this->sitedb->isDuplicateUniqueId($table_is,$field,$gen_id,$gen_id))
+			while($this->sitedb->is_duplicate_unique_id($table,$field,$gen_id,$gen_id) || $this->sitedb->is_duplicate_unique_id($table_is,$field,$gen_id,$gen_id))
 			{
 				$count++;
 				$N = str_pad($count, 4, "0", STR_PAD_LEFT);
@@ -1190,8 +1191,8 @@ _HTML_;
 		}
 		if($setid)
 		{
-			$querystr = sprintf('update %s set %s = "%s" where id = "%s"',$table_is,$field,$gen_id,$ctrl_id);
-			$result = $this->sitedb->executeNonSelectQuery($querystr);
+			$querystr = sprintf('UPDATE %s SET %s = "%s" WHERE id = "%s"',$table_is,$field,$gen_id,$ctrl_id);
+			$result = $this->sitedb->execute_update_query($querystr);
 		}
 		return $gen_id;
 	}
@@ -1210,7 +1211,7 @@ _HTML_;
 		print $RESULT;
 	}
 
-	function getAge($dob)
+	function get_age($dob)
 	{
 		if($dob == null) {return 0;}
 		
@@ -1263,10 +1264,10 @@ _HTML_;
 		$amount		= $param[2]; 
 		
 		// order/invoice total
-		$order_total = $this->getOrderTotal($order_id);					
+		$order_total = $this->get_order_total($order_id);					
 
 		// total previous payments excluding current record
-		$querystr	= sprintf('select sum(amount) as payment_total from payments where order_id ="%s" and payment_id != "%s" and payment_status = "VALID" ',$order_id,$payment_id);
+		$querystr	= sprintf('SELECT SUM(amount) AS payment_total FROM payments WHERE order_id ="%s" AND payment_id != "%s" AND payment_status = "VALID" ',$order_id,$payment_id);
 		$result		= $this->sitedb->execute_select_query($querystr);
 		$payment_total = $result[0]->payment_total;
 
@@ -1277,16 +1278,16 @@ _HTML_;
 		return $info_str;
 	}
 
-	function getOrderTotal($order_id)
+	function get_order_total($order_id)
 	{
-		$querystr	= sprintf('select sum(func_OrderDetailOrderTotal(qty,unit_price,discount_amount,tax_percentage,taxable,discount_type)) as order_total from orderdetails where order_id ="%s"',$order_id);
+		$querystr	= sprintf('SELECT SUM(func_OrderDetailOrderTotal(qty,unit_price,discount_amount,tax_percentage,taxable,discount_type)) AS order_total FROM orderdetails WHERE order_id ="%s"',$order_id);
 		$result		= $this->sitedb->execute_select_query($querystr);
 		return $result[0]->order_total;
 	}
 
-	function getOrderPaymentTotal($order_id)
+	function get_order_payment_total($order_id)
 	{
-		$querystr	= sprintf('select sum(amount) as payment_total from payments where order_id ="%s" and payment_status = "VALID"',$order_id);
+		$querystr	= sprintf('SELECT SUM(amount) AS payment_total FROM payments WHERE order_id ="%s" AND payment_status = "VALID"',$order_id);
 		$result		= $this->sitedb->execute_select_query($querystr);
 		return $result[0]->payment_total;
 	}

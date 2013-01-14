@@ -7,8 +7,12 @@ ADD COLUMN `param_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFT
 ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
 
 UPDATE `halaya`.`params` SET `module` = "useraccount" WHERE `controller` = "message";
+UPDATE `halaya`.`params` SET `module` = "useraccount" WHERE `controller` = "userchangepassword";
 UPDATE `halaya`.`params` SET `param_id` = CONCAT("core_",`module`,"_",REPLACE(`controller`,"_","")),`dflag` = "Y";
 UPDATE `halaya`.`params` SET `param_id` = "core_site" WHERE `param_id` = "core_core_site";
+/*
+UPDATE `halaya`.`params` SET `param_id` = "core_useraccount_userchangepassword" WHERE `controller` = "userchangepassword";
+*/
 UPDATE `halaya`.`params` SET `indexfield` = "param_id" WHERE `controller` = "param";
 UPDATE `halaya`.`params` SET `primarymodel` = "Model_SiteDB"; 
 
