@@ -51,8 +51,9 @@ class Controller_Core_Useraccount_Message extends Controller_Core_Site
 		$validation
 			->rule('body','not_empty')
 			->rule('body','min_length', array(':value', 1))->rule('subject','max_length', array(':value', 8192));
-		
-		//->rule('body','regex',array(':value',[^\'\"&]))
+			
+		//->rule('body','regex',array(':value','[^/\'+|"+|&+/g]'));
+
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);

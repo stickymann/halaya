@@ -110,7 +110,7 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 		$this->template ->usermenu .= '<hr />';
 	}
 
-	public function action_roleselect($print=false,$spid='',$current_no='1')
+	public function roleselect($print=false,$spid='',$current_no='1')
     {  	
 		$initperms = array('if'=>'','vw'=>'','pr'=>'','nw'=>'','cp'=>'','iw'=>'','in'=>'','ao'=>'','as'=>'','rj'=>'','de'=>'','hd'=>'','va'=>'','df'=>'','ls'=>'','is'=>'','hs'=>'','ex'=>'');
 		$sparr[0] = $initperms;

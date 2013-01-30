@@ -1003,37 +1003,35 @@ _HTML_;
 	{
 		$selection = ''; $allroles='';
 		$roles = $_REQUEST['roles'];
-		//if($key == 'idname') {$selection = ORM::factory('user')->select_list('idname','idname'); $user = ORM::factory('user',$key);}
-		//if($key == 'roles') 
-		//{	
-			$arr = ORM::factory('role')->where(array('name !=' => 'login'))->select_list('name','description');
-			$checklist = preg_split('/,/',$roles);
-			$selection = "\n<td><table cellspacing=2>\n";
-			foreach($arr as  $rolekey => $roledesc)
-			{
-				if(in_array($rolekey, $checklist)){$checked ='checked';}else{$checked ='';}
-				$selection .= '<tr valign="center">';
-				$html = sprintf('<td><input type="checkbox" id="%s" name="%s" value="%s" %s onchange=window.userrole.setRoles() /></td>',$rolekey,$rolekey,$rolekey,$checked);
-				//$html .= '<script type="text/javascript"> alert("'.$rolekey.'");</script>';
-				$allroles .= $rolekey.",";
-				$selection .= $html;	
-				$html = '<td>'. Form::label($rolekey,$rolekey).'</td>';
-				$selection .= $html;
-				$html = sprintf('<td> -> %s </td>',$roledesc);
-				$selection .= $html;	
-				$selection .= "</tr>\n";
-			}
-			$selection .= '</table></td>';
-			$allroles = substr_replace($allroles, '', -1);
-			$selection .= sprintf('<input type="hidden" id="allroles" name="allroles" value="%s">',$allroles);
-
-		//}
+		$tmprole = ORM::factory('Role')->where('name','!=','login')->find_all();
+		$arr = $tmprole->as_array('name','description');
+		$checklist = preg_split('/,/',$roles);
+		$selection = "\n<td><table cellspacing=2>\n";
+		
+		foreach($arr as  $rolekey => $roledesc)
+		{
+			if(in_array($rolekey, $checklist)){$checked ='checked';}else{$checked ='';}
+			$selection .= '<tr valign="center">';
+			$html = sprintf('<td><input type="checkbox" id="%s" name="%s" value="%s" %s onchange=window.userrole.setRoles() /></td>',$rolekey,$rolekey,$rolekey,$checked);
+			//$html .= '<script type="text/javascript"> alert("'.$rolekey.'");</script>';
+			$allroles .= $rolekey.",";
+			$selection .= $html;	
+			$html = '<td>'. Form::label($rolekey,$rolekey).'</td>';
+			$selection .= $html;
+			$html = sprintf('<td> -> %s </td>',$roledesc);
+			$selection .= $html;	
+			$selection .= "</tr>\n";
+		}
+		
+		$selection .= '</table></td>';
+		$allroles = substr_replace($allroles, '', -1);
+		$selection .= sprintf('<input type="hidden" id="allroles" name="allroles" value="%s">',$allroles);
 		print $selection;
 	}
 	
 	function print_roleadmin_checkboxes($spid,$current_no)
 	{
-		$treemenu = new Menusuper_Controller();
+		$treemenu = new Controller_Core_Menusuper;
 $HTML=<<<_HTML_
 		<table class="ci">
 			<tr><th class="ch">Symbol</th><th class="ch">Name</th><th class="ch">Description</th><th class="ch">Symbol</th><th class="ch">Name</th><th class="ch">Description</th></tr>
@@ -1063,7 +1061,21 @@ $HTML=<<<_HTML_
 	<div class="treeheader">&nbsp;</div>
 	<div id="sidetreecontrol"> <a href="?#">Collapse All</a> | <a href="?#">Expand All</a> </div>
 _HTML_;
-		$HTML = $HTML.$treemenu->roleselect(false,$spid,$current_no)."</div>";			
+
+$SCRIPT=<<<_SCRIPT_
+	<script type="text/javascript">
+		$(function() {
+			$("#tree").treeview({
+				collapsed: true,
+				animated: "low",
+				control:"#sidetreecontrol",
+				prerendered: false,
+				persist: "menuconf"
+			});
+		})
+	</script>
+_SCRIPT_;
+		$HTML = $HTML.$treemenu->roleselect(false,$spid,$current_no)."</div>".$SCRIPT;			
 		print ($HTML);
 	}
 	

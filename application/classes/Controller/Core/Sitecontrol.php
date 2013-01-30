@@ -262,7 +262,7 @@ class Controller_Core_Sitecontrol extends Controller
 		}			
 		$controls .= Form::checkbox('fieldnames','0',FALSE,array('id'=>'fieldnames')).Form::label('fieldnames','fieldnames').'&nbsp';
 		$controls .= Form::input('limit','500',array('size'=>'8','class'=>'ff')).Form::label('limit','limit').'&nbsp';
-		$controls .= Form::checkbox('pager','1',TRUE,array('id'=>'pager')).Form::label('pager','pager').'&nbsp';
+		$controls .= Form::checkbox('pager','1',FALSE,array('id'=>'pager')).Form::label('pager','pager').'&nbsp';
 		$controls .= '<input type="hidden" id="js_exportid" name="js_exportid">';	
 		return $controls;
 	}

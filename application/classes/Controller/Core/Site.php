@@ -2319,7 +2319,15 @@ _text_;
 		}
 		return false;
 	}
-
+	
+	public function duplicate_altid($validation,$field,$id,$alt_id)
+    {
+		if ($this->param['primarymodel']->is_duplicate_unique_id($this->param['tb_inau'],$field,$id,$alt_id) || $this->param['primarymodel']->is_duplicate_unique_id($this->param['tb_live'],$field,$id,$alt_id))
+        {
+            $validation->error($field, 'msg_duplicate');
+        }
+	}
+	
 	/*abstracts*/
 	public function authorize_pre_insert_new_record(){}
 	public function authorize_post_insert_new_record(){}

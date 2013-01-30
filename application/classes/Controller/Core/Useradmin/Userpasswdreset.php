@@ -1,8 +1,8 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Changes user's own password. 
+ * Changes a user's password via administrative user. 
  *
- * $Id: Userchangepassword.php 2012-01-12 00:00:00 dnesbit $
+ * $Id: Userpasswdreset.php 2013-01-13 00:00:00 dnesbit $
  *
  * @package		Halaya Core
  * @module	    core
@@ -10,11 +10,11 @@
  * @copyright   (c) 2013
  * @license      
  */
-class Controller_Core_Useraccount_Userchangepassword extends Controller_Core_Site
+class Controller_Core_Useradmin_Userpasswdreset extends Controller_Core_Site
 {
-	public function __construct()
+    public function __construct()
     {
-		parent::__construct("userchangepassword");
+		parent::__construct("userpasswdreset");
 		$this->param['htmlhead'] .= $this->insert_head_js();
 	}
 		
@@ -26,9 +26,17 @@ class Controller_Core_Useraccount_Userchangepassword extends Controller_Core_Sit
 	
 	function insert_head_js()
 	{
-		return HTML::script( $this->randomize('media/js/core.userchangepassword.js') );
+		$TEXT=<<<_text_
+		<script type="text/javascript">
+		$(document).ready(function()
+		{
+			$('#password').val("");
+		});
+		</script>
+_text_;
+		return $TEXT;
 	}
-	
+
 	function input_validation()
 	{
 		//encrypt password
@@ -40,11 +48,11 @@ class Controller_Core_Useraccount_Userchangepassword extends Controller_Core_Sit
 		$validation = new Validation($post);
 		$validation
 			->rule('password','not_empty')
-			->rule('subject','min_length', array(':value', 64))->rule('subject','max_length', array(':value', 64));
-
+			->rule('password','min_length', array(':value', 64))->rule('password','max_length', array(':value', 64));
+	
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
-
-} // End Core_Useraccount_Userchangepassword
+	
+} // End Controller_Core_Useradmin_Userpasswdreset

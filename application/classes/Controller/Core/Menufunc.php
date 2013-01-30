@@ -135,7 +135,7 @@ class Controller_Core_Menufunc extends Controller_Include
 				{
 					$checked = "checked";
 				}
-				$menuitem_checkbox = sprintf('<input type="checkbox" id="%s" name="menu_%s" value="%s" %s onchange=window.roleadmin.UpdateSecurityProfile("%s","M") />',$row->menu_id,$row->menu_id,$row['parent_id'],$checked,$row->menu_id);
+				$menuitem_checkbox = sprintf('<input type="checkbox" id="%s" name="menu_%s" value="%s" %s onchange=window.roleadmin.UpdateSecurityProfile("%s","M") />',$row->menu_id,$row->menu_id,$row->parent_id,$checked,$row->menu_id);
 			}
 
 			if ($row->nlevel > $clevel)
@@ -150,7 +150,7 @@ class Controller_Core_Menufunc extends Controller_Include
 				}
 			}
 			
-			if($row['node_or_leaf'] == "L")
+			if($row->node_or_leaf == "L")
 			{
 				$menutree .= "\t".sprintf('<li id="%s_li" name="%s_li">',$row->menu_id,$row->menu_id).$menuitem_checkbox.' '.$row->label_input.' '.$iperm_checkboxs.' '.$eperm_checkboxs.'</li>'."\n";
 			}
