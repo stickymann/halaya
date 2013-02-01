@@ -54,4 +54,4 @@ class Controller_Core_Sysadmin_Branch extends Controller_Core_Site
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
 
-}// End Controller_Sysadmin_Branch
+}// End Controller_Core_Sysadmin_Branch
