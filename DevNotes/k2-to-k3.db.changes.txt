@@ -86,3 +86,8 @@ ALTER TABLE `halaya`.`users` CHANGE `last_login` `last_login` INT(10) UNSIGNED D
 ALTER TABLE `halaya`.`users_is` CHANGE `last_login` `last_login` INT(10) UNSIGNED DEFAULT '0' NULL;
 
 /* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
+/*
+update view vw_core_fixedselections_available
+
+
+*/
