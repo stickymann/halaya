@@ -862,7 +862,6 @@ class Controller_Core_Site extends Controller_Include
 								$pagebody->add(sprintf('<input type="text" class="input-i" id="%s" name="%s" value="%s" %s />',$key,$key,$this->form[$key],$options));
 								$pagebody->add($DATEICON_HTML.$POPOUT_HTML.$SIDELINK_HTML.$SIDEINFO_HTML.$SIDEFUNC_HTML);
 								$pagebody->add('</td></tr>'."\n");
-								
 							break;
 					
 							case 'hidden':
