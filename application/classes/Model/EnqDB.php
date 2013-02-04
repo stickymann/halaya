@@ -2,15 +2,15 @@
 /**
  * Common queries for enquiry operations.
  *
- * $Id: SiteDB.php 2012-12-29 00:00:00 dnesbit $
+ * $Id: EnqDB.php 2012-12-29 00:00:00 dnesbit $
  *
- * @package	Halaya Core
+ * @package		Halaya Core
  * @module		core
  * @author		Dunstan Nesbit (dunstan.nesbit@gmail.com)
  * @copyright	(c) 2013
  * @license
  */
-class Model_Enqdb extends Model 
+class Model_EnqDB extends Model 
 {
 	function __construct()
 	{
