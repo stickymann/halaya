@@ -58,6 +58,27 @@ ALTER TABLE `halaya`.`enquirydefs_is`
 ADD COLUMN `enquirydef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
 ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
 UPDATE `halaya`.`enquirydefs` SET `dflag` = "Y";
+UPDATE `halaya`.`params` SET `indexfield`='enquirydef_id' WHERE `id`='18' AND `indexfield`='controller';
+
+
+
+ALTER TABLE `halaya`.`reportdefs` DROP KEY `uniq_controller`, ADD INDEX `controller` (`controller`);
+ALTER TABLE `halaya`.`reportdefs`     
+ADD COLUMN `reportdef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
+UPDATE `halaya`.`reportdefs` 
+SET `reportdef_id` = CONCAT("core_report_",REPLACE(REPLACE(`controller`,"_rpt",""),"_",""));
+ALTER TABLE `halaya`.`reportdefs` ADD KEY `uniq_reportdef_id` (`reportdef_id`);
+
+ALTER TABLE `halaya`.`reportdefs_hs`     
+ADD COLUMN `reportdef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
+
+ALTER TABLE `halaya`.`reportdefs_is`     
+ADD COLUMN `reportdef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
+ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`; 
+UPDATE `halaya`.`reportdefs` SET `dflag` = "Y";
+UPDATE `halaya`.`params` SET `indexfield`='reportdef_id' WHERE `id`='27' AND `indexfield`='controller';
 
 
 

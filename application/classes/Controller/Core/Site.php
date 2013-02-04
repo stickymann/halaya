@@ -1714,13 +1714,10 @@ _TEXT_;
 	{
 		if(!Auth::instance()->logged_in())
 		{
-			//$this->redirect_to_login();	
+			$this->redirect_to_login();	
 		}
 		else
 		{
-			//$this->before();
-//print "<b>[DEBUG]---></b> "; print_r($this->param); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
-
 			$sc = new Controller_Core_Sitecontrol();
 			$pagehead = new Controller_Core_Sitehtml( $this->param['enqhead'] );
 			$pagebody = new Controller_Core_Sitehtml( $sc->show_tabs( $this->param['param_id'],$this->param['controller'] ));

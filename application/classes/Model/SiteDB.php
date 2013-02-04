@@ -995,7 +995,7 @@ class Model_SiteDB extends Model
 
 	public function get_user_enquiry_tables($user)
 	{
-		$querystr = sprintf('SELECT url_input,module,label_input FROM menudefs_users WHERE inputter="%s" AND (url_input !="" || url_input !=NULL) AND url_input NOT LIKE "%sreport%s" ORDER BY  url_input;',$user,"%","%");
+		$querystr = sprintf('SELECT url_input,module,label_input FROM menudefs_users WHERE inputter="%s" AND (url_input !="" || url_input !=NULL) AND module != "report" ORDER BY  url_input;',$user,"%","%");
 		$arr = $this->execute_select_query($querystr);
 		return $arr;
 	}

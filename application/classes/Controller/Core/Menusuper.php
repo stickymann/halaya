@@ -40,6 +40,16 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 
 	public function action_printsupers()
 	{
+		$this->printsupers();	
+	}
+
+	public function action_updatesupers()
+	{
+		$this->updatesupers();
+	}
+
+	public function printsupers()
+	{
 		$this->template ->usermenu = '';
 		foreach($this->topmenu as $key => $rec) 
 		{
@@ -59,7 +69,7 @@ class Controller_Core_Menusuper extends Controller_Core_Menufunc
 		if($this->render == "1"){$this->auto_render = true;}
 	}
 
-	public function action_updatesupers()
+	public function updatesupers()
 	{
 		$this->template ->usermenu = '';
 		foreach($this->topmenu as $key => $rec) 
