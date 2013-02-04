@@ -2,15 +2,15 @@
 /**
  * CSV controller, sets up CSV record. 
  *
- * $Id: Csvexport.php 2013-01-11 00:00:00 dnesbit $
+ * $Id: Csv.php 2013-01-11 00:00:00 dnesbit $
  *
  * @package		Halaya Core
  * @module	    core
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
  * @copyright   (c) 2013
- * @license      
+ * @license   
  */
-class Controller_Core_Csv extends Controller_Core_Site
+class Controller_Core_Sysadmin_Csv extends Controller_Core_Site
 {
 	public function __construct() 
 	{
@@ -26,37 +26,25 @@ class Controller_Core_Csv extends Controller_Core_Site
 	function input_validation()
 	{
 		$_POST['csv_id']	= strtoupper($_POST['csv_id']);
+		
 		$post = $_POST;	
-
 		//validation rules
+		array_map('trim',$post);
 		$validation = new Validation($post);
-		$validation->pre_filter('trim', TRUE);
-		
-		$validation->add_rules('id','required','numeric');
-		$validation->add_rules('csv_id','required', 'length[3,30]', 'standard_text');
-		
-		$validation->add_callbacks('csv_id', array($this, '_duplicate_altid'));
-		
-		//$validation->post_filter('strtoupper', '?????_id');
-		$this->param['isinputvalid'] = $validation->validate();
-		$this->param['validatedpost'] = $validation->as_array();
+		$validation
+			->rule('id','not_empty')
+			->rule('id','numeric');
+		$validation
+			->rule('csv_id','not_empty')
+			->rule('csv_id','min_length', array(':value', 3))->rule('csv_id','max_length', array(':value', 30))
+			->rule('csv_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['csv_id']));
+
+		$this->param['isinputvalid'] = $validation->check();
+		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
 
-	public function _duplicate_altid(Validation $validation,$field)
-    {
-		$id	 = $_POST['id'];
-		$unique_id = $_POST['csv_id'];
-		if (array_key_exists('msg_duplicate', $validation->errors()))
-				return;
-		
-        if ($this->param['primarymodel']->is_duplicate_unique_id($this->param['tb_inau'],$field,$id,$unique_id) || $this->param['primarymodel']->is_duplicate_unique_id($this->param['tb_live'],$field,$id,$unique_id))
-        {
-            $validation->add_error($field, 'msg_duplicate');
-        }
-	}
-
-	public function insert_into_CSV_table($csv_id,$csv_text,$controller,$idname,$type)
+	public function insert_into_csv_table($csv_id,$csv_text,$controller,$idname,$type)
 	{
 		$csv_tmp_path = "/tmp/";
 		if(!file_exists($csv_tmp_path)){mkdir($csv_tmp_path,777,true);} 
@@ -102,5 +90,5 @@ class Controller_Core_Csv extends Controller_Core_Site
 			if(file_exists($row->csv)){ unlink($row->csv); }
 		}
 	}
-}
-?>
+
+}//End Controller_Core_Sysadmin_Csv 

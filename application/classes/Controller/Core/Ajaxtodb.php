@@ -811,8 +811,8 @@ _TEXT_;
 	function print_csv_id($param_id,$controller,$result,$tabletype,$label,$fn,$idname,$type)
 	{
 		$csv_id = $this->create_csv($CSV,$result,$tabletype,$label,$fn);
-		$csv = new Controller_Core_Csv();
-		$csv->insert_into_CSV_table($csv_id,$CSV,$controller,$idname,$type);
+		$csv = new Controller_Core_Sysadmin_Csv();
+		$csv->insert_into_csv_table($csv_id,$CSV,$controller,$idname,$type);
 		//$RESULT = str_replace("\r\n","<br>", $CSV);
 		//$csv_id = "12344675475";
 		print $csv_id.DELIMITER;
