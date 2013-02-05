@@ -69,8 +69,8 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 			$pdfurl = ""; 
 			if($this->printable)
 			{
-				$pdfurl = sprintf('<div id=enqprt>[ <a href=%sindex.php/pdfbuilder/index/%s target=_blank>Payments</a> ] ',url::base(),$payments);
-				$pdfurl .= sprintf(' [ <a href=%sindex.php/pdfbuilder/index/%s target=_blank>Invoices</a> ] </div>',url::base(),$invoices)."\n";
+				$pdfurl = sprintf('<div id=enqprt>[ <a href=%sindex.php/core_pdfbuilder/index/%s target=_blank>Payments</a> ] ',URL::base(),$payments);
+				$pdfurl .= sprintf(' [ <a href=%sindex.php/core_pdfbuilder/index/%s target=_blank>Invoices</a> ] </div>',URL::base(),$invoices)."\n";
 			}
 		
 			$RESULT = '<div id="e" style="padding:5px 5px 5px 5px; overflow:auto;">';

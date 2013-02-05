@@ -85,6 +85,11 @@ UPDATE `halaya`.`params` SET `indexfield`='reportdef_id' WHERE `id`='27' AND `in
 ALTER TABLE `halaya`.`users` CHANGE `last_login` `last_login` INT(10) UNSIGNED DEFAULT '0' NULL;
 ALTER TABLE `halaya`.`users_is` CHANGE `last_login` `last_login` INT(10) UNSIGNED DEFAULT '0' NULL;
 
+
+
+CALL sp_CopyRecord("menudefs","menu_id",56,62,"250056");
+UPDATE `halaya`.`menudefs` SET `parent_id`='2500',`sortpos`='2500.55000',`label_input`='PDF Template',`url_input`='core_developer_pdftemplate',`url_enquiry`='core_developer_pdftemplate/enquirydefault' where `id`='62';
+
 /* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
 /*
 update view vw_core_fixedselections_available
