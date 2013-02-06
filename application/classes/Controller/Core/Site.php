@@ -632,7 +632,7 @@ class Controller_Core_Site extends Controller_Include
 							$pagebody->add('<span class="viewtext">'.nl2br(HTML::chars($this->form[$key])).'</span>');
 						}
 
-						if($this->formopts[$key]['inputtype'] == "input")
+						if($this->formopts[$key]['inputtype'] == "input" || $this->formopts[$key]['inputtype'] == "date")
 						{
 							$SIDEINFO_HTML = $this->create_sideinfo($key,$this->formopts[$key]['options']);
 							if($SIDEINFO_HTML != ""){ $SIDEINFO_HTML = "&nbsp &nbsp ( ".$SIDEINFO_HTML.")";}
@@ -641,7 +641,6 @@ class Controller_Core_Site extends Controller_Include
 							$SIDEFUNC_HTML = $this->create_sidefunc($key,$this->formopts[$key]['options']);
 							if($SIDEFUNC_HTML != ""){ $SIDEFUNC_HTML = "&nbsp &nbsp ( ".$SIDEFUNC_HTML.")";}
 							$pagebody->add($SIDEFUNC_HTML);
-							
 						}
 						$pagebody->add('</td></tr>'."\n"); 
 					break;
@@ -750,7 +749,7 @@ class Controller_Core_Site extends Controller_Include
 				$_POST['input_date']=date('Y-m-d H:i:s'); $_POST['auth_date']=date('Y-m-d H:i:s');  $_POST['record_status']='INAU';
 
 				$this->input_pre_update_existing_record();		
-				if( $this->param['primarymodel']->update_record($this->param['tb_inau'],$_POST))
+				if($this->formopts[$key]['inputtype'] == "input" || $this->formopts[$key]['inputtype'] == "date")
 				{
 					//create  update subform records if any
 					$this->create_subform_records();
@@ -907,7 +906,7 @@ class Controller_Core_Site extends Controller_Include
 								$selection = array_combine(explode(",",$arrval),explode(",",$arrtxt));
 								$pagebody->add('<tr valign="center"><td>'.Form::label($key,$this->label[$key]).$this->colon.'</td>');
 								$pagebody->add('<td>');
-								$pagebody->add(Form::select($key, $selection, NULL, array('id'=>$key) ))."\n";
+								$pagebody->add(Form::select($key, $selection, $this->form[$key], array('id'=>$key) ))."\n";
 								$pagebody->add('</td></tr>'."\n"); 
 							break;
 
@@ -1345,7 +1344,7 @@ class Controller_Core_Site extends Controller_Include
 							$pagebody->add("<td>".Form::label($key,$this->label[$key]).$this->colon."</td><td>".Form::hidden($key,$this->form[$key],array('id'=>$key))."<span class='viewtext'>".nl2br(HTML::chars($txtval))."</span>");
 						}
 												
-						if($this->formopts[$key]['inputtype']=='input')
+						if($this->formopts[$key]['inputtype'] == "input" || $this->formopts[$key]['inputtype'] == "date")
 						{
 							$SIDEINFO_HTML = $this->create_sideinfo($key,$this->formopts[$key]['options']);
 							if($SIDEINFO_HTML != ""){ $SIDEINFO_HTML = "&nbsp &nbsp ( ".$SIDEINFO_HTML.")";}
@@ -1512,7 +1511,7 @@ class Controller_Core_Site extends Controller_Include
 							$pagebody->add("<td>".Form::label($key,$this->label[$key]).$this->colon."</td><td>".Form::hidden($key,$this->form[$key],array('id'=>$key))."<span class='viewtext'>".nl2br(HTML::chars($this->form[$key]))."</span>");
 						}
 								
-						if($this->formopts[$key]['inputtype']=='input')
+						if($this->formopts[$key]['inputtype'] == "input" || $this->formopts[$key]['inputtype'] == "date")
 						{
 							$SIDEINFO_HTML = $this->create_sideinfo($key,$this->formopts[$key]['options']);
 							if($SIDEINFO_HTML != ""){ $SIDEINFO_HTML = "&nbsp &nbsp ( ".$SIDEINFO_HTML.")";}

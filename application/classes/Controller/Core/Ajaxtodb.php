@@ -721,9 +721,6 @@ _TEXT_;
 			$header = ''; $data = '';
 			foreach ($linerec as $key => $value)
 			{
-				if(strstr($value, '<?xml', true) === FALSE)
-				{
-				
 				if($firstpass)
 				{
 					if($fn){$header .= '<th>'.$key.'</th>';}else {$header .= '<th>'.$label[$key].'</th>';} 
@@ -765,8 +762,14 @@ _TEXT_;
 				}
 				else
 				{
-					$data .= '<td>'.HTML::chars($value).'</td>'; 
-				}
+					if(strstr($value, '<?xml', true) === FALSE)
+					{
+						$data .= '<td>'.HTML::chars($value).'</td>';
+					}
+					else
+					{
+						$data .= '<td>'.HTML::chars("# long text, view to display #" ).'</td>';
+					}
 				}
 			}
 			if($firstpass)
@@ -813,8 +816,6 @@ _TEXT_;
 		$csv_id = $this->create_csv($CSV,$result,$tabletype,$label,$fn);
 		$csv = new Controller_Core_Sysadmin_Csv();
 		$csv->insert_into_csv_table($csv_id,$CSV,$controller,$idname,$type);
-		//$RESULT = str_replace("\r\n","<br>", $CSV);
-		//$csv_id = "12344675475";
 		print $csv_id.DELIMITER;
 	}
 
@@ -1168,7 +1169,7 @@ _SCRIPT_;
 			$N = "0001";
 			$customer_id = strtoupper($L.$F.$N);
 		
-			while($this->sitedb->isDuplicateUniqueId($table,$field,$id,$customer_id) || $this->sitedb->isDuplicateUniqueId($table_is,$field,$id,$customer_id))
+			while($this->sitedb->is_duplicate_unique_id($table,$field,$id,$customer_id) || $this->sitedb->is_duplicate_unique_id($table_is,$field,$id,$customer_id))
 			{
 				$N++;
 				$N = str_pad($N, 4, "0", STR_PAD_LEFT);
