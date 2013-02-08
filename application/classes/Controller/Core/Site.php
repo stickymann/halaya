@@ -749,7 +749,7 @@ class Controller_Core_Site extends Controller_Include
 				$_POST['input_date']=date('Y-m-d H:i:s'); $_POST['auth_date']=date('Y-m-d H:i:s');  $_POST['record_status']='INAU';
 
 				$this->input_pre_update_existing_record();		
-				if($this->formopts[$key]['inputtype'] == "input" || $this->formopts[$key]['inputtype'] == "date")
+				if( $this->param['primarymodel']->update_record($this->param['tb_inau'],$_POST))
 				{
 					//create  update subform records if any
 					$this->create_subform_records();
@@ -936,6 +936,7 @@ class Controller_Core_Site extends Controller_Include
 										$SUBFORM_HTML = $this->create_subform($key,$this->form['current_no'],$subtable_type);
 									}
 									$pagebody->add('<tr valign="top"><td>'.Form::label($key,$this->label[$key]).$this->colon.'</td>');
+									$pagebody->add('<td>');
 									$pagebody->add($SUBFORM_HTML.sprintf('<input type="text" id="%s" name="%s" value="%s" size="1" style="border:0px;width:0px;height:0px;" readonly>',$key,$key,$this->form[$key]));
 									$pagebody->add('</td></tr>'."\n"); 
 								}
@@ -1118,7 +1119,7 @@ class Controller_Core_Site extends Controller_Include
 										$sub_post['auth_date']		= $_POST['auth_date'];
 										$sub_post['record_status']	= $_POST['record_status'];
 										$sub_post['current_no']		= $_POST['current_no'];
-										if($this->param['primarymodel']->insert__record($table,$sub_post))
+										if($this->param['primarymodel']->insert_record($table,$sub_post))
 										{/*do nothing*/} else {	return false; }
 									}
 								}
@@ -1127,7 +1128,7 @@ class Controller_Core_Site extends Controller_Include
 							$this->authorize_post_insert_new_record();
 							$this->set_record_status_message($PRINT_POST);
 										
-							if($this->param['primarymodel']->delete_record_by_Id($this->param['tb_inau'],$_POST['id']))
+							if($this->param['primarymodel']->delete_record_by_id($this->param['tb_inau'],$_POST['id']))
 							{
 								if($subform_exist)
 								{
@@ -1137,7 +1138,7 @@ class Controller_Core_Site extends Controller_Include
 										foreach($arr as $index => $row)
 										{
 											$sub_post = (array)$row;
-											if($this->param['primarymodel']->delete_record_by_Id($table,$sub_post['id']))
+											if($this->param['primarymodel']->delete_record_by_id($table,$sub_post['id']))
 											{/*do nothing*/} else {	return false; }
 										}
 									}
@@ -1159,7 +1160,7 @@ class Controller_Core_Site extends Controller_Include
 					{
 						if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$_POST['id']))
 						{
-							$this->param['primarymodel']->set_record_status_HIST($this->param['tb_hist'],$_POST['id'],$_POST['current_no']);
+							$this->param['primarymodel']->set_record_status_hist($this->param['tb_hist'],$_POST['id'],$_POST['current_no']);
 							$_POST['current_no']++;
 							
 							$subform_exist = false;
@@ -1174,7 +1175,7 @@ class Controller_Core_Site extends Controller_Include
 										$sub_post = (array)$row;
 										if($this->param['primarymodel']->insert_from_table_to_table($subtable_hist[$key],$table,$sub_post['id']))
 										{
-											$this->param['primarymodel']->set_record_status_HIST($subtable_hist[$key],$sub_post['id'],$sub_post['current_no']);
+											$this->param['primarymodel']->set_record_status_hist($subtable_hist[$key],$sub_post['id'],$sub_post['current_no']);
 										}
 										else {	return false; }
 									}
@@ -1207,7 +1208,7 @@ class Controller_Core_Site extends Controller_Include
 											$sub_post['auth_date']		= $_POST['auth_date'];
 											$sub_post['record_status']	= $_POST['record_status'];
 											$sub_post['current_no']		= $_POST['current_no'];
-											if($this->param['primarymodel']->insert__record($table,$sub_post))
+											if($this->param['primarymodel']->insert_record($table,$sub_post))
 											{/*do nothing*/} else {	return false; }
 										}
 									}
@@ -2156,7 +2157,7 @@ _text_;
 		$idfield = $this->param['indexfield'];
 		$idval =  $this->form[$idfield];
 
-		$results = $this->param['primarymodel']->getSubFormViewRecords($subcontroller,$idfield,$idval,$current_no,$subtable_type,$labels);
+		$results = $this->param['primarymodel']->get_subform_view_records($subcontroller,$idfield,$idval,$current_no,$subtable_type,$labels);
 		$HTML  = $this->subform_html($results,$labels,$color);
 		$HTML .= $this->subform_summary_html($results,$labels,$color);
 		return $HTML;
@@ -2219,7 +2220,6 @@ _text_;
 				$xml = simplexml_load_string($_POST[$key]);
 				$json = json_encode($xml);
 				$arr = json_decode($json,TRUE);
-	
 				if(isset($arr['row'])) 
 				{ 
 					$tmp = $arr['row'];  
@@ -2230,42 +2230,44 @@ _text_;
 				$querystr = sprintf('delete from %s where %s = "%s"',$subtable,$parent_idfield,$idval);
 				if($result = $this->param['primarymodel']->execute_delete_query($querystr))
 				{
-					if($rowsExist)
+					//wait for deletions
+				}
+				
+				if($rowsExist)
+				{
+					foreach ($arr as $index => $row)
 					{
-						foreach ($arr as $index => $row)
-						{
-							$row['inputter']		= $_POST['inputter'];
-							$row['authorizer']		= $_POST['authorizer'];
-							$row['input_date']		= $_POST['input_date'];
-							$row['auth_date']		= $_POST['auth_date'];
-							$row['record_status']	= $_POST['record_status'];
-							$row['current_no']		= $_POST['current_no'];
+						$row['inputter']		= $_POST['inputter'];
+						$row['authorizer']		= $_POST['authorizer'];
+						$row['input_date']		= $_POST['input_date'];
+						$row['auth_date']		= $_POST['auth_date'];
+						$row['record_status']	= $_POST['record_status'];
+						$row['current_no']		= $_POST['current_no'];
 					
-							$list = $this->subform_field_exclusion_list();
-							if(isset($list[$key]))
+						$list = $this->subform_field_exclusion_list();
+						if(isset($list[$key]))
+						{
+							foreach($list[$key] as $idx => $fld)
 							{
-								foreach($list[$key] as $idx => $fld)
-								{
-									if(isset($row[$fld])) { unset($row[$fld]); }
-								}
+								if(isset($row[$fld])) { unset($row[$fld]); }
 							}
+						}
 
-							if($row['id'] == "undefined")
-							{
-								//get id for record, then update fields
-								$subformarr = $this->param['primarymodel']->create_blank_record($subtable_live[$key],$subtable);
-								$subform = (array) $subformarr;
-								array_merge($row,$subform);
-								$row['id']	= $subform['id'];
-								if($this->param['primarymodel']->update_record($subtable,$row))
-								{ } else {	return false; }
-							}
-							else
-							{
-								//delete exist record, re-insert with updated fields
-								if($this->param['primarymodel']->insert_record($subtable,$row))
-								{ } else {	return false; }
-							}
+						if($row['id'] == "undefined")
+						{
+							//get id for record, then update fields
+							$subformarr = $this->param['primarymodel']->create_blank_record($subtable_live[$key],$subtable);
+							$subform = (array) $subformarr;
+							array_merge($row,$subform);
+							$row['id']	= $subform['id'];
+							if($this->param['primarymodel']->update_record($subtable,$row))
+							{ } else {	return false; }
+						}
+						else
+						{
+							//delete exist record, re-insert with updated fields
+							if($this->param['primarymodel']->insert_record($subtable,$row))
+							{ } else {	return false; }
 						}
 					}
 				}
@@ -2298,7 +2300,7 @@ _text_;
 	{
 		$_POST = $form;
 		//setup authorization data
-		$this->param['pageheader'] = $this->getPageHeader($this->param['appheader'],"");
+		$this->param['pageheader'] = $this->get_page_header($this->param['appheader'],"");
 		$_POST['submit']='Authorize'; $_POST['recordlockid']=0; $_POST['func']=""; 
 		$_POST['preval']=""; $_POST['auth']=""; $_POST['rjct']="";
 				

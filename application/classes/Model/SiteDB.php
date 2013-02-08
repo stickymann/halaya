@@ -224,7 +224,7 @@ class Model_SiteDB extends Model
 					$fields[$key] = sprintf('%s AS %s%s',$fieldname,$prefix,$asname);		
 				}
 			}
-			$query = sprintf('SELECT %s FROM %s WHERE %s="%s" AND current_no="%s"', join(',',$fields),$table,$idfield,$idval,$current_no);
+			$querystr = sprintf('SELECT %s FROM %s WHERE %s="%s" AND current_no="%s"', join(',',$fields),$table,$idfield,$idval,$current_no);
 		}
 		else
 		{
@@ -243,7 +243,7 @@ class Model_SiteDB extends Model
 					$fields = sprintf('%s AS %s_%s',$value,$prefix,$value);		
 				}
 			}
-			$query = sprintf('SELECT %s FROM %s WHERE %s="%s" AND current_no="%s"',$fields,$table,$idfield,$idval,$current_no);
+			$querystr = sprintf('SELECT %s FROM %s WHERE %s="%s" AND current_no="%s"',$fields,$table,$idfield,$idval,$current_no);
 		}
 		$result = $this->execute_select_query($querystr);
 		return $result;
@@ -621,8 +621,8 @@ class Model_SiteDB extends Model
 	public function get_subform_options($controller)
 	{
 		$labels = FALSE; 
-		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
-		$result = $this->db->query(Database::SELECT,$query);
+		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s" AND dflag="Y"','formfields','params','controller',$controller);
+		$result = $this->execute_select_query($querystr);
 		$arr = array();
 		$row = $result[0];
 		$formfields = new SimpleXMLElement($row->formfields);

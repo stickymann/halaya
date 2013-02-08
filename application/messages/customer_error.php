@@ -85,7 +85,7 @@ return array
     (
         'min_length' => 'Date Of Birth: must be 10 characters.',
 		'max_length' => 'Date Of Birth: must be 10 characters.',
-        'alpha_dash' => 'Date Of Birth: date format is incorrect (YYYY-MM-DD).',
+        'date' => 'Date Of Birth: date format is incorrect (YYYY-MM-DD).',
 		'default' => 'Date Of Birth: invalid input.'
     ),
 	
@@ -139,7 +139,7 @@ return array
     (
         'min_length' => 'Driver\'s Permit Expiry Date: must be 10 characters.',
 		'max_length' => 'Driver\'s Permit Expiry Date: must be 10 characters.',
-        'alpha_dash' => 'Driver\'s Permit Expiry Date: format is incorrect (YYYY-MM-DD).',
+        'date' => 'Driver\'s Permit Expiry Date: format is incorrect (YYYY-MM-DD).',
 		'default' => 'Driver\'s Permit Expiry Date: invalid input.'
     ),
 		

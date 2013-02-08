@@ -73,30 +73,30 @@ class Controller_Core_Ajaxtodb extends Controller
 				$idval		 = $_REQUEST['idval'];
 				if(isset($_REQUEST['tabletype'])){$table_type = $_REQUEST['tabletype'];} else {$table_type = false;}
 
-				$param		 = $this->sitedb->getControllerParams($controller);
-				$columnfield = $this->sitedb->getSubFormFields($controller);
+				$param		 = $this->sitedb->get_controller_params($controller);
+				$columnfield = $this->sitedb->get_subform_fields($controller);
 				$prefix  = sprintf('subform_%s_',$parentfield);
 				
 				if($table_type)
 				{
 					if($table_type == "live"){ $table = $param['tb_live']; }else if($table_type == "inau"){	$table = $param['tb_inau'];}else if($table_type == "hist"){ $table = $param['tb_hist'];}
-					$result = $this->sitedb->getRecsBySubform($table,$columnfield,$idfield,$idval,$current_no,$prefix);
+					$result = $this->sitedb->get_recs_by_subform($table,$columnfield,$idfield,$idval,$current_no,$prefix);
 				}
 				else
 				{	/*default action*/
 					/* for subrecs in inau first*/
 					$table = $param['tb_inau'];
-					if(!($result = $this->sitedb->getRecsBySubform($table,$columnfield,$idfield,$idval,$current_no,$prefix)))
+					if(!($result = $this->sitedb->get_recs_by_subform($table,$columnfield,$idfield,$idval,$current_no,$prefix)))
 					{
 						/*if no inau records found, check live*/
 						$table = $param['tb_live'];
-						$result = $this->sitedb->getRecsBySubform($table,$columnfield,$idfield,$idval,$current_no,$prefix);
+						$result = $this->sitedb->get_recs_by_subform($table,$columnfield,$idfield,$idval,$current_no,$prefix);
 						foreach($result as $key => $row)
 						{
 							$field = $prefix."id";
 							$id = $result[$key]->$field;
-							$this->sitedb->insertFromTableToTable($param['tb_inau'],$param['tb_live'],$id);
-							$this->sitedb->setRecordStatus($param['tb_inau'],$id,"IHLD");
+							$this->sitedb->insert_from_table_to_table($param['tb_inau'],$param['tb_live'],$id);
+							$this->sitedb->set_record_status($param['tb_inau'],$id,"IHLD");
 						}
 					}
 					else
@@ -105,7 +105,7 @@ class Controller_Core_Ajaxtodb extends Controller
 						{
 							$field = $prefix."id";
 							$id = $result[$key]->$field;
-							$this->sitedb->setRecordStatus($param['tb_inau'],$id,"IHLD");
+							$this->sitedb->set_record_status($param['tb_inau'],$id,"IHLD");
 						}
 					}
 				}
@@ -113,7 +113,7 @@ class Controller_Core_Ajaxtodb extends Controller
 			break;
 			
 			case 'jdefaultorderdetailscolumndef':
-				$columnfield = $this->sitedb->getSubFormColumnDef("orderdetail","subform_order_details_");
+				$columnfield = $this->sitedb->get_subform_column_def("orderdetail","subform_order_details_");
 				print json_encode($columnfield);
 			break;
 
@@ -122,7 +122,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				{
 					$controller = $_REQUEST['controller'];
 					if(isset($_REQUEST['tabletype'])){$table_type = $_REQUEST['tabletype'];} else {$table_type = "live";}
-					$param  = $this->sitedb->getControllerParams($controller);
+					$param  = $this->sitedb->get_controller_params($controller);
 					if($table_type == "live"){ $table = $param['tb_live']; }else if($table_type == "inau"){ $table = $param['tb_inau'];}else if($table_type == "hist"){ $table = $param['tb_hist'];}
  				}
 				else
@@ -153,7 +153,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				}
 				
 				$fields = explode(",", $fields);
-				$result = $this->sitedb->getAllRecsByFields($table,$fields,$prefix,$where,$orderby);
+				$result = $this->sitedb->get_all_recs_by_fields($table,$fields,$prefix,$where,$orderby);
 				print json_encode($result);
 			break;
 
@@ -162,7 +162,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				{
 					$controller = $_REQUEST['controller'];
 					if(isset($_REQUEST['tabletype'])){$table_type = $_REQUEST['tabletype'];} else {$table_type = "live";}
-					$param  = $this->sitedb->getControllerParams($controller);
+					$param  = $this->sitedb->get_controller_params($controller);
 					if($table_type == "live"){ $table = $param['tb_live']; }else if($table_type == "inau"){ $table = $param['tb_inau'];}else if($table_type == "hist"){ $table = $param['tb_hist'];}
 				}
 				else
@@ -178,7 +178,7 @@ class Controller_Core_Ajaxtodb extends Controller
 				$idvals = preg_split('/,/',$idval);
 				foreach($idvals as $key => $val)
 				{
-					if($result = $this->sitedb->getRecordByIdVal($table,$idfield,$val,$fields))
+					if($result = $this->sitedb->get_record_by_id_val($table,$idfield,$val,$fields))
 					{
 						print json_encode($result);
 						return;
@@ -194,9 +194,9 @@ class Controller_Core_Ajaxtodb extends Controller
 				if(isset($_REQUEST['tabletype'])){$table_type = $_REQUEST['tabletype'];} else {$table_type = "live";}
 				if(isset($_REQUEST['prefix'])){$prefix = $_REQUEST['prefix'];} else {$prefix = "";}
 
-				$param  = $this->sitedb->getControllerParams($controller);
+				$param  = $this->sitedb->get_controller_params($controller);
 				if($table_type == "live"){ $table = $param['tb_live']; }else if($table_type == "inau"){ $table = $param['tb_inau'];}else if($table_type == "hist"){ $table = $param['tb_hist'];}
-				if($result = $this->sitedb->getXMLFieldDataByIdVal($table,$idfield,$idval,$field,$prefix))
+				if($result = $this->sitedb->get_xmlfield_data_by_idval($table,$idfield,$idval,$field,$prefix))
 				{
 					print json_encode($result);
 					return;
