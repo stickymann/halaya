@@ -90,9 +90,23 @@ ALTER TABLE `halaya`.`users_is` CHANGE `last_login` `last_login` INT(10) UNSIGNE
 CALL sp_CopyRecord("menudefs","menu_id",56,62,"250056");
 UPDATE `halaya`.`menudefs` SET `parent_id`='2500',`sortpos`='2500.55000',`label_input`='PDF Template',`url_input`='core_developer_pdftemplate',`url_enquiry`='core_developer_pdftemplate/enquirydefault' where `id`='62';
 
+
+
+ALTER TABLE `halaya`.`inventorys` ADD COLUMN `inventory_id` VARCHAR(255) NULL AFTER `id`;
+UPDATE `halaya`.`inventorys` SET `inventorys_id` = CONCAT(product_id,"-",branch_id);
+ALTER TABLE `halaya`.`inventorys` CHANGE `inventory_id` `inventory_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `halaya`.`inventorys_hs` ADD COLUMN `inventory_id` VARCHAR(255) NULL AFTER `id`;
+UPDATE `halaya`.`inventorys_hs` SET `inventory_id` = CONCAT(product_id,"-",branch_id);
+ALTER TABLE `halaya`.`inventorys_hs` CHANGE `inventory_id` `inventory_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `halaya`.`inventorys_is` ADD COLUMN `inventory_id` VARCHAR(255) NULL AFTER `id`;
+
+
+
+
 /* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
 /*
 update view vw_core_fixedselections_available
-
+update table params inventory field formfields
+update view vw_inventprod_available
 
 */

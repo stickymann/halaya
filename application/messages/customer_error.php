@@ -92,7 +92,7 @@ return array
 	'gender' => array
     (
         'not_empty' => 'Gender: required, must be[M/F/N].',
-        'alpha' => 'Gender: must be[M/F/N].',
+        'in_array' => 'Gender: must be[M/F/N].',
 		'min_length' => 'Gender: must be 1 character.',
         'max_length' => 'Gender: must be 1 character.',
         'default' => 'Gender: invalid input.'

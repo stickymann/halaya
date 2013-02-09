@@ -2325,6 +2325,16 @@ _text_;
         }
 	}
 	
+	public function duplicate_composite_id($validation,$fields,$id)
+    {
+		//construct $fields array outside of function
+		//$fields = array('product_id'=>$_POST['product_id'],'branch_id'=>$_POST['branch_id']);
+		if($this->param['primarymodel']->is_duplicate_composite_id($this->param['tb_inau'],$fields,$id) || $this->param['primarymodel']->is_duplicate_composite_id($this->param['tb_live'],$fields,$id))
+		{
+			$validation->error($field, 'msg_duplicate');
+		}
+	}
+	
 	/*abstracts*/
 	public function authorize_pre_insert_new_record(){}
 	public function authorize_post_insert_new_record(){}
