@@ -95,7 +95,7 @@ class Controller_Core_Site extends Controller_Include
 		$this->param['htmlhead'] = $htmlhead->get_html();
 		$this->param['enqhead'] = $htmlhead->get_html();
 	}
-	
+	/*
 	public function _before()
 	{
        	parent::before();
@@ -162,7 +162,7 @@ class Controller_Core_Site extends Controller_Include
 		$this->param['htmlhead'] = $htmlhead->get_html();
 		$this->param['enqhead'] = $htmlhead->get_html();
 	}
-
+*/
 	public function set_start_controller($controller)
 	{
 		$this->controller = $controller;
@@ -2350,8 +2350,8 @@ _text_;
 	
 	public function view_pre_open_existing_record(){}		
 	public function view_post_open_existing_record(){}
-
-	public function subform_summary_html($results=null,$labels=null) {}
+	
+	public function subform_summary_html($results=null,$labels=null,$color=null) {}
 	public function subform_field_exclusion_list() { return false;}
 	public function xml_subform_additional_columndef() { return "";}
 }

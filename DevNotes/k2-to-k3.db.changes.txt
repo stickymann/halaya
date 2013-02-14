@@ -89,6 +89,7 @@ ALTER TABLE `halaya`.`users_is` CHANGE `last_login` `last_login` INT(10) UNSIGNE
 
 CALL sp_CopyRecord("menudefs","menu_id",56,62,"250056");
 UPDATE `halaya`.`menudefs` SET `parent_id`='2500',`sortpos`='2500.55000',`label_input`='PDF Template',`url_input`='core_developer_pdftemplate',`url_enquiry`='core_developer_pdftemplate/enquirydefault' where `id`='62';
+INSERT INTO `menudefs` (`id`, `menu_id`, `parent_id`, `sortpos`, `nleft`, `nright`, `nlevel`, `node_or_leaf`, `module`, `label_input`, `label_enquiry`, `url_input`, `url_enquiry`, `controls_input`, `controls_enquiry`, `inputter`, `input_date`, `authorizer`, `auth_date`, `record_status`, `current_no`) VALUES('63','250056','2500','2500.56006','81','82','3','L','developer','Auto Definitions','','core_developer_autodef','','vw','','IMPLEMENTATION','2013-02-13 19:02:48','ADMIN','2013-02-13 19:23:28','LIVE','1');
 
 
 
@@ -99,7 +100,16 @@ ALTER TABLE `halaya`.`inventorys_hs` ADD COLUMN `inventory_id` VARCHAR(255) NULL
 UPDATE `halaya`.`inventorys_hs` SET `inventory_id` = CONCAT(product_id,"-",branch_id);
 ALTER TABLE `halaya`.`inventorys_hs` CHANGE `inventory_id` `inventory_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
 ALTER TABLE `halaya`.`inventorys_is` ADD COLUMN `inventory_id` VARCHAR(255) NULL AFTER `id`;
+UPDATE `halaya`.`params` SET `indexfield`='inventory_id' WHERE `id`='404' AND `indexfield`='id';
 
+
+ALTER TABLE `halaya`.`orders_is` CHANGE `invoice_date` `invoice_date` DATE DEFAULT '0001-01-01' NULL ;
+
+
+
+/* Autodef tables */
+CREATE TABLE `_adi_configs`(`id` VARCHAR(50) NOT NULL,`autogendir` VARCHAR(1024),`defdir` VARCHAR(1024),`approotdir` VARCHAR(1024),`module` VARCHAR(1024),`activedef` VARCHAR(255), PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8;
+CREATE TABLE `_adi_autotables`(`id` VARCHAR(50) NOT NULL,`module` VARCHAR(50) NOT NULL,`tablename` VARCHAR(255) NOT NULL,`tablefields` TEXT NOT NULL,`uniquefield` VARCHAR(255), PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 
 

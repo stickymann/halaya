@@ -1,0 +1,11 @@
+<?xml version='1.0' standalone='yes'?>
+<menudef>
+<id>customer_menus (autogen 20110615181327)</id>
+<menus>	
+	<menu><menu_id>5010</menu_id><parent_id>0</parent_id><sortpos>50.1</sortpos><node_or_leaf>N</node_or_leaf><module>customers</module><label_input>Customers</label_input><label_enquiry></label_enquiry><url_input></url_input><url_enquiry></url_enquiry><controls_input></controls_input><controls_enquiry></controls_enquiry></menu>
+	<menu><menu_id>501050</menu_id><parent_id>5010</parent_id><sortpos>5010.5</sortpos><node_or_leaf>L</node_or_leaf><module>customer</module><label_input>Customer (Tracking)</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>customer</url_input><url_enquiry>customer\/enquiry_default</url_enquiry><controls_input>if,vw,nw,cp,in,ao,as,de,hd,va</controls_input><controls_enquiry>df,ls,is,hs,ex</controls_enquiry></menu>
+	<menu><menu_id>501051</menu_id><parent_id>5010</parent_id><sortpos>5010.51</sortpos><node_or_leaf>L</node_or_leaf><module>customer</module><label_input>Customer (Retail)</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>customerretail</url_input><url_enquiry>customerretail\/enquiry_default</url_enquiry><controls_input>if,vw,nw,cp,in,ao,as,de,hd,va</controls_input><controls_enquiry>df,ls,is,hs,ex</controls_enquiry></menu>
+	<menu><menu_id>501052</menu_id><parent_id>5010</parent_id><sortpos>5010.52</sortpos><node_or_leaf>L</node_or_leaf><module>customer</module><label_input>Vehicle</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>vehicle</url_input><url_enquiry>vehicle\/enquiry_default</url_enquiry><controls_input>if,vw,nw,cp,in,ao,as,de,hd,va</controls_input><controls_enquiry>df,ls,is,hs,ex</controls_enquiry></menu>
+	<menu><menu_id>501053</menu_id><parent_id>5010</parent_id><sortpos>5010.53</sortpos><node_or_leaf>L</node_or_leaf><module>customer</module><label_input>Device</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>device</url_input><url_enquiry>device\/enquiry_default</url_enquiry><controls_input>if,vw,nw,cp,in,ao,as,de,hd,va</controls_input><controls_enquiry>df,ls,is,hs,ex</controls_enquiry></menu>
+</menus>
+</menudef>

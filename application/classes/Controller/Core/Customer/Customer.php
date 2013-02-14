@@ -49,7 +49,7 @@ class Controller_Core_Customer_Customer extends Controller_Core_Site
 			->rule('id','numeric');
 		$validation
 			->rule('customer_id','not_empty')
-			->rule('customer_id','min_length', array(':value', 3))->rule('customer_id','max_length', array(':value', 50))
+			->rule('customer_id','min_length', array(':value', 8))->rule('customer_id','max_length', array(':value', 8))
 			->rule('customer_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['customer_id']));
 		$validation
 			->rule('customer_type','not_empty')

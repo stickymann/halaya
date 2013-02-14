@@ -1,0 +1,62 @@
+<?xml version='1.0' standalone='yes'?>
+<tabledef>
+<id>certofinstallation (autogen 20120728063133)</id>
+<tablename>certofinstallations</tablename>
+<livecreate>yes</livecreate>
+<histcreate>yes</histcreate>
+<inaucreate>yes</inaucreate>
+<columns>
+	<column><colname>id</colname><coltype>int(11)</coltype><colopts>unsigned NOT NULL</colopts></column>
+	<column><colname>certificate_id</colname><coltype>varchar(20)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>certificate_status</colname><coltype>enum("ACTIVE","RETIRED","EXPIRED")</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>vehicle_id</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>chassis_number</colname><coltype>varchar(100)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>vehicle_type</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>vehicle_make</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>vehicle_model</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>vehicle_colour</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>first_name</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>last_name</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>address1</colname><coltype>varchar(100)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>address2</colname><coltype>varchar(100)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>city</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>installation_type</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>device_model</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>device_serial_no</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>expiry_date</colname><coltype>date</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>issue_date</colname><coltype>date</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld01</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld02</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld03</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld04</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld05</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld06</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld07</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld08</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld09</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld10</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld11</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>commisioning_fld12</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld01</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld02</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld03</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld04</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld05</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld06</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld07</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld08</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld09</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld10</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld11</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>usrinstr_fld12</colname><coltype>varchar(3)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>variations</colname><coltype>varchar(255)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>validation_period</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>signature_name</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+	<column><colname>signature_position</colname><coltype>varchar(50)</coltype><colopts>NOT NULL</colopts></column>
+</columns>
+<primarykey>id</primarykey>
+<uniquekeys>
+	<uniquekey><ukeyname>uniq_certificate_id</ukeyname><ukeycol>certificate_id</ukeycol></uniquekey>
+</uniquekeys>
+<engine>ENGINE=InnoDB DEFAULT CHARSET=utf8</engine>
+</tabledef>

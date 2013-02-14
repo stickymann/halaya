@@ -49,7 +49,8 @@ abstract class Controller_Include extends Controller
 		'treeview' => 'media/css/jquery.treeview.css',
 		'screen' => 'media/css/screen.css',
 		'tablesorterblue' => 'media/css/tablesorterblue.css',
-		'tablesortergreen' => 'media/css/tablesortergreen.css'
+		'tablesortergreen' => 'media/css/tablesortergreen.css',
+		'autodef' => 'media/css/autodef.css'
 	);
 
 	//site logos. icons and others images
