@@ -1,0 +1,7 @@
+<?xml version='1.0' standalone='yes'?>
+<menudef>
+<id>developer_menus (autogen 20130216025735)</id>
+<menus>	
+	<menu><id>63</id><menu_id>250056</menu_id><parent_id>2500</parent_id><sortpos>2500.56006</sortpos><node_or_leaf>L</node_or_leaf><module>developer</module><label_input>Auto Definitions</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>core_developer_autodef</url_input><url_enquiry>core_developer_autodef\/enquirydefault</url_enquiry><controls_input>if,vw,nw,cp,in,ao,as,rj,hd,va</controls_input><controls_enquiry>ls,is,hs,ex</controls_enquiry></menu>
+</menus>
+</menudef>

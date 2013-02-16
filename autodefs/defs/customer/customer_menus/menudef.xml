@@ -1,8 +1,0 @@
-<?xml version='1.0' standalone='yes'?>
-<menudef>
-<id>customer_menus (autogen 20120728054223)</id>
-<menus>	
-	<menu><menu_id>501056</menu_id><parent_id>5010</parent_id><sortpos>5010.56</sortpos><node_or_leaf>L</node_or_leaf><module>customer</module><label_input>Cert Of Installation</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>certofinstallation</url_input><url_enquiry>certofinstallation\/enquiry_default</url_enquiry><controls_input>if,vw,nw,in,ao,as,rj,hd,va</controls_input><controls_enquiry>ls,is,hs,ex</controls_enquiry></menu>
-	<menu><menu_id>501057</menu_id><parent_id>5010</parent_id><sortpos>5010.57</sortpos><node_or_leaf>L</node_or_leaf><module>customer</module><label_input>Charge Account</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>chargeaccount</url_input><url_enquiry>chargeaccount\/enquiry_default</url_enquiry><controls_input>if,vw,nw,cp,in,ao,as,rj,hd,va</controls_input><controls_enquiry>ls,is,hs,ex</controls_enquiry></menu>
-</menus>
-</menudef>

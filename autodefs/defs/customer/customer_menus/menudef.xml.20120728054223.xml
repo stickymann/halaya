@@ -1,7 +1,0 @@
-<?xml version='1.0' standalone='yes'?>
-<menudef>
-<id>customer_menus (autogen 20111010154244)</id>
-<menus>	
-	<menu><menu_id>501055</menu_id><parent_id>5010</parent_id><sortpos>5010.55</sortpos><node_or_leaf>L</node_or_leaf><module>customer</module><label_input>Managed TopUp Accounts</label_input><label_enquiry>magicon016.png%IMG%</label_enquiry><url_input>mantopupacc</url_input><url_enquiry>mantopupacc\/enquiry_default</url_enquiry><controls_input>if,vw,nw,cp,in,ao,as,hd,va</controls_input><controls_enquiry>ls,is,hs,ex</controls_enquiry></menu>
-</menus>
-</menudef>

@@ -110,8 +110,22 @@ ALTER TABLE `halaya`.`orders_is` CHANGE `invoice_date` `invoice_date` DATE DEFAU
 /* Autodef tables */
 CREATE TABLE `_adi_configs`(`id` VARCHAR(50) NOT NULL,`autogendir` VARCHAR(1024),`defdir` VARCHAR(1024),`approotdir` VARCHAR(1024),`module` VARCHAR(1024),`activedef` VARCHAR(255), PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8;
 CREATE TABLE `_adi_autotables`(`id` VARCHAR(50) NOT NULL,`module` VARCHAR(50) NOT NULL,`tablename` VARCHAR(255) NOT NULL,`tablefields` TEXT NOT NULL,`uniquefield` VARCHAR(255), PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8;
-
-
+CREATE TABLE `_adi_automenus`(`id` VARCHAR(50) NOT NULL,`module` VARCHAR(50) NOT NULL, `root_id` VARCHAR(255) NOT NULL,`menu_layout` TEXT NOT NULL, PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8;
+CREATE TABLE `_adi_menutrees` (
+  `menu_id` INT(20) DEFAULT NULL,
+  `parent_id` INT(20) DEFAULT NULL,
+  `sortpos` FLOAT(20,5) DEFAULT NULL,
+  `lft` INT(20) DEFAULT NULL,
+  `rgt` INT(20) DEFAULT NULL,
+  `node_or_leaf` CHAR(1) DEFAULT NULL,
+  `module` VARCHAR(20) DEFAULT NULL,
+  `title` VARCHAR(255) DEFAULT NULL,
+  `url_input` VARCHAR(255) DEFAULT NULL,
+  `parent` VARCHAR(255) DEFAULT NULL,
+  `control_input` VARCHAR(255) DEFAULT NULL,
+  `control_enquiry` VARCHAR(255) DEFAULT NULL,
+  `id_opt` INT(20) DEFAULT NULL
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 /* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
 /*
