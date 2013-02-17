@@ -11,7 +11,6 @@
  * @license      
  */
 
-define("DATABASE","gbiz");
 define("SLEEPTIME",2);
 define("INPUTTER","IMPLEMENTATION");
 define("RECORDSTATUS","INAU");
@@ -66,7 +65,6 @@ class Controller_Core_Developer_Autodef extends Controller_Include
 		$autodef_css  = sprintf('%s',HTML::style($this->css['autodef'], array('screen')));
 		$jquery_js = sprintf('%s',HTML::script($this->js['jquery']));
 		$siteutils = sprintf('%s',HTML::script($this->js['siteutils']));
-
 		$HTML=<<<_HTML_
 <!DOCTYPE html>
 <html lang="en">
@@ -242,23 +240,23 @@ _HTML_;
 			break;
 
 			case "createautoparams":
-				$RESULT = createAutoParams();
+				$RESULT = $this->create_auto_params();
 			break;
 		
 			case "createautoforms":
-				$RESULT = createAutoForms();
+				$RESULT = $this->create_auto_forms();
 			break;
 		
 			case "createautomvcs":
-				$RESULT = createAutoMVCs();
+				$RESULT = $this->create_auto_mvcs();
 			break;
 
 			case "defstatus":
-				//$RESULT = definitionStatus();
+				//$RESULT = $this->definition_status();
 			break;
 	
 			case "definstall":
-				$RESULT = definitionInstall();
+				$RESULT = $this->definition_install();
 			break;
 		}
 		return $this->main_layout_display($RESULT);
@@ -544,10 +542,10 @@ _HTML_;
 	function app_table_exist($tablename)
 	{
 		$querystr = sprintf('SHOW TABLES;');
-		$stmt = $this->sitedb->query(Database::SELECT,$querystr,TRUE);
-		$result = $stmt->fetchAll();
+		$result = $this->sitedb->execute_select_query($querystr);
 		foreach($result as $row)
 		{
+			$row = (array) $row;
 			if(in_array($tablename,$row))
 			{
 				return true;
@@ -690,32 +688,36 @@ _HTML_;
 	function create_autogen_input_form($dropdown,$result,$option)
 	{	
 		$PHP_SELF = $this->PHP_SELF;
-		$HTML = sprintf('<form id="CreateAutoGen" name="CreateAutoGen" action="%s" method="get">',$PHP_SELF);
-		$HTML .= "\n<table cellspacing=0 border=1>\n";
-		$HTML .= "<tr valign='center'><td>Create Autogen</td><td>Overwrite Existing</td>\n";
+		$HTML = sprintf('<form id="CreateAutoGen" name="CreateAutoGen" action="%s" method="get">',$PHP_SELF)."\n";
+		$HTML .= "\n".'<table class="autogen-table">'."\n";
+		$HTML .= "<thead>\n";
+		$HTML .= '<tr valign="center"><th class="autogen-th">Create Autogen</th><th class="autogen-th">Overwrite Existing</th>'."\n";
+		$HTML .= "</thead>\n";
+		$HTML .= "<tbody>\n";
 		foreach($dropdown as $value)
 		{
 			$value = (array) $value;
 			$HTML .= '<tr valign="top">';
-			$html = sprintf('<td><input type="checkbox" id="%s_c" name="%s_c" value="%s" onchange=setChecks("%s")>',$value['id'],$value['id'],$value['id'],"create");
+			$html = sprintf('<td class="autogen-td"><input type="checkbox" id="%s_c" name="%s_c" value="%s" onchange=setChecks("%s")>',$value['id'],$value['id'],$value['id'],"create");
 			$html .= sprintf('<label for="%s_c">%s</label>',$value['id'],$value['id']);
 			$html .= '<script type="text/javascript">setCheckBox("create","'.$value['id'].'");</script></td>';
-			$html .= sprintf('<td><input type="checkbox" id="%s_o" name="%s_o" value="%s" onchange=setChecks("%s")>',$value['id'],$value['id'],$value['id'],"overwrite");
+			$html .= sprintf('<td class="autogen-td"><input type="checkbox" id="%s_o" name="%s_o" value="%s" onchange=setChecks("%s")>',$value['id'],$value['id'],$value['id'],"overwrite");
 			$html .= sprintf('<label for="%s_o">%s</label>',$value['id'],$value['id']);
 			$html .= '<script type="text/javascript">setCheckBox("overwrite","'.$value['id'].'");</script></td>';
 			$HTML .= $html;
 			$HTML .= "</tr>\n";
 		}
-		$HTML .= '</table>';
-		$HTML .= '<br>';
-		$HTML .= '<table>';
+		$HTML .= "</tbody>\n";
+		$HTML .= "</table>\n";
+		$HTML .= "<br>\n";
+		$HTML .= "<table>\n";
 		$HTML .= '<tr valign="top"><td>Create The Following Definitions:<br><textarea id="create" name="create" rows=4 cols=80 readonly></textarea></td><tr>';
 		$HTML .= '<tr valign="top"><td>Overwrite The Following Definitions:<br><textarea id="overwrite" name="overwrite" rows=4 cols=80 readonly></textarea></td><tr>';
-		$HTML .= '</table>';
+		$HTML .= "</table>\n";
 
 		$HTML .= '<br/><input class="bttn" type="submit" name="userButtonPress" value="Submit">';
 		$HTML .= sprintf('<input type="hidden" id="option" name="option" value="%s">',$option);
-		$HTML .= '</form>'; 
+		$HTML .= "</form>\n"; 
 		return $HTML;
 	}
 
@@ -810,150 +812,144 @@ _HTML_;
 		return $HTML;
 	}
 
-	function createAutoParams()
+	function create_auto_params()
 	{
-	global $PHP_SELF, $_GET, $_POST;
+		$dropdown = $this->query_app_db("getmenuurls","");
+		$HTML = "<h3>Auto Generate Params</h3>";
 	
-	$dropdown = queryAppDB("getmenuurls","");
-	$HTML = "<h3>Auto Generate Params</h3>";
-	
-	if( isset($_GET['userButtonPress']) )
-	{	
-		$createlist = preg_split('/,/',$_GET['create']);
-		$overwritelist = preg_split('/,/',$_GET['overwrite']);
+		if( isset($_REQUEST['userButtonPress']) )
+		{	
+			$createlist = preg_split('/,/',$_REQUEST['create']);
+			$overwritelist = preg_split('/,/',$_REQUEST['overwrite']);
 		
-		if($createlist[0] != null)
-		{
-			foreach($createlist as $key => $value)
+			if($createlist[0] != null)
 			{
-				$result= createAutoParamDef($value);
-				$HTML .= sprintf('Auto ParamDef Created [<i><b>%s</b></i>] : %s<br>',$value,$result); 
+				foreach($createlist as $key => $value)
+				{
+					$result= $this->create_autoparam_def($value);
+					$HTML .= sprintf('Auto ParamDef Created [<i><b>%s</b></i>] : %s<br>',$value,$result); 
+				}
+			}
+			else
+			{
+				$HTML .= sprintf('Auto ParamDef Created [ zero(0) params to create selected]<br>'); 
+			}
+			$HTML .= "<hr>";
+			if($overwritelist[0] != null)
+			{
+				foreach($overwritelist as $key => $value)
+				{
+					$arr = $this->query_app_db("getmenuurl",$value);
+					$row = $arr[0];
+					$result = $result = $this->copy_autodef_to_defdir($row,PARAMDEFS,"paramdef");
+					$HTML .= sprintf('ParamDef Copy [<i><b>%s</b></i>] : %s<br><br>',$value,$result); 
+				}
+			}
+			else
+			{
+				$HTML .= sprintf('Auto ParamDef Created : [ zero(0) params to overwrite selected]<br>'); 
 			}
 		}
 		else
 		{
-			$HTML .= sprintf('Auto ParamDef Created [ zero(0) params to create selected]<br>'); 
+			$result = array();
+			$HTML .= $this->create_autogen_input_form($dropdown,$result,"createautoparams");
 		}
-		$HTML .= "<hr>";
-		if($overwritelist[0] != null)
-		{
-			foreach($overwritelist as $key => $value)
-			{
-				$arr = queryAppDB("getmenuurl",$value);
-				$row = $arr[0];
-				$result = $result = copyAutoDefToDefDir($row,PARAMDEFS,"paramdef");
-				$HTML .= sprintf('ParamDef Copy [<i><b>%s</b></i>] : %s<br><br>',$value,$result); 
-			}
-		}
-		else
-		{
-			$HTML .= sprintf('Auto ParamDef Created : [ zero(0) params to overwrite selected]<br>'); 
-		}
+		return $HTML;
 	}
-	else
-	{
-		$result = array();
-		$HTML .= createAutoGen_InputForm($dropdown,$result,"createautoparams");
-	}
-	return $HTML;
-}
 
-function createAutoForms()
-{
-	global $PHP_SELF, $_GET, $_POST;
+	function create_auto_forms()
+	{
+		$dropdown = $this->query_app_db("getmenuurls","");
+		$HTML = "<h3>Auto Generate Forms</h3>";
 	
-	$dropdown = queryAppDB("getmenuurls","");
-	$HTML = "<h3>Auto Generate Forms</h3>";
-	
-	if( isset($_GET['userButtonPress']) )
-	{	
-		$createlist = preg_split('/,/',$_GET['create']);
-		$overwritelist = preg_split('/,/',$_GET['overwrite']);
+		if( isset($_REQUEST['userButtonPress']) )
+		{	
+			$createlist = preg_split('/,/',$_REQUEST['create']);
+			$overwritelist = preg_split('/,/',$_REQUEST['overwrite']);
 		
-		if($createlist[0] != null)
-		{
-			foreach($createlist as $key => $value)
+			if($createlist[0] != null)
 			{
-				$result= createAutoFormDef($value);
-				$HTML .= sprintf('Auto FormDef Created [<i><b>%s</b></i>] : %s<br>',$value,$result); 
+				foreach($createlist as $key => $value)
+				{
+					$result= $this->create_autoform_def($value);
+					$HTML .= sprintf('Auto FormDef Created [<i><b>%s</b></i>] : %s<br>',$value,$result); 
+				}
+			}
+			else
+			{
+				$HTML .= sprintf('Auto FormDef Created [ zero(0) forms to create selected]<br>'); 
+			}
+			$HTML .= "<hr>";
+			if($overwritelist[0] != null)
+			{
+				foreach($overwritelist as $key => $value)
+				{
+					$arr = $this->query_app_db("getmenuurl",$value);
+					$row = $arr[0];
+					$result = $this->copy_autodef_to_defdir($row,FORMDEFS,"formdef");
+					$HTML .= sprintf('FormDef Copy [<i><b>%s</b></i>] : %s<br><br>',$value,$result); 
+				}
+			}
+			else
+			{
+				$HTML .= sprintf('Auto FormDef Created : [ zero(0) forms to overwrite selected]<br>'); 
 			}
 		}
 		else
 		{
-			$HTML .= sprintf('Auto FormDef Created [ zero(0) forms to create selected]<br>'); 
+			$result = array();
+			$HTML .= $this->create_autogen_input_form($dropdown,$result,"createautoforms");
 		}
-		$HTML .= "<hr>";
-		if($overwritelist[0] != null)
-		{
-			foreach($overwritelist as $key => $value)
-			{
-				$arr = queryAppDB("getmenuurl",$value);
-				$row = $arr[0];
-				$result = copyAutoDefToDefDir($row,FORMDEFS,"formdef");
-				$HTML .= sprintf('FormDef Copy [<i><b>%s</b></i>] : %s<br><br>',$value,$result); 
-			}
-		}
-		else
-		{
-			$HTML .= sprintf('Auto FormDef Created : [ zero(0) forms to overwrite selected]<br>'); 
-		}
+		return $HTML;
 	}
-	else
-	{
-		$result = array();
-		$HTML .= createAutoGen_InputForm($dropdown,$result,"createautoforms");
-	}
-	return $HTML;
-}
 
-function createAutoMVCs()
-{
-	global $PHP_SELF, $_GET, $_POST;
+	function create_auto_mvcs()
+	{
+		$dropdown = $this->query_app_db("getmenuurls","");
+		$HTML = "<h3>Auto Generate MVCs</h3>";
 	
-	$dropdown = queryAppDB("getmenuurls","");
-	$HTML = "<h3>Auto Generate MVCs</h3>";
-	
-	if( isset($_GET['userButtonPress']) )
-	{	
-		$createlist = preg_split('/,/',$_GET['create']);
-		$overwritelist = preg_split('/,/',$_GET['overwrite']);
+		if( isset($_REQUEST['userButtonPress']) )
+		{	
+			$createlist = preg_split('/,/',$_REQUEST['create']);
+			$overwritelist = preg_split('/,/',$_REQUEST['overwrite']);
 		
-		if($createlist[0] != null)
-		{
-			foreach($createlist as $key => $value)
+			if($createlist[0] != null)
 			{
-				$result= createAutoMVCDef($value);
-				$HTML .= sprintf('Auto MVCDef Created [<i><b>%s</b></i>] : %s<br>',$value,$result); 
+				foreach($createlist as $key => $value)
+				{
+					$result= $this->create_automvc_def($value);
+					$HTML .= sprintf('Auto MVCDef Created [<i><b>%s</b></i>] : %s<br>',$value,$result); 
+				}
+			}
+			else
+			{
+				$HTML .= sprintf('Auto MVCDef Created [ zero(0) create mvcs selected]<br>'); 
+			}
+			$HTML .= "<hr>";
+			if($overwritelist[0] != null)
+			{
+				foreach($overwritelist as $key => $value)
+				{
+					$arr = $this->query_app_db("getmenuurl",$value);
+					$row = $arr[0];
+					$result = $result = $this->copy_autodef_to_defdir($row,MVCDEFS,"mvcdef");
+					$HTML .= sprintf('MCVDef Copy [<i><b>%s</b></i>] : %s<br><br>',$value,$result); 
+				}
+			}
+			else
+			{
+				$HTML .= sprintf('Auto MVCDef Created : [ zero(0) overwrite mvcs selected]<br>'); 
 			}
 		}
 		else
 		{
-			$HTML .= sprintf('Auto MVCDef Created [ zero(0) create mvcs selected]<br>'); 
+			$result = array();
+			$HTML .= $this->create_autogen_input_form($dropdown,$result,"createautomvcs");
 		}
-		$HTML .= "<hr>";
-		if($overwritelist[0] != null)
-		{
-			foreach($overwritelist as $key => $value)
-			{
-				$arr = queryAppDB("getmenuurl",$value);
-				$row = $arr[0];
-				$result = $result = copyAutoDefToDefDir($row,MVCDEFS,"mvcdef");
-				$HTML .= sprintf('MCVDef Copy [<i><b>%s</b></i>] : %s<br><br>',$value,$result); 
-			}
-		}
-		else
-		{
-			$HTML .= sprintf('Auto MVCDef Created : [ zero(0) overwrite mvcs selected]<br>'); 
-		}
+		return $HTML;
 	}
-	else
-	{
-		$result = array();
-		$HTML .= createAutoGen_InputForm($dropdown,$result,"createautomvcs");
-	}
-	return $HTML;
-}
-
+	
 
 /// END AUTOGEN###########################################################
 
@@ -1153,6 +1149,305 @@ _TEXT_;
 		return $menu_txt."<br>".$result_txt."<br>";
 	}
 	
+	function create_autoparam_def($value)
+	{
+		$arr = $this->query_app_db("getmenuurl",$value);
+		$row = $arr[0];
+		$row = (array) $row;
+		$param_id = $row['id'];
+		$module = $row['module'];
+		$controller = $row['id'];
+		if (preg_match('/_/', $row['id']))
+		{
+			$ctrlarr = preg_split('/_/',$row['id']);
+			$controller = $ctrlarr[count($ctrlarr)-1];
+		}
+
+		$sysarr = $this->query_system_db("getsysconfig","");
+		$sysrow = $sysarr[0];
+		$sysrow = (array) $sysrow;
+		$BASE = $sysrow['autogendir'];
+		$dirname = $BASE.PARAMDEFS;
+		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		
+		$indexfield = $controller."_id";
+		$indexlabel = $this->ucfirst_sentence(str_replace("_"," ",sprintf("%s %s",$controller,"Id")));
+		$errormsgfile = $controller."_error";
+		$tab = $controller."s"; $tab_is = $controller."s_is"; $tab_hs = $controller."s_hs";
+		$appheader = $this->ucfirst_sentence($controller);
+		$date = date("YmdHis");
+	
+		$XMLHEADER = "<?xml version='1.0' standalone='yes'?>\n";
+		$TEXT1 =<<<_TEXT_
+<paramdef>
+<id>$controller (autogen $date)</id>
+<columns>
+	<column><field>param_id</field><value>$param_id</value></column>
+	<column><field>controller</field><value>$controller</value></column>
+ 	<column><field>dflag</field><value>Y</value></column>
+	<column><field>module</field><value>$module</value></column>
+  	<column><field>auth_mode_on</field><value>1</value></column>
+  	<column><field>index_field_on</field><value>1</value></column>
+  	<column><field>indexview</field><value>default_index</value></column>
+  	<column><field>viewview</field><value>default_view</value></column>
+  	<column><field>inputview</field><value>default_input</value></column>
+  	<column><field>authorizeview</field><value>default_authorize</value></column>
+  	<column><field>deleteview</field><value>default_delete</value></column>
+  	<column><field>enquiryview</field><value>default_enquiry</value></column>
+  	<column><field>indexfield</field><value>$indexfield</value></column>
+	<column><field>indexfieldvalue</field><value></value></column>
+  	<column><field>indexlabel</field><value>$indexlabel</value></column>
+  	<column><field>appheader</field><value>$appheader</value></column>
+  	<column><field>primarymodel</field><value>Model_SiteDB</value></column>
+  	<column><field>tb_live</field><value>$tab</value></column>
+  	<column><field>tb_inau</field><value>$tab_is</value></column>
+  	<column><field>tb_hist</field><value>$tab_hs</value></column>
+  	<column><field>errormsgfile</field><value>$errormsgfile</value></column>
+</columns>
+</paramdef>
+_TEXT_;
+	$XML = $XMLHEADER.$TEXT1;
+	
+		$res = 0;
+		$filename = $dirname.$param_id.".paramdef.xml";
+		if ($handle = fopen($filename, 'w')) 
+		{
+			fwrite($handle, $XML);
+			fclose($handle);
+			$res = 1;
+		}
+		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+		$result_txt = sprintf('[ <span class="%s">%s</span> => File Created ( %s ) ]',$class,$RESTXT,$filename);
+		return $result_txt;
+	}
+
+	function create_autoform_def($value)
+	{
+		$TEXT1=""; $TEXT2 = "";
+		$arr = $this->query_app_db("getmenuurl",$value);
+		$row = (array) $arr[0];
+		$param_id = $row['id'];
+		$module = $row['module'];
+		$controller = $row['id'];
+		if (preg_match('/_/', $row['id']))
+		{
+			$ctrlarr = preg_split('/_/',$row['id']);
+			$controller = $ctrlarr[count($ctrlarr)-1];
+		}
+	
+		$sysarr = $this->query_system_db("getsysconfig","");
+		$sysrow = (array) $sysarr[0];
+		$BASE = $sysrow['autogendir'];
+		$dirname = $BASE.FORMDEFS;
+		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+
+		$indexlabel = $this->ucfirst_sentence(str_replace("_"," ",sprintf("%s %s",$controller,"Id")));
+		$errormsgfile = $controller."_error";
+		$tab = $controller."s"; $tab_is = $controller."s_is"; $tab_hs = $controller."s_hs";
+		$appheader = $this->ucfirst_sentence($controller);
+		$date = date("YmdHis");
+	
+		$XMLHEADER = "<?xml version='1.0' standalone='yes'?>\n";
+		$TEXT1 =<<<_TEXT_
+<formdef>
+<id>$param_id (autogen $date)</id>
+<controller>$controller</controller>
+<module>$module</module>
+<formfields>
+_TEXT_;
+		$tablename = $controller."s";
+		$res = 0;
+		if ($this->app_table_exist($tablename))
+		{
+			$querystr = sprintf('describe %s',$tablename);
+			$result = $this->sitedb->execute_select_query($querystr);
+			foreach($result as $row) 
+			{
+				$row = (array) $row;
+				if($row['Field'] == 'id')
+				{
+					$TEXT2 .="\n\t<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n";
+				}
+				else if($row['Field'] == 'comments')
+				{
+					$TEXT2 .="\t<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n";
+				}
+				else if($row['Field'] == 'inputter')
+				{
+					break;
+				}
+				else
+				{
+					$label = str_replace("_"," ",$row['Field']);
+					$label = $this->ucfirst_sentence($label);
+					$type = "input"; $option = "size=50";
+					if (preg_match('/date/i', $row['Field']))
+					{
+						$type = "date";
+						$option = "size=12 maxlength=10 onFocus=sidefunc.Update(%FUNC%,%PARAMFLD%,%SFFORMAT%) onKeyUp=sidefunc.Update(%FUNC%,%PARAMFLD%,%SFFORMAT%)";
+					}
+					$TEXT2 .= sprintf("\t<field><name>%s</name><label>%s</label><type>%s</type><value></value><options>%s</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n",$row['Field'],$label,$type,$option);
+				}
+			}
+			$TEXT2 .= "</formfields>\n</formdef>\n";
+			$XML = $XMLHEADER.$TEXT1.$TEXT2;
+		
+			$filename = $dirname.$param_id.".formdef.xml";
+			if ($handle = fopen($filename, 'w')) 
+			{
+				fwrite($handle, $XML);
+				fclose($handle);
+				$res = 1;
+			}
+		}
+		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+		$result_txt = sprintf('[ <span class="%s">%s</span> => Formdef Created ( %s ) ]',$class,$RESTXT,$res);
+		return $result_txt;
+	}
+	
+	function create_automvc_def($value)
+	{
+		$arr = $this->query_app_db("getmenuurl",$value);
+		$row = (array) $arr[0];
+		$param_id = $row['id'];
+		$module = $row['module'];
+		$target	= str_replace("/ ","/",ucwords(str_replace("_","/ ",$param_id)));
+
+		$sysarr = $this->query_system_db("getsysconfig","");
+		$sysrow = (array) $sysarr[0];
+		$BASE = $sysrow['autogendir'];
+		$dirname = $BASE.MVCDEFS;
+		$ctrldir = $BASE.FORMDIR;
+		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+
+		$ctrl_srcfile= $ctrldir.$param_id.".controller.php";
+		$date = date("YmdHis");
+		$XMLHEADER = "<?xml version='1.0' standalone='yes'?>\n";
+		$TEXT1 =<<<_TEXT_
+<mvc>
+<id>$param_id (autogen $date)</id>
+<controllers>
+	<controller><src>$ctrl_srcfile</src><target>application/classes/Controller/$target.php</target></controller>
+</controllers>
+<models>
+	<model><src></src><target></target></model>
+</models>
+<views>
+	<view><src></src><target></target></view>
+</views>
+<files>
+	<file><src></src><target></target></file>
+</files>
+</mvc>
+_TEXT_;
+		$XML = $XMLHEADER.$TEXT1;
+	
+		$res = 0;
+		$filename = $dirname.$param_id.".mvcdef.xml";
+		if ($handle = fopen($filename, 'w')) 
+		{
+			fwrite($handle, $XML);
+			fclose($handle);
+			$res = 1;
+		}
+		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+		$result_txt = sprintf('[ <span class="%s">%s</span> => MVCdef Created ( %s ) ]',$class,$RESTXT,$res);
+		$ctrl_txt = $this->create_controller($value);
+		return $result_txt.$ctrl_txt;
+	}
+
+	function create_controller($value)
+	{
+		$arr = $this->query_app_db("getmenuurl",$value);
+		$row = (array) $arr[0];
+		$param_id = $row['id'];
+		$module = $row['module'];
+		$controller = $row['id'];
+		$js_file	= $row['id'];
+		if (preg_match('/_/', $row['id']))
+		{
+			$ctrlarr = preg_split('/_/',$row['id']);
+			$controller = $ctrlarr[count($ctrlarr)-1];
+			$js_file = $ctrlarr[0].".".$ctrlarr[count($ctrlarr)-1];
+		}
+		$classname	= "Controller_".str_replace("_ ","_",ucwords(str_replace("_","_ ",$param_id)));
+		$controller_file = ucfirst($controller).".php";
+		$alt_id		= $controller."_id";	
+		$timestamp	= date("Y-m-d H:i:s");
+		$year		= date("Y");
+		
+		$sysarr	= $this->query_system_db("getsysconfig","");
+		$sysrow	= (array) $sysarr[0];
+		$BASE = $sysrow['autogendir'];
+		$dirname = $BASE.FORMDIR;
+		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		
+		$TEXT =<<<_TEXT_
+<?php defined('SYSPATH') or die('No direct script access.');
+/**
+ * <insert controller description>. 
+ *
+ * \$Id: $controller_file $timestamp dnesbit \$
+ *
+ * @package		Halaya Core
+ * @module	    core
+ * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
+ * @copyright   (c) $year
+ * @license      
+ */
+class $classname extends Controller_Core_Site
+{
+	public function __construct()
+    {
+		parent::__construct('$controller');
+		// \$this->param['htmlhead'] .= \$this->insert_head_js();
+	}	
+		
+	public function action_index()
+    {
+		\$this->param['indexfieldvalue'] = strtoupper( \$this->request->param('opt') );
+		\$this->process_index();
+	}
+	
+	function insert_head_js()
+	{
+		return HTML::script( \$this->randomize('media/js/$js_file.js') );
+	}
+
+	function input_validation()
+	{
+		\$post = \$_POST;	
+		//validation rules
+		array_map('trim',\$post);
+		\$validation = new Validation(\$post);
+		\$validation
+			->rule('id','not_empty')
+			->rule('id','numeric');
+		\$validation
+			->rule('$alt_id','not_empty')
+			->rule('$alt_id','min_length', array(':value', 16))->rule('$alt_id','max_length', array(':value', 16))
+			->rule('$alt_id', array(\$this,'duplicate_altid'), array(':validation', ':field', \$_POST['id'], \$_POST['$alt_id']));
+			
+		\$this->param['isinputvalid'] = \$validation->check();
+		\$this->param['validatedpost'] = \$validation->data();
+		\$this->param['inputerrors'] = (array) \$validation->errors(\$this->param['errormsgfile']);
+	}
+} //End $classname
+_TEXT_;
+
+		$res = 0;
+		$filename = $dirname.$param_id.".controller.php";
+		if ($handle = fopen($filename, 'w')) 
+		{
+			fwrite($handle, $TEXT);
+			fclose($handle);
+			$res = 1;
+		}
+		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+		$result_txt = sprintf('[ <span class="%s">%s</span> => Controller Created ( %s ) ]',$class,$RESTXT,$res);
+		return $result_txt;
+	}
+
 	function rebuild_menutree($parent,$left)
 	{
 		// the right value of this node is the left value + 1 
@@ -1516,5 +1811,108 @@ _TEXT_;
 		}
 	}
 
+	function query_app_db($queryopt,$var,&$showquery="")
+	{
+		$querystr = "";
+
+		switch($queryopt)
+		{
+			case "users":
+				$querystr = sprintf('SELECT * FROM users');
+				$res = $this->sitedb->execute_select_query($querystr);
+				return $res;
+			break;
+		
+			case "tabledef":
+				$tablecount = 0; $i=0;
+				foreach ($var as $row)
+				{
+					if($i == 0){$showquery = $row['sql_show'];}
+					$tab_create = $row['tab_create'];
+					if (stristr('yes', $tab_create) || $tab_create == 1) 
+					{
+						$querystr .= $row['sql_drop'].$row['sql_create'];
+						$tablecount++;
+					}
+					$i++;
+				}
+				$res = $this->sitedb->execute_insert_query($querystr);
+				sleep(SLEEPTIME);
+				if($res !== FALSE)
+				{
+					return $tablecount;
+				}
+			break;
+
+			case "tableshow":
+				$querystr = $showquery;
+				$tablecount = $var;
+				$arr = $this->show_from_app_db($querystr,$rescount);
+				if($tablecount == $rescount && $tablecount > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+				$format="";
+				if($rescount == 3){$format = '%s, %s, %s';}else if($rescount == 2){$format = '%s, %s';}else if($rescount == 1){$format = '%s';}
+				$tables = vsprintf($format,$arr);	
+				$result_txt = sprintf('[ <span class="%s">%s</span> => Count(%s), Success Installed(%s), Tables(%s) ]',$class,$RESTXT,$tablecount,$rescount,$tables);
+				return $result_txt;
+			break;
+
+			case "paramdef":
+				foreach ($var as $row)
+				{
+					$querystr .= $row['sql_code'];
+				}	
+				$reccount = $this->sitedb->execute_insert_query($querystr);
+				if($reccount !== FALSE && $reccount > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+				$result_txt = sprintf('[ <span class="%s">%s</span> => Records Uploaded(%s) ]',$class,$RESTXT,$reccount);
+				return $result_txt;
+			break;
+
+			case "formdef":
+				foreach ($var as $row)
+				{
+					$querystr .= $row['sql_code'];
+				}	
+				$querystr = str_replace("%XMLHEADER%",XMLHEADER, $querystr); 
+				$reccount = $this->sitedb->execute_insert_query($querystr);
+				if($reccount !== FALSE && $reccount > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+				$result_txt = sprintf('[ <span class="%s">%s</span> => Records Uploaded(%s) ]',$class,$RESTXT,$reccount);
+				return $result_txt;
+			break;
+			
+			case "menudef":
+				foreach ($var as $row)
+				{
+					$querystr .= $row['sql_code'];
+				}	
+				$reccount = $this->sitedb->execute_insert_query($querystr);
+				if($reccount !== FALSE && $reccount > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+				$result_txt = sprintf('[ <span class="%s">%s</span> => Records Uploaded(%s) ]',$class,$RESTXT,$reccount);
+				return $result_txt;
+			break;
+
+			case "updatedef":
+				foreach ($var as $row)
+				{
+					$querystr .= $row['sql_code'];
+				}	
+				$reccount = $this->sitedb->execute_insert_query($querystr);
+				if($reccount !== FALSE && $reccount > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
+				$result_txt = sprintf('[ <span class="%s">%s</span> => Records Uploaded(%s) ]',$class,$RESTXT,$reccount);
+				return $result_txt;
+			break;
+			
+			case "getmenuurls":
+				$querystr = sprintf('SELECT url_input as id,module FROM menudefs where node_or_leaf="L" AND (url_input !="" || url_input !=NULL) ORDER BY url_input;');
+				$res = $this->sitedb->execute_select_query($querystr);
+				return $res;	
+			break;
+
+			case "getmenuurl":
+				$querystr = sprintf("SELECT url_input as id,module FROM menudefs WHERE url_input='%s'",$var);
+				$res = $this->sitedb->execute_select_query($querystr);
+				return $res;
+			break;
+		}
+	}
 }
 ?>

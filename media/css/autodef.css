@@ -30,3 +30,7 @@ a:hover {color:red; font-size: 9pt; font-style: normal; font-weight: 100; text-d
 .fail {color:red; font-size: 10pt; font-style: normal; font-weight: bold;}
 .pass {color:green; font-size: 10pt; font-style: normal; font-weight: bold;}
 hr {font-weight: normal; border-width: 1px; border-color: black;}
+
+.autogen-table {width:100%; border-width: 1px; border-spacing: 2px; border-style: outset; border-color: gray; border-collapse: collapse; }
+.autogen-th { border:1px solid gray; border-collapse: collapse; padding: 5px 0px 5px 10px; background-color:#000066; color: white; font-size: 1em; text-align: left; }
+.autogen-td { border:1px solid gray; border-collapse: collapse; padding: 2px 4px 2px 4px; background-color: tranparent; text-align: left; }
