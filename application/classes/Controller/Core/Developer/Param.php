@@ -41,5 +41,16 @@ class Controller_Core_Developer_Param extends Controller_Core_Site
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
+	
+	public function insert_sys_autoid_startnum()
+	{
+		$querystr = sprintf('INSERT INTO _sys_auto(tb_inau,counter) VALUES("%s","%s");', $_POST['tb_inau'], "1001");
+		$this->param['primarymodel']->execute_insert_query($querystr);
+	}
+
+	public function authorize_post_insert_new_record()
+	{
+		$this->insert_sys_autoid_startnum()
+	}
 
 }//End Controller_Core_Developer_Param

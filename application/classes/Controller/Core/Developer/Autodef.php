@@ -1,4 +1,4 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
 /**
  * Controller definitions builder and installer tool. 
  *
@@ -11,7 +11,6 @@
  * @license      
  */
 
-define("SLEEPTIME",2);
 define("INPUTTER","IMPLEMENTATION");
 define("RECORDSTATUS","INAU");
 define("XMLHEADER","<?xml version=\'1.0\' standalone=\'yes\'?>");	
@@ -34,7 +33,13 @@ class Controller_Core_Developer_Autodef extends Controller_Include
 	
 	public function before()
     {
-		$this->sitedb = new Model_SiteDB;
+		if(!Auth::instance()->logged_in())
+		{
+			Controller_Core_Site::redirect_to_login();
+		}
+		$this->sitedb	= new Model_SiteDB;
+		$config = Kohana::$config->load('database')->get('default');
+		$this->DATABASE = $config['connection']['database'];
 	}
 
 	public function action_index()
@@ -252,7 +257,7 @@ _HTML_;
 			break;
 
 			case "defstatus":
-				//$RESULT = $this->definition_status();
+				$RESULT = $this->definition_status();
 			break;
 	
 			case "definstall":
@@ -520,6 +525,652 @@ _HTML_;
 		$HTML .= sprintf('<input type="text" name="approotpath" size="50" maxlength="1024" value="%s"/>(Application Root Directory)<br/>',$path);
 		$HTML .= '<br/><input class="bttn" type="submit" name="userButtonPress" value="Submit">';
 		$HTML .= '<input type="hidden" name="option" value="setapprootdir">';
+		$HTML .= '</form>'; 
+		return $HTML;
+	}
+
+	function definition_status()
+	{
+		$WRITEPATH = ""; 
+		$this->defs = array(); 
+		$files = ""; $tabledef_sql = ""; $formdef_sql = ""; $paramdef_sql = ""; $menudef_sql = "";
+		$this->defs['table']	= false; $this->defs['form']	= false; $this->defs['param']	= false; 
+		$this->defs['menu']		= false; $this->defs['update']	= false; $this->defs['mvc']		= false;
+		$current_date = date("Y-m-d H:m:s");
+
+		$HTML = "<h3>Definitions Status</h3>";
+		$sysarr = $this->query_system_db("getsysconfig","");
+		$sysrow = (array) $sysarr[0];
+	
+		//current defintion
+		$dirname = $sysrow['module']."/".$sysrow['activedef'];
+		$HTML .= sprintf('<table width=98%s class="adi_table">',"%")."\n";
+		$desc = 'Current Definition';
+		$val = $dirname; $class="pass"; $stat = "";
+		$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+
+		//check for definition files
+		$path = $sysrow['defdir'];
+		if(is_dir($path))
+		{
+			$desc = 'Module Root Directory';
+			$val = $path; $class = "pass"; $stat = "PASS";
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+	
+			$files['table'] = $val = "$path/$dirname/tabledef.xml";
+			$desc = 'Definition Exist [<i>table</i>]';
+			if(file_exists($val)){$class = "pass"; $stat = "PASS"; $this->defs['table'] = true;}else{$class = "fail"; $stat = "FAIL";}
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+			
+			$files['menu'] = $val = "$path/$dirname/menudef.xml";
+			$desc = 'Definition Exist [<i>menu</i>]';
+			if(file_exists($val)){$class = "pass"; $stat = "PASS"; $this->defs['menu'] = true;}else{$class = "fail"; $stat = "FAIL";}
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+
+			$files['param'] = $val = "$path/$dirname/paramdef.xml";
+			$desc='Definition Exist [<i>param</i>]';
+			if(file_exists($val)){$class = "pass"; $stat = "PASS"; $this->defs['param'] = true;}else{$class = "fail"; $stat = "FAIL";}
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+
+			$files['form'] = $val = "$path/$dirname/formdef.xml";
+			$desc = 'Definition Exist [<i>form</i>]';
+			if(file_exists($val)){$class = "pass"; $stat = "PASS"; $this->defs['form'] = true;}else{$class = "fail"; $stat = "FAIL";}
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+	
+			$files['mvc'] = $val = "$path/$dirname/mvcdef.xml";
+			$desc = 'Definition Exist [<i>mvc</i>]';
+			if(file_exists($val)){$class = "pass"; $stat = "PASS"; $this->defs['mvc'] = true;}else{$class = "fail"; $stat = "FAIL";}
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+	
+			$files['update'] = $val = "$path/$dirname/update.xml";
+			$desc = 'SQL Script Exist [<i>update</i>]';
+			if(file_exists($val)){$class = "pass"; $stat = "PASS"; $this->defs['update'] = true;}else{$class = "fail"; $stat = "FAIL";}
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+		}
+		else
+		{
+			$desc = 'Module Root Directory';
+			$val = ""; $class = "fail"; $stat = "FAIL";
+			$HTML .= sprintf('<tr><td class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+		}
+		$HTML .= "</table>"."\n";	
+		$HTML .= "<br><hr><br>";
+	
+		if($this->defs['table'])
+		{
+			$HTML .= sprintf('<table width=98%s class="adi_table">',"%")."\n";
+			try
+				{
+					//check for required fields in xml file
+					$xml = file_get_contents($files['table']);
+					$tabledef = new SimpleXMLElement($xml);
+					$SQL_LIVE = ""; $SQL_INAU = ""; $SQL_HIST = ""; $UKEY_LIVE = ""; $UKEY_INAU = "";
+
+					$desc = 'Definition Loaded [<i>table</i>]';
+					$val = ""; $class = "pass"; $stat = "PASS";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>id</i>]';
+					if($tabledef->id) {$val=$tabledef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+		
+					$desc = 'Field Exist [<i>tablename</i>]';
+					if($tabledef->tablename) {$val=$tabledef->tablename; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$tab = $tabledef->tablename;			$SQL_LIVE .= sprintf('CREATE TABLE `%s` (',$tab);	$SQL_DROP_LIVE = sprintf('DROP TABLE IF EXISTS `%s`;',$tab)."\n";; $SQL_SHOW_LIVE = sprintf('SHOW TABLES WHERE tables_in_%s LIKE "%s%s";',$this->DATABASE,$tab,"%")."\n";;
+					$tab_is = $tabledef->tablename."_is";	$SQL_INAU .= sprintf('CREATE TABLE `%s` (',$tab_is); $SQL_DROP_INAU = sprintf('DROP TABLE IF EXISTS `%s`;',$tab_is)."\n";; $SQL_SHOW_INAU = sprintf('SHOW TABLES WHERE tables_in_%s LIKE "%s%s";',$this->DATABASE,$tab_is,"%")."\n";;
+					$tab_hs = $tabledef->tablename."_hs";	$SQL_HIST .= sprintf('CREATE TABLE `%s` (',$tab_hs); $SQL_DROP_HIST = sprintf('DROP TABLE IF EXISTS `%s`;',$tab_hs)."\n";; $SQL_SHOW_HIST = sprintf('SHOW TABLES WHERE tables_in_%s LIKE "%s%s";',$this->DATABASE,$tab_hs,"%")."\n";;
+				
+					$desc = 'Field Exist [<i>livecreate</i>]';
+					if($tabledef->livecreate) {$val=$tabledef->livecreate; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>histcreate</i>]';
+					if($tabledef->histcreate) {$val=$tabledef->histcreate; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>inaucreate</i>]';
+					if($tabledef->inaucreate) {$val = $tabledef->inaucreate; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>columns</i>]';
+					if($tabledef->columns) {$val=$tabledef->columns; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat="FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,trim($val),$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>primarykey</i>]';
+					if($tabledef->primarykey) {$val=$tabledef->primarykey; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat="FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+
+					$desc = 'Field Exist [<i>uniquekeys</i>]';
+					if($tabledef->uniquekeys) {$val=$tabledef->uniquekeys; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,trim($val),$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>engine</i>]';
+					if($tabledef->engine) {$val=$tabledef->engine; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$HTML .= "</table>"."\n";
+					$HTML .= "<br>";
+				
+					//check for valid unique keys in xml file
+					$HTML .= sprintf('<table width=98%s class="adi_table">',"%")."\n";
+					$ukeyname="<b>unique key name</b>"; $ukeycol="<b>unique key column</b>"; $stat = "";
+					$HTML .= sprintf('<tr><td  class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$ukeyname,$ukeycol,$class,$stat)."\n";
+					foreach ($tabledef->uniquekeys->uniquekey as $column)
+					{			
+						if($column->ukeyname && $column->ukeycol){$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+						$ukeyname=$column->ukeyname; $ukeycol=$column->ukeycol;
+						$HTML .= sprintf('<tr><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$ukeyname,$ukeycol,$class,$stat)."\n";
+						$UKEY_LIVE .= sprintf(',UNIQUE KEY `%s` (`%s`)',$ukeyname,$ukeycol);
+						$UKEY_INAU .= sprintf(',UNIQUE KEY `%s` (`%s`)',$ukeyname,$ukeycol);
+					}
+					$HTML .= "</table>"."\n";
+					$HTML .= "<br>";
+
+					//check for valid columns in xml file
+					$HTML .= sprintf('<table width=98%s class="adi_table">',"%")."\n";
+					$colname="<b>column name</b>"; $coltype = "<b>column type</b>"; $colopts = "<b>column opts</b>"; $stat = "";
+					$HTML .= sprintf('<tr><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$colname,$coltype,$colopts,$class,$stat)."\n";
+					foreach ($tabledef->columns->column as $column)
+					{			
+						if($column->colname && $column->coltype && $column->colopts){$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['table']=0;}
+						$colname=$column->colname; $coltype=$column->coltype; $colopts=$column->colopts;
+						$HTML .= sprintf('<tr><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$colname,$coltype,$colopts,$class,$stat)."\n";
+						$SQL_LIVE .= sprintf('`%s` %s %s,',$colname,$coltype,$colopts);
+						$SQL_HIST .= sprintf('`%s` %s %s,',$colname,$coltype,$colopts);
+						$colopts = str_replace("NOT NULL","DEFAULT NULL", $colopts); 
+						$SQL_INAU .= sprintf('`%s` %s %s,',$colname,$coltype,$colopts);
+					}
+					$HTML .= "</table>";
+					$HTML .= "<br>";
+				
+					//build create table SQL
+					$SQL_INAU = str_replace("`id` int(11) unsigned DEFAULT NULL","`id` int(11) unsigned NOT NULL AUTO_INCREMENT",$SQL_INAU);
+					$AUDIT_FIELDS_INAU ="`inputter` varchar(50) DEFAULT NULL,`input_date` datetime DEFAULT NULL,`authorizer` varchar(50) DEFAULT NULL,`auth_date` datetime DEFAULT NULL,`record_status` char(4) DEFAULT NULL,`current_no` int(11) DEFAULT NULL,";
+					$AUDIT_FIELDS_LIVE ="`inputter` varchar(50) NOT NULL,`input_date` datetime NOT NULL,`authorizer` varchar(50) NOT NULL,`auth_date` datetime NOT NULL,`record_status` char(4) NOT NULL,`current_no` int(11) NOT NULL,";
+					$AUDIT_FIELDS_HIST = $AUDIT_FIELDS_LIVE;
+
+					$PKEY_LIVE = "PRIMARY KEY (`id`)";
+					$PKEY_INAU = "PRIMARY KEY (`id`)";
+					$PKEY_HIST = "PRIMARY KEY (`id`,`current_no`)";
+				
+					$ENGN_HIST = $ENGN_INAU = $ENGN_LIVE = ") ".$tabledef->engine;
+			
+					$SQL_LIVE .= $AUDIT_FIELDS_LIVE.$PKEY_LIVE.$UKEY_LIVE.$ENGN_LIVE.";\n";
+					$SQL_HIST .= $AUDIT_FIELDS_HIST.$PKEY_HIST.$ENGN_HIST.";\n";
+					$SQL_INAU .= $AUDIT_FIELDS_INAU.$PKEY_INAU.$UKEY_INAU.$ENGN_INAU.";\n";
+							
+					$tabledef_sql['live'] = array('tab_create'=>sprintf('%s',$tabledef->livecreate),'sql_drop'=>$SQL_DROP_LIVE,'sql_create'=>$SQL_LIVE,'sql_show'=>$SQL_SHOW_LIVE);
+					$tabledef_sql['inau'] = array('tab_create'=>sprintf('%s',$tabledef->inaucreate),'sql_drop'=>$SQL_DROP_INAU,'sql_create'=>$SQL_INAU,'sql_show'=>$SQL_SHOW_INAU);
+					$tabledef_sql['hist'] = array('tab_create'=>sprintf('%s',$tabledef->histcreate),'sql_drop'=>$SQL_DROP_HIST,'sql_create'=>$SQL_HIST,'sql_show'=>$SQL_SHOW_HIST);
+					$count = $this->query_system_db("settabledef",$tabledef_sql);
+
+					$HTML .= sprintf('<table width=98%s class="adi_table">',"%")."\n";
+					$table = "<b>table</b>"; $sql="<b>sql</b>";
+					$HTML .= sprintf('<tr valign=top><td class="adi_tts">%s</td><td class="adi_tts">%s</td></tr>',$table,$sql)."\n";
+					$table = "$tab";
+					$HTML .= sprintf('<tr valign=top><td class="adi_tts">%s</td><td class="adi_tts">%s</td></tr>',$table,$SQL_LIVE)."\n";
+					$table = "$tab_is";
+					$HTML .= sprintf('<tr valign=top><td class="adi_tts">%s</td><td class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
+					$table = "$tab_hs";
+					$HTML .= sprintf('<tr valign=top><td class="adi_tts">%s</td><td class="adi_tts">%s</td></tr>',$table,$SQL_HIST)."\n";
+				}
+			catch (Exception $e) 
+				{
+					$desc = 'Definition Loaded [<i>table</i>]';
+					$val = $e->getMessage(); $class="fail"; $stat="FAIL";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$this->defs['table']=0;
+				}
+			$HTML .= "</table>";
+			$HTML .= "<br><hr><br>";
+
+		}
+	
+		if($this->defs['menu'])
+		{
+			$HTML .= sprintf('<table width=98%s class="adi_table" >',"%")."\n";
+			try
+				{
+					$xml = file_get_contents($files['menu']);
+					$menudef = new SimpleXMLElement($xml);
+					$SQL_INAU="";$fields="";$values="";$table="menudefs_is";
+				
+					$desc='Definition Loaded [<i>menu</i>]';
+					$val=""; $class="pass"; $stat="PASS";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc='Field Exist [<i>id</i>]';
+					if($menudef->id) {$val=$menudef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['menu']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";	
+					$fields=""; $values="";
+					foreach ($menudef->menus->menu as $menu)
+					{			
+						if($menu->menu_id && $menu->parent_id && $menu->sortpos && $menu->node_or_leaf && $menu->module && 
+						$menu->label_input && $menu->label_enquiry && $menu->url_input && $menu->url_enquiry && $menu->controls_input && $menu->controls_enquiry)
+						{$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['menu']=0; break;}
+						if($menu->id) 
+						{
+							$values .= "(\"".$menu->id."\", "."\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
+							$fields = "(`id`, `menu_id`, `parent_id`, `sortpos`, `node_or_leaf`, `module`, `label_input`, `label_enquiry`, `url_input`, `url_enquiry`, `controls_input`, `controls_enquiry`,`inputter`, `input_date`, `record_status`, `current_no`) "; 
+						}
+						else
+						{
+							$values .= "(\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
+							$fields = "(`menu_id`,`parent_id`,`sortpos`,`node_or_leaf`,`module`,`label_input`,`label_enquiry`,`url_input`,`url_enquiry`,`controls_input`,`controls_enquiry`,`inputter`,`input_date`,`record_status`,`current_no`) "; 
+						}
+						$values .= sprintf('"%s", "%s", "%s", "0"),',INPUTTER,$current_date,RECORDSTATUS);
+					}
+					$values = substr_replace($values, '', -1);
+					$SQL_INAU .= sprintf('INSERT INTO `%s` %s VALUES %s;',$table,$fields,$values);
+					$desc='Columns Loaded [<i>menu</i>]'; $val=""; 
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$menudef_sql['insert_inau'] = array('sql_code'=>$SQL_INAU);
+					$count = $this->query_system_db("setmenudef",$menudef_sql);
+					$HTML .= sprintf('<tr valign=top><td  class="adi_tts">%s</td><td colspan=2 class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
+				}
+			catch (Exception $e) 
+				{
+					$desc='Definition Loaded [<i>menu</i>]';
+					$val=$e->getMessage(); $class = "fail"; $stat = "FAIL";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$this->defs['menu']=0;
+				}
+			$HTML .= "</table>";
+			$HTML .= "<br><hr><br>";
+		}
+	
+		if($this->defs['param'])
+		{
+			$HTML .= sprintf('<table width=98%s class="adi_table" >',"%")."\n";
+			try
+				{
+					$xml = file_get_contents($files['param']);
+					$paramdef = new SimpleXMLElement($xml);
+					$SQL_INAU="";$fields="";$values="";$table="params_is";
+				
+					$desc = 'Definition Loaded [<i>param</i>]';
+					$val = ""; $class = "pass"; $stat = "PASS";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>id</i>]';
+					if($paramdef->id) {$val=$paramdef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['param']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+		
+					foreach ($paramdef->columns->column as $column)
+					{			
+						if( $column->field && $column->value){$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['param']=0; break;}
+						$fields .= $column->field.", "; $values .= "\"".$column->value."\", ";
+					}
+					$desc = 'Columns Loaded [<i>param</i>]'; $val=""; 
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					//remove comma and space at end of string
+					//$fields = substr_replace($fields, '', -2); $values = substr_replace($values, '', -2);
+					//add audit data
+					$fields .= sprintf('inputter,input_date,record_status,current_no'); 
+					$values .= sprintf('"%s", "%s", "%s", "0"',INPUTTER,$current_date,RECORDSTATUS);
+				
+					$SQL_INAU = sprintf('INSERT INTO %s (%s) VALUES(%s);',$table,$fields,$values);
+					$paramdef_sql['insert_inau'] = array('sql_code'=>$SQL_INAU);
+					$count = $this->query_system_db("setparamdef",$paramdef_sql);
+					$HTML .= sprintf('<tr valign=top><td class="adi_tts">%s</td><td colspan=2 class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
+				}
+			catch (Exception $e) 
+				{
+					$desc='Definition Loaded [<i>param</i>]';
+					$val=$e->getMessage(); $class = "fail"; $stat = "FAIL";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$this->defs['param']=0;
+				}
+			$HTML .= "</table>"."\n";
+			$HTML .= "<br><hr><br>";
+		}
+		
+		if($this->defs['form'])
+		{
+			$HTML .= sprintf('<table width=98%s class="adi_table" >',"%")."\n";
+			try
+				{
+					$xml = file_get_contents($files['form']);
+					$formdef = new SimpleXMLElement($xml);
+					$SQL_INAU = ""; $FORM_FIELDS = ""; $fields = "";$values = ""; $table = "params_is";
+								
+					$desc='Definition Loaded [<i>form</i>]';
+					$val=""; $class="pass"; $stat="PASS";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+								
+					$desc = 'Field Exist [<i>id</i>]';
+					if($formdef->id) {$val=$formdef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['form']=0;}
+					$tmpid = preg_split('/ /',$val); $id = $tmpid[0];
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+						
+					$desc = 'Field Exist [<i>id</i>]';
+					if($formdef->controller) {$val = $formdef->controller; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['form']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>module</i>]';
+					if($formdef->module) {$val=$formdef->module; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['form']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc='Field Exist [<i>formfields</i>]';
+					if($formdef->formfields) {$val=$formdef->formfields; $class="pass"; $stat="PASS";}else{$val=""; $class="fail"; $stat="FAIL"; $this->defs['form']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+								
+					$FORM_FIELDS .= "%XMLHEADER%"."\n";
+					$FORM_FIELDS .= '<formfields>'."\n";
+			
+					foreach ($formdef->formfields->field as $column)
+					{			
+						if($column->name && $column->label && $column->type && $column->value && $column->options && $column->onnew && $column->onedit)
+						{$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['form']=0; break;}
+						$FORM_FIELDS .= "\t".sprintf('<field><name>%s</name><label>%s</label><type>%s</type><value>%s</value><options>%s</options><onnew>%s</onnew><onedit>%s</onedit></field>',$column->name,$column->label,$column->type,$column->value,$column->options,$column->onnew,$column->onedit)."\n";;
+					}
+					$FORM_FIELDS .= '</formfields>'."\n";
+					$values .= "\"".$FORM_FIELDS."\",";
+					//add audit data
+					$values .= sprintf('inputter="%s",input_date="%s",record_status="%s",current_no="0"',INPUTTER,$current_date,RECORDSTATUS);
+					$SQL_INAU = sprintf('UPDATE %s SET formfields=%s where param_id="%s";',$table,$values,$id);
+					$formdef_sql['insert_inau'] = array('controller'=>sprintf("%s",$id),'module'=>sprintf("%s",$formdef->module),'sql_code'=>$SQL_INAU);
+					$count = $this->query_system_db("setformdef",$formdef_sql);
+					$SQL_INAU = htmlspecialchars($SQL_INAU);
+					$HTML .= sprintf('<tr valign=top><td class="adi_tts">%s</td><td colspan=2 class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
+				}
+			catch (Exception $e) 
+				{
+					$desc='Definition Loaded [<i>form</i>]';
+					$val=$e->getMessage(); $class = "fail"; $stat = "FAIL";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$this->defs['form']=0;
+				}
+			$HTML .= "</table>";
+			$HTML .= "<br><hr><br>";
+		}
+
+		if($this->defs['update'])
+		{
+			$HTML .= sprintf('<table width=98%s class="adi_table" >',"%")."\n";
+			try
+				{
+					$xml = file_get_contents($files['update']);
+					$updatedef = new SimpleXMLElement($xml);
+					$SQL_INAU="";
+				
+					$desc='Definition Loaded [<i>update</i>]';
+					$val = ""; $class = "pass"; $stat = "PASS";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc='Field Exist [<i>id</i>]';
+					if($updatedef->id) {$val=$paramdef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['update']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc='Field Exist [<i>sql</i>]';
+					if($updatedef->sql) {$val=$updatedef->sql; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['update']=0;}
+					$HTML .= sprintf('<tr valign=top><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+
+					$SQL_INAU = sprintf('%s',$updatedef->sql);
+					$updatedef_sql['insert_inau'] = array('sql_code'=>$SQL_INAU);
+					$count = $this->query_system_db("setupdatedef",$updatedef_sql);
+
+				}
+			catch (Exception $e) 
+				{
+					$desc='SQL Script Loaded [<i>update</i>]';
+					$val=$e->getMessage(); $class = "fail"; $stat = "FAIL";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td class="adi_tts">%s</td><td class="adi_ttr"><span width=20%s class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$this->defs['update']=0;
+				}
+			$HTML .= "</table>";
+			$HTML .= "<br><hr><br>";
+		}
+
+		if($this->defs['mvc'])
+		{
+			$HTML .= sprintf('<table width=98%s class="adi_table" >',"%")."\n";
+			try
+				{
+					$xml = file_get_contents($files['mvc']);
+					$mvcdef = new SimpleXMLElement($xml);
+					$SQL_INAU = "";
+				
+					$desc = 'Definition Loaded [<i>mvc</i>]';
+					$val = ""; $class = "pass"; $stat = "PASS";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>id</i>]';
+					if($mvcdef->id) {$val=$mvcdef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>controllers</i>]';
+					if($mvcdef->controllers) {$val=$mvcdef->controllers; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>views</i>]';
+					if($mvcdef->views) {$val=$mvcdef->views; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>models</i>]';
+					if($mvcdef->models) {$val=$mvcdef->models; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$desc = 'Field Exist [<i>files</i>]';
+					if($mvcdef->files) {$val=$mvcdef->files; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";;
+				
+					$HTML .= "</table>"."\n";;
+					$HTML .= "<br>"."\n"."\n";
+								
+					//check for valid files in xml file
+					$HTML .= sprintf('<table width=98%s class="adi_table" >',"%")."\n";;
+					$filetype="<b>filetype</b>"; $sourcefile="<b>source</b>"; $targetfile="<b>target</b>"; $stat = "";
+					$HTML .= sprintf('<tr><td  class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts"><span class="%s">%s</span></td></tr>',$filetype,$sourcefile,$targetfile,$class,$stat)."\n";;
+				
+					$this->query_system_db("delmvcdef","");
+					$sysarr = $this->query_system_db("getsysconfig","");
+					$sysrow = (array) $sysarr[0];
+					
+					$WRITEPATH = $sysrow['defdir']."/".$sysrow['module']."/".$sysrow['activedef'].FORMDIR;
+					$APPROOTPATH = $sysrow['approotdir']."/";
+
+					foreach ($mvcdef->controllers->controller as $controller)
+					{			
+						if($controller->src && $controller->target){$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+						$filetype="controller"; $sourcefile=$controller->src; $targetfile=$controller->target;
+						$src = $sourcefile; $target = $APPROOTPATH.$targetfile;
+	
+						if($stat == "PASS")
+						{
+							$i = 0;
+							if(is_file($src ) && !($targetfile == "") )
+							{
+								$mvcdef_files[$i] = array('id'=>$sourcefile,'src'=>$src,'target'=>$target);
+								$count = $this->query_system_db("setmvcdef",$mvcdef_files);
+								$i++;
+								$class = "pass"; $stat = "PASS";
+							}
+							else{$class = "fail"; $stat = "FAIL: Source Not Exist";}					
+						}
+						$HTML .= sprintf('<tr><td  class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts"><span class="%s">%s</span></td></tr>',$filetype,$sourcefile,$targetfile,$class,$stat)."\n";;
+					}
+				
+					$WRITEPATH = $sysrow['defdir']."/".$sysrow['module']."/".$sysrow['activedef'].MODELDIR;
+					//createModel($mvcdef->id); $i=0;
+					foreach ($mvcdef->models->model as $controller)
+					{			
+						if($controller->src && $controller->target){$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+						$filetype="model"; $sourcefile=$controller->src; $targetfile=$controller->target;
+						$src = $sourcefile; $target = $APPROOTPATH.$targetfile;
+						if($stat == "PASS")
+						{
+							if(is_file($src ) && !($targetfile=="") )
+							{
+								$mvcdef_files[$i] = array('id'=>$sourcefile,'src'=>$src,'target'=>$target);
+								$count = $this->query_system_db("setmvcdef",$mvcdef_files);
+								$i++;
+								$class = "pass"; $stat = "PASS";
+							}
+							else{$class = "fail"; $stat = "FAIL: Source Not Exist";}					
+						}
+						$HTML .= sprintf('<tr><td  class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts"><span class="%s">%s</span></td></tr>',$filetype,$sourcefile,$targetfile,$class,$stat)."\n";;
+					}
+				
+					$WRITEPATH = $sysrow['defdir']."/".$sysrow['module']."/".$sysrow['activedef'].VIEWDIR;
+					$i=0;
+					foreach ($mvcdef->views->view as $controller)
+					{			
+						if($controller->src && $controller->target){$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['mvc']=0;}
+						$filetype="view"; $sourcefile=$controller->src; $targetfile=$controller->target;
+						$src = $sourcefile; $target = $APPROOTPATH.$targetfile;
+						if($stat == "PASS")
+						{
+							if(is_file($src ) && !($targetfile == "") )
+							{
+								$mvcdef_files[$i] = array('id'=>$sourcefile,'src'=>$src,'target'=>$target);
+								$count = $this->query_system_db("setmvcdef",$mvcdef_files);
+								$i++;
+								$class = "pass"; $stat = "PASS";
+							}
+							else{$class = "fail"; $stat = "FAIL: Source Not Exist";}					
+						}
+						$HTML .= sprintf('<tr><td  class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts"><span class="%s">%s</span></td></tr>',$filetype,$sourcefile,$targetfile,$class,$stat)."\n";;
+					}
+					
+					$WRITEPATH = $sysrow['defdir']."/".$sysrow['module']."/".$sysrow['activedef'].FILEDIR;
+					$i=0;
+					foreach ($mvcdef->files->file as $controller)
+					{			
+						if($controller->src && $controller->target){$class="pass"; $stat="PASS";}else{$class="fail"; $stat="FAIL"; $this->defs['mvc']=0;}
+						$filetype="file"; $sourcefile = $controller->src; $targetfile = $controller->target;
+						$HTML .= sprintf('<tr><td  class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts">%s</td><td class="adi_tts"><span class="%s">%s</span></td></tr>',$filetype,$sourcefile,$targetfile,$class,$stat)."\n";;
+						$src = $WRITEPATH.$sourcefile; $target = $APPROOTPATH.$targetfile;
+						if(is_file($src ) && !($targetfile==""))
+						{
+							$mvcdef_files[$i] = array('id'=>$sourcefile,'src'=>$src,'target'=>$target);
+							$count = query_system_db("setmvcdef",$mvcdef_files);
+							$i++;
+						}
+					}
+				}
+			catch (Exception $e) 
+				{
+					$desc='Definition Loaded [<i>mvc</i>]';
+					$val=$e->getMessage(); $class="fail"; $stat="FAIL";
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					$this->defs['mvc']=0;
+				}
+			$HTML .= "</table>"."\n";
+			$HTML .= "<br><hr><br>";
+		}
+		return $HTML;
+	}
+
+	function definition_install()
+	{
+		$HTML = "";
+	
+		if(isset($_REQUEST['userButtonPress']))
+		{	 
+			if( isset($_REQUEST['tabledefChecked']) )
+			{
+				$count = $this->query_app_db("tabledef",$this->query_system_db("gettabledef",""),$query);
+				$stat = $this->query_app_db("tableshow",$count,$query);
+				$HTML .= "Definition Installed [<i><b>table</b></i>] ".$stat." <br>";
+			}
+		
+			if( isset($_REQUEST['paramdefChecked']) )
+			{
+				$stat = $this->query_app_db("paramdef",$this->query_system_db("getparamdef",""));
+				$HTML .= "Definition Installed [<i><b>param</b></i>] ".$stat." <br>";		
+			}
+
+			if( isset($_REQUEST['formdefChecked']) )
+			{
+				$stat = $this->query_app_db("formdef",$this->query_system_db("getformdef",""));
+				$HTML .= "Definition Installed [<i><b>form</b></i>] ".$stat." <br>";		
+			}
+		
+			if( isset($_REQUEST['menudefChecked']) )
+			{
+				$stat = $this->query_app_db("menudef",$this->query_system_db("getmenudef",""));
+				$HTML .= "Definition Installed [<i><b>menu</b></i>] ".$stat." <br>";		
+			}
+
+			if( isset($_REQUEST['updatedefChecked']) )
+			{
+				$stat = $this->query_app_db("updatedef",$this->query_system_db("getupdatedef",""));
+				$HTML .= "Definition Installed [<i><b>update</b></i>] ".$stat." <br>";
+			}
+		
+			if( isset($_REQUEST['mvcdefChecked']) )
+			{
+				$sysarr = $this->query_system_db("getmvcdef","");
+				foreach($sysarr as $sysrow)
+				{
+					$sysrow = (array) $sysrow;
+					if(is_file($sysrow['target']))
+					{
+						$backupstr = $sysrow['target'].".".date("YmdHis").".php";
+						if (!copy($sysrow['target'], $backupstr)) {$HTML .= "Backup failed : ".$backupstr."<br>";} else $HTML .= "Backup successful : ".$backupstr."<br>";
+					}
+					if(!copy($sysrow['src'], $sysrow['target'])) {$HTML .= "Copy failed : ".$sysrow['target']."<br>";} else $HTML .= "Copy successful : ".$sysrow['target']."<br>";
+				}
+			}
+		}
+		else
+		{
+			$HTML .= $this->definition_status();
+			$HTML .= sprintf("<script language='javascript'>document.getElementById('installselect').innerHTML='%s'</script>",$this->definition_install_input_form());
+		}
+		return $HTML;
+	}
+
+	function definition_install_input_form()
+	{
+		$PHP_SELF = $this->PHP_SELF;
+
+		$HTML = "<h3>Select Install Options</h3>";
+		$HTML .= sprintf('<form id="DefinitionInstall" name="DefinitionInstall" action="%s" method="get">',$PHP_SELF);
+		$HTML .= '<table cellspacing=2 cellpadding=0 border=0';
+	
+		if( $this->defs['table'] )
+		{
+			$HTML .= '<tr><td><label for="tabledefChecked">Install Definition [tables]</label></td>';
+			$HTML .= '<td><input type="checkbox" id="tabledefChecked" name="tabledefChecked" value=1><br></td><tr>';
+		}
+
+		if( $this->defs['param'] )
+		{
+			$HTML .= '<tr><td><label for="paramdefChecked">Install Definition [param]</label></td>';
+			$HTML .= '<td><input type="checkbox" id="paramdefChecked" name="paramdefChecked" value=1><br></td><tr>';
+		}
+	
+		if( $this->defs['form'] )
+		{
+			$HTML .= '<tr><td><label for="formdefChecked">Install Definition [form]</label></td>';
+			$HTML .= '<td><input type="checkbox" id="formdefChecked" name="formdefChecked" value=1><br></td><tr>';
+		}
+
+		if( $this->defs['menu'] )
+		{
+			$HTML .= '<tr><td><label for="menudefChecked">Install Definition [menu]</label></td>';
+			$HTML .= '<td><input type="checkbox" id="menudefChecked" name="menudefChecked" value=1><br></td><tr>';
+		}
+	
+		if( $this->defs['update'] )
+		{
+			$HTML .= '<tr><td><label for="updatedefChecked">Install Definition [update]</label></td>';
+			$HTML .= '<td><input type="checkbox" id="updatedefChecked" name="updatedefChecked" value=1><br></td><tr>';
+		}
+	
+		if( $this->defs['mvc'] )
+		{
+			$HTML .= '<tr><td><label for="mvcdefChecked">Install Definition [mvc]</label></td>';
+			$HTML .= '<td><input type="checkbox" id="mvcdefChecked" name="mvcdefChecked" value=1><br></td><tr>';
+		}
+		$HTML .= '</table>';
+		$HTML .= '<br/><input class="bttn" type="submit" name="userButtonPress" value="Submit">';
+		$HTML .= '<input type="hidden" name="option" value="definstall">';
+	
 		$HTML .= '</form>'; 
 		return $HTML;
 	}
@@ -1182,6 +1833,7 @@ _TEXT_;
 <paramdef>
 <id>$controller (autogen $date)</id>
 <columns>
+	<column><field>id</field><value>0</value></column>
 	<column><field>param_id</field><value>$param_id</value></column>
 	<column><field>controller</field><value>$controller</value></column>
  	<column><field>dflag</field><value>Y</value></column>
@@ -1280,13 +1932,12 @@ _TEXT_;
 				{
 					$label = str_replace("_"," ",$row['Field']);
 					$label = $this->ucfirst_sentence($label);
-					$type = "input"; $option = "size=50";
+					$type = "input"; $option = "size=50"; $onnew = "enabled"; $onedit = "enabled";
 					if (preg_match('/date/i', $row['Field']))
 					{
-						$type = "date";
-						$option = "size=12 maxlength=10 onFocus=sidefunc.Update(%FUNC%,%PARAMFLD%,%SFFORMAT%) onKeyUp=sidefunc.Update(%FUNC%,%PARAMFLD%,%SFFORMAT%)";
+						$type = "date"; $option = "size=12 maxlength=10"; $onnew = "enabled_po"; $onedit = "enabled_po";
 					}
-					$TEXT2 .= sprintf("\t<field><name>%s</name><label>%s</label><type>%s</type><value></value><options>%s</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n",$row['Field'],$label,$type,$option);
+					$TEXT2 .= sprintf("\t<field><name>%s</name><label>%s</label><type>%s</type><value></value><options>%s</options><onnew>%s</onnew><onedit>%s</onedit></field>\n",$row['Field'],$label,$type,$option,$onnew,$onedit);
 				}
 			}
 			$TEXT2 .= "</formfields>\n</formdef>\n";
@@ -1432,6 +2083,7 @@ class $classname extends Controller_Core_Site
 		\$this->param['validatedpost'] = \$validation->data();
 		\$this->param['inputerrors'] = (array) \$validation->errors(\$this->param['errormsgfile']);
 	}
+
 } //End $classname
 _TEXT_;
 
@@ -1599,7 +2251,7 @@ _TEXT_;
 			break;
 						
 			case "getsysconfig":
-				$querystr = sprintf('SELECT * FROM _adi_configs WHERE id ="system"');
+				$querystr = sprintf('SELECT * FROM _adi_configs WHERE id = "system"');
 				$res = $this->sitedb->execute_select_query($querystr);
 				return $res;
 			break;
@@ -1611,76 +2263,84 @@ _TEXT_;
 			break;
 
 			case "gettabledef":
-				$querystr = sprintf("SELECT * FROM tabledef");
-				$res = selectFromSystemDB($querystr);
+				$querystr = sprintf('SELECT * FROM _adi_tabledefs');
+				$res = $this->sitedb->execute_select_query($querystr);
 				return $res;
 			break;
 				
 			case "settabledef":
 				$arr=array_keys($var);
+				$querystr = sprintf('DELETE from _adi_tabledefs');
+				if($recs = $this->sitedb->execute_delete_query($querystr)){}
 				foreach($arr as $key)
 				{
 					$id=$key; $fields = $var[$key];
-					$querystr = sprintf("UPDATE tabledef SET tab_create='%s',sql_drop='%s',sql_create='%s',sql_show='%s' WHERE id = '%s'",$fields['tab_create'],$fields['sql_drop'],$fields['sql_create'],$fields['sql_show'],$id);
-					$res = insertToSystemDB($querystr);
+					$querystr = sprintf("INSERT INTO _adi_tabledefs (id, tab_create, sql_drop, sql_create, sql_show) VALUES('%s','%s','%s','%s','%s');",$id,$fields['tab_create'],$fields['sql_drop'],$fields['sql_create'],$fields['sql_show']);
+					$res = $this->sitedb->execute_insert_query($querystr);
 				}
 				return $res;
 			break;
 		
 			case "getparamdef":
-				$querystr = sprintf("SELECT * FROM paramdef");
-				$res = selectFromSystemDB($querystr);
+				$querystr = sprintf('SELECT * FROM _adi_paramdefs');
+				$res = $this->sitedb->execute_select_query($querystr);
 				return $res;
 			break;
 				
 			case "setparamdef":
 				$arr=array_keys($var);
+				$querystr = sprintf('DELETE from _adi_paramdefs');
+				if($recs = $this->sitedb->execute_delete_query($querystr)){}
 				foreach($arr as $key)
 				{
 					$id=$key; $fields = $var[$key];
-					$querystr = sprintf("UPDATE paramdef SET sql_code='%s' WHERE id = '%s'",$fields['sql_code'],$id);
-					$res = insertToSystemDB($querystr);
+					$querystr = sprintf("INSERT INTO _adi_paramdefs (id,sql_code) VALUES('%s','%s');",$id,$fields['sql_code']);
+					$res = $this->sitedb->execute_insert_query($querystr);
 				}
 				return $res;
 			break;
 			
 			case "getformdef":
-				$querystr = sprintf("SELECT * FROM formdef");
-				$res = selectFromSystemDB($querystr);
+				$querystr = sprintf('SELECT * FROM _adi_formdefs');
+				$res = $this->sitedb->execute_select_query($querystr);
 				return $res;
 			break;
 				
 			case "setformdef":
 				$arr=array_keys($var);
+				$querystr = sprintf('DELETE from _adi_formdefs');
+				if($recs = $this->sitedb->execute_delete_query($querystr)){}
 				foreach($arr as $key)
 				{
 					$id=$key; $fields = $var[$key];
-					$querystr = sprintf("UPDATE formdef SET controller='%s',module='%s',sql_code='%s' WHERE id = '%s'",$fields['controller'],$fields['module'],$fields['sql_code'],$id);
-					$res = insertToSystemDB($querystr);
+					$querystr = sprintf("INSERT INTO _adi_formdefs (id,controller,module,sql_code) VALUES('%s','%s','%s','%s');",$id,$fields['controller'],$fields['module'],$fields['sql_code']);
+					$res = $this->sitedb->execute_insert_query($querystr);
 				}
 				return $res;
 			break;
 
 			case "getmenudef":
-				$querystr = sprintf("SELECT * FROM menudef");
-				$res = selectFromSystemDB($querystr);
+				$querystr = sprintf('SELECT * FROM _adi_menudefs');
+				$res = $this->sitedb->execute_select_query($querystr);
 				return $res;
 			break;
 				
 			case "setmenudef":
 				$arr=array_keys($var);
+				$querystr = sprintf('DELETE from _adi_menudefs');
+				if($recs = $this->sitedb->execute_delete_query($querystr)){}
 				foreach($arr as $key)
 				{
 					$id=$key; $fields = $var[$key];
-					$querystr = sprintf("UPDATE menudef SET sql_code='%s' WHERE id = '%s'",$fields['sql_code'],$id);
-					$res = insertToSystemDB($querystr);
+					$querystr = sprintf("INSERT INTO _adi_menudefs (id,sql_code) VALUES('%s','%s');",$id,$fields['sql_code']);
+					$res = $this->sitedb->execute_insert_query($querystr);
 				}
 				return $res;
 			break;
 			
 			case "getupdatedef":
 				$querystr = sprintf("SELECT * FROM updatedef");
-				$res = selectFromSystemDB($querystr);
+				$res = $this->sitedb->execute_select_query($querystr);
 				return $res;
 			break;
 			
@@ -1690,20 +2350,20 @@ _TEXT_;
 				{
 					$id=$key; $fields = $var[$key];
 					$querystr = sprintf("UPDATE updatedef SET sql_code='%s' WHERE id = '%s'",$fields['sql_code'],$id);
-					$res = insertToSystemDB($querystr);
+					$res = $this->sitedb->execute_insert_query($querystr);
 				}
 				return $res;
 			break;
 	
 			case "getmvcdef":
-				$querystr = sprintf("SELECT * FROM mvcdef");
-				$res = selectFromSystemDB($querystr);
+				$querystr = sprintf('SELECT * FROM _adi_mvcdefs');
+				$res = $this->sitedb->execute_select_query($querystr);
 				return $res;
 			break;
 		
 			case "delmvcdef":
-				$querystr = sprintf("DELETE from mvcdef;");
-				$res = insertToSystemDB($querystr);
+				$querystr = sprintf('DELETE from _adi_mvcdefs;');
+				$res = $this->sitedb->execute_delete_query($querystr);
 				return $res;
 			break;
 		
@@ -1712,8 +2372,8 @@ _TEXT_;
 				foreach($arr as $key)
 				{
 					$id=$key; $fields = $var[$key];
-					$querystr = sprintf("INSERT INTO mvcdef(id,src,target) VALUES ('%s','%s','%s');",$fields['id'],$fields['src'],$fields['target']);
-					$res = insertToSystemDB($querystr);
+					$querystr = sprintf("INSERT INTO _adi_mvcdefs(id,src,target) VALUES ('%s','%s','%s');",$fields['id'],$fields['src'],$fields['target']);
+					$res = $this->sitedb->execute_insert_query($querystr);
 				}
 				return $res;
 			break;
@@ -1731,7 +2391,7 @@ _TEXT_;
 			break;
 
 			case "insertautotable":
-				$querystr = sprintf('INSERT INTO _adi_autotables(id,module,tablename,tablefields,uniquefield) VALUES("%s","%s","%s","%s","%s");',$var['id'],$var['module'],$var['tablename'],$var['tablefields'],$var['uniquefield']);
+				$querystr = sprintf("INSERT INTO _adi_autotables(id,module,tablename,tablefields,uniquefield) VALUES('%s','%s','%s','%s','%s');",$var['id'],$var['module'],$var['tablename'],$var['tablefields'],$var['uniquefield']);
 				$res = $this->sitedb->execute_insert_query($querystr);
 				if($res !== FALSE && $res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
 				$result_txt = sprintf('[ <span class="%s">%s</span> => Records Inserted(%s) ]',$class,$RESTXT,$res);
@@ -1811,6 +2471,21 @@ _TEXT_;
 		}
 	}
 
+	function show_from_app_db($querystr,&$idxcount=0)
+	{
+		$i = 0;
+		$res = $this->sitedb->execute_select_query($querystr);
+		
+		foreach ($res as $row) 
+		{
+			$row = (array) $row;
+			$arr[$i] = $row['Tables_in_'.$this->DATABASE];
+			$i++;
+		}
+		$idxcount = count($arr);
+		return $arr;
+	}
+
 	function query_app_db($queryopt,$var,&$showquery="")
 	{
 		$querystr = "";
@@ -1827,17 +2502,20 @@ _TEXT_;
 				$tablecount = 0; $i=0;
 				foreach ($var as $row)
 				{
+					$row = (array) $row;
 					if($i == 0){$showquery = $row['sql_show'];}
 					$tab_create = $row['tab_create'];
 					if (stristr('yes', $tab_create) || $tab_create == 1) 
 					{
-						$querystr .= $row['sql_drop'].$row['sql_create'];
+						$querystr = $row['sql_drop'];
+						if( $res = $this->sitedb->execute_insert_query($querystr) ) {}
+						$querystr = $row['sql_create'];
+						if( $res = $this->sitedb->execute_insert_query($querystr) ) {}
 						$tablecount++;
 					}
 					$i++;
 				}
-				$res = $this->sitedb->execute_insert_query($querystr);
-				sleep(SLEEPTIME);
+				
 				if($res !== FALSE)
 				{
 					return $tablecount;
@@ -1859,6 +2537,7 @@ _TEXT_;
 			case "paramdef":
 				foreach ($var as $row)
 				{
+					$row = (array) $row;
 					$querystr .= $row['sql_code'];
 				}	
 				$reccount = $this->sitedb->execute_insert_query($querystr);
@@ -1870,6 +2549,7 @@ _TEXT_;
 			case "formdef":
 				foreach ($var as $row)
 				{
+					$row = (array) $row;
 					$querystr .= $row['sql_code'];
 				}	
 				$querystr = str_replace("%XMLHEADER%",XMLHEADER, $querystr); 
@@ -1882,6 +2562,7 @@ _TEXT_;
 			case "menudef":
 				foreach ($var as $row)
 				{
+					$row = (array) $row;
 					$querystr .= $row['sql_code'];
 				}	
 				$reccount = $this->sitedb->execute_insert_query($querystr);
@@ -1893,6 +2574,7 @@ _TEXT_;
 			case "updatedef":
 				foreach ($var as $row)
 				{
+					$row = (array) $row;
 					$querystr .= $row['sql_code'];
 				}	
 				$reccount = $this->sitedb->execute_insert_query($querystr);

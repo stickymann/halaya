@@ -127,6 +127,13 @@ CREATE TABLE `_adi_menutrees` (
   `id_opt` INT(20) DEFAULT NULL
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `_adi_tabledefs` (`id` VARCHAR(4) NOT NULL,`tab_create` VARCHAR(3), `sql_drop` TEXT, `sql_create` TEXT, `sql_show` TEXT) ENGINE=INNODB DEFAULT CHARSET=utf8;
+CREATE TABLE `_adi_menudefs` (`id` VARCHAR(255) NOT NULL, `sql_code` TEXT) ENGINE=INNODB DEFAULT CHARSET=utf8;
+CREATE TABLE `_adi_paramdefs` (`id` VARCHAR(255) NOT NULL, `sql_code` TEXT) ENGINE=INNODB DEFAULT CHARSET=utf8;
+CREATE TABLE `_adi_updatedefs` (`id` VARCHAR(255) NOT NULL, `sql_code` TEXT) ENGINE=INNODB DEFAULT CHARSET=utf8;
+CREATE TABLE `_adi_mvcdefs` (`id` VARCHAR(1024) NOT NULL, `src` VARCHAR(1024) NOT NULL, `target` VARCHAR(1024) NOT NULL) ENGINE=INNODB DEFAULT CHARSET=utf8;
+CREATE TABLE `_adi_formdefs` (`id` VARCHAR(50) NOT NULL, `controller` VARCHAR(255), `module` VARCHAR(50), `sql_code` TEXT) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
 /* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
 /*
 update view vw_core_fixedselections_available

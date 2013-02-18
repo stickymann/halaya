@@ -1,21 +1,0 @@
-<?xml version='1.0' standalone='yes'?>
-<tabledef>
-<id>core_customer_chargeaccounts (autogen 20130214120141)</id>
-<tablename>chargeaccounts</tablename>
-<livecreate>yes</livecreate>
-<histcreate>yes</histcreate>
-<inaucreate>yes</inaucreate>
-<columns>
-	<column><colname>id</colname><coltype>int(11)</coltype><colopts>unsigned NOT NULL</colopts></column>
-	<column><colname>customer_id</colname><coltype>varchar(8)</coltype><colopts>NOT NULL</colopts></column>
-	<column><colname>creation_date</colname><coltype>date</coltype><colopts>NOT NULL DEFAULT  "1901-12-14"</colopts></column>
-	<column><colname>active</colname><coltype>enum("Y","N")</coltype><colopts>NOT NULL DEFAULT "N"</colopts></column>
-	<column><colname>special_instructions</colname><coltype>text</coltype><colopts>DEFAULT NULL</colopts></column>
-	<column><colname>comments</colname><coltype>text</coltype><colopts>DEFAULT NULL</colopts></column>
-</columns>
-<primarykey>id</primarykey>
-<uniquekeys>
-	<uniquekey><ukeyname>uniq_customer_id</ukeyname><ukeycol>customer_id</ukeycol></uniquekey>
-</uniquekeys>
-<engine>ENGINE=InnoDB DEFAULT CHARSET=utf8</engine>
-</tabledef>
