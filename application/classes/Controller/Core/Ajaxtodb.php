@@ -532,6 +532,15 @@ class Controller_Core_Ajaxtodb extends Controller
 				$result		= $this->sitedb->execute_select_query($querystr);
 				print json_encode($result); 
 			break;
+
+			case 'stockcheck';
+				$order		= $_REQUEST['order'];
+				$icstat		= $_REQUEST['icstat'];
+				$branch		= $_REQUEST['branch'];
+				$products	= $_REQUEST['products'];
+				$quantities	= $_REQUEST['quantities'];
+				$this->do_stockcheck($order,$icstat,$branch,$products,$quantities);
+			break;
 		}
 	}
 	
@@ -1303,6 +1312,116 @@ _SCRIPT_;
 		$querystr	= sprintf('SELECT SUM(amount) AS payment_total FROM payments WHERE order_id ="%s" AND payment_status = "VALID"',$order_id);
 		$result		= $this->sitedb->execute_select_query($querystr);
 		return $result[0]->payment_total;
+	}
+
+	function do_stockcheck($order,$icstat,$branch,$products,$quantites)
+	{
+		$stockcheck_status = "COMPLETED";
+		if( $icstat == "COMPLETED" ) 
+		{ 
+			print ""; 
+print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+			return $stockcheck_status; 
+		}
+		$p_arr = preg_split('/,/',$products);
+		$q_arr = preg_split('/,/',$quantites);
+		$valid_stock_item = array();
+		$index = 0;
+		foreach($p_arr as $key => $product_id)
+		{
+			if( $this->is_stock_item($product_id) )
+			{
+				$inventory_id = $product_id."-".$branch;
+				if( array_key_exists($inventory_id, $valid_stock_item) )
+				{
+					$valid_stock_item[$inventory_id] = $valid_stock_item[$inventory_id] + $q_arr[$index];
+				}
+				else
+				{
+					$valid_stock_item[$inventory_id] = $q_arr[$index];		
+				}
+			}
+			$index++;
+		}
+		if( count($valid_stock_item) == 0 ) 
+		{ 
+			print ""; 
+print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+			return $stockcheck_status; 
+		}
+
+print "<b>[DEBUG]---></b> "; print_r($valid_stock_item); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+		$stockcheck_status = "PASS";
+		
+		if( $icstat == "NONE" )
+		{
+			$i = 0;
+			foreach ($valid_stock_item as $inventory_id => $qty_required)
+			{
+				$this->stockcheck_result[$inventory_id] = $this->get_stock_status_none($inventory_id,$qty_required);
+				$i++;
+			}
+print "<b>[DEBUG]---></b> "; print_r($this->stockcheck_result); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+			
+		}
+		else if ( $icstat == "PARTIAL" )
+		{
+
+		
+		}
+		
+		foreach($this->stockcheck_result as $inventory_id => $value)
+		{
+			//$value = $tmpval[$inventory_id];
+print "<b>[DEBUG]---></b> "; print_r($value); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+			
+			if( in_array("OUT OF STOCK",$value) || 
+			in_array("INSUFFICIENT QUANTITY",$value) ||
+			in_array("ITEM NOT IN INVENTORY",$value) )
+			{ 
+				
+
+				break;
+			}
+		}
+print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+		return $stockcheck_status;
+	}
+
+	function is_stock_item($product_id)
+	{
+		$querystr	= sprintf('SELECT COUNT(product_id) AS count FROM products WHERE product_id ="%s" AND type = "STOCK"',$product_id);
+		$result		= $this->sitedb->execute_select_query($querystr);
+		$count		= $result[0]->count;
+		if($count > 0 ) { return TRUE; } else { return FALSE; }  
+	}
+	
+	function get_stock_status_none($inventory_id,$qty_required)
+	{
+		$querystr	= sprintf('SELECT qty_instock FROM inventorys WHERE inventory_id ="%s"',$inventory_id);
+		$result		= $this->sitedb->execute_select_query($querystr);
+		if($result)
+		{
+			$row = (array) $result[0];
+			if( $row['qty_instock'] == 0 )
+			{
+				$arr = array("0","OUT OF STOCK");
+			}
+			else if( $row['qty_instock'] >= $qty_required )
+			{
+				$arr = array($row['qty_instock'],"IN STOCK");
+			}
+			else
+			{
+				$arr = array($row['qty_instock'],"INSUFFICIENT QUANTITY");
+			}
+			return $arr;
+		}
+		else
+		{
+			$arr = array("0","ITEM NOT IN INVENTORY");
+			return $arr;
+		} 
 	}
 
 } // End Core_Ajaxtodb

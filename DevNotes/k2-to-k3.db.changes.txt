@@ -31,7 +31,11 @@ ALTER TABLE `halaya`.`params_is`
 ADD COLUMN `param_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
 ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `controller`;  
 ALTER TABLE `halaya`.`params_is` CHANGE `primarymodel`  `primarymodel` VARCHAR(255) DEFAULT 'Model_SiteDB' NULL ;
-
+DELETE FROM `halaya`.`params` WHERE `id`='404'
+INSERT INTO `params` VALUES (404,'core_sales_inventory','inventory','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>inventory_id</name><label>Inventory Id</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\r\n	<field><name>product_id</name><label>Product Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly_po</onnew><onedit>readonly</onedit>\r\n		<popout><enable>yes</enable><table>vw_inventprod_available</table><selectfields>id,product_id,description</selectfields><idfield>product_id</idfield></popout>\r\n		<sideinfo>\r\n			<enable>yes</enable><table>products</table><selectfields>product_description</selectfields><idfield>product_id</idfield><format>*</format>\r\n		</sideinfo>\r\n	</field>\n	<field><name>branch_id</name><label>Branch Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly_po</onnew><onedit>readonly</onedit>\r\n		<popout><enable>yes</enable><table>branches</table><selectfields>id,branch_id,description</selectfields><idfield>branch_id</idfield></popout>\r\n		<sideinfo>\r\n			<enable>yes</enable><table>branches</table><selectfields>description</selectfields><idfield>branch_id</idfield><format>*</format>\r\n		</sideinfo>\r\n	</field>\r\n	<field><name>qty_instock</name><label>Quantity Instock</label><type>input</type><value></value><options>size=12</options>\r\n		<onnew>readonly_po</onnew><onedit>readonly_po</onedit>\r\n		<sidelink>\r\n			<link><src>javascript:void(0)</src><attr>onclick=window.inventory.LoadForm()</attr><text>Adjust</text></link>\r\n		</sidelink>\r\n	</field>\n	<field>
+<name>qty_diff</name><label>Difference</label><type>input</type><value></value><options>size=12</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\r\n	<field><name>reorder_level</name><label>Reorder Level</label><type>input</type><value></value><options>size=12</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>last_update_type</name><label>Update Type</label><type>input</type><value></value><options>size=25 onFocus=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%) onKeyUp=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%)</options>\r\n		<onnew>readonly_po</onnew><onedit>readonly_po</onedit>\n		<popout><enable>yes</enable><table>inventupdtypes</table><selectfields>id,update_type_id,description,stock_movement</selectfields><idfield>update_type_id</idfield></popout>\n		<sideinfo>\n			<enable>yes</enable><table>inventupdtypes</table><selectfields>description,stock_movement</selectfields><idfield>update_type_id</idfield><format>*;_*</format>\n		</sideinfo>\n	</field>\n	<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n</formfields>\r\n','sales',0,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','inventory_id','','Inventory Id','Inventory','Model_SiteDB','inventorys','inventorys_is','inventorys_hs','inventory_error','ADMIN','2011-11-18 08:49:35','ADMIN','2011-11-18 08:57:59','LIVE',1);
+DELETE FROM `halaya`.`params` WHERE `id`='405'
+INSERT INTO `params` VALUES (405,'core_sales_order','order','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>order_id</name><label>Order Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>branch_id</name><label>Branch Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\r\n	<field><name>customer_id</name><label>Customer Id</label><type>input</type><value></value><options>size=10 onFocus=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%) onKeyUp=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%)</options>\r\n	<onnew>readonly_po</onnew><onedit>readonly</onedit>\r\n		<popout><enable>yes</enable><table>customers</table><selectfields>id,customer_id,first_name,last_name,phone_mobile1</selectfields><idfield>customer_id</idfield></popout>\r\n		<sideinfo>\r\n			<enable>yes</enable><table>customers</table><selectfields>first_name,last_name</selectfields><idfield>customer_id</idfield><format>*_*</format>	\r\n		</sideinfo>	\r\n	</field>	\r\n	<field><name>is_co</name><label>Is Charge Order</label><type>dropdown</type><value></value><options>N,Y::N,Y</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\r\n	<field><name>cc_id</name><label>Charge Customer Id</label><type>input</type><value></value><options>size=10 onFocus=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%) onKeyUp=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%)</options>\r\n	<onnew>readonly_po</onnew><onedit>readonly_po</onedit>\r\n		<popout><enable>yes</enable><table>vw_active_charge_customers</table><selectfields>id,customer_id,customer_type,business_type,first_name,last_name,phone_mobile1</selectfields><idfield>customer_id</idfield></popout>\r\n		<sideinfo>\r\n			<enable>yes</enable><table>customers</table><selectfields>first_name,last_name,customer_type,business_type</selectfields><idfield>customer_id</idfield><format>*_*;_*;_*</format>\r\n		</sideinfo>\r\n	</field>\r\n	<field><name>order_status</name><label>Order Status</label><type>input</type><value></value><options>size=25</options>\r\n	<onnew>readonly_po</onnew><onedit>readonly_po</onedit>\r\n	<sidelink>\r\n		<link><src>javascript:void(0)</src><attr>onclick=order_StatusPopOut()</attr><text>%IMG%media/img/site/lubw020.png</text></link>\r\n	</sidelink>\r\n	</field>\n		<field><name>order_details</name><label>Order Details</label><type>subform</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit>\r\n		<subform>\r\n			<subformcontroller>orderdetail</subformcontroller>\r\n			<subformonnew>enabled</subformonnew>\r\n			<subformonedit>enabled</subformonedit> \r\n		</subform>\r\n	</field>\n	<field><name>order_date</name><label>Order Date</label><type>date</type><value></value><options>size=10 maxlength=10</options><onnew>enabled_po</onnew><onedit>readonly</onedit></field> \r\n	<field><name>quotation_date</name><label>Quotation Date</label><type>date</type><value></value><options>size=10 maxlength=10</options><onnew>enabled_po</onnew><onedit>enabled_po</onedit></field>\r\n	<field><name>invoice_date</name><label>Invoice Date</label><type>date</type><value></value><options>size=10 maxlength=10 </options><onnew>readonly</onnew><onedit>readonly</onedit></field>\r\n	<field><name>status_change_date</name><label>Status Change Date</label><type>date</type><value></value><options>size=10 maxlength=10</options><onnew>enabled_po</onnew><onedit>enabled_po</onedit></field> \r\n	<field><name>inventory_checkout_type</name><label>Inventory Checkout</label><type>input</type><value></value><options>size=15</options><onnew>readonly_po</onnew><onedit>readonly</onedit>\r\n		<sidelink>\r\n			<link><src>javascript:void(0)</src><attr>onclick=order_ToggleCheckoutType()</attr><text>Change</text></link>\r\n		</sidelink>\r\n	</field>\r\n	<field><name>inventory_update_type</name><label>Inventory Update</label><type>input</type><value></value><options>size=15</options><onnew>readonly_po</onnew><onedit>readonly</onedit>\r\n		<sidelink>\r\n			<link><src>javascript:void(0)</src><attr>onclick=order_ToggleUpdateType()</attr><text>Change</text></link>\r\n		</sidelink>\r\n	</field>\r\n	<field><name>inventory_checkout_status</name><label>Checkout Status</label><type>input</type><value></value><options>size=15</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\r\n	<field><name>invoice_note</name><label>Invoice Note</label><type>textarea</type><value></value><options>rows=6 cols=80 maxlength=256</options><onnew></onnew><onedit></onedit></field> \r\n	<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew></onnew><onedit></onedit></field>\r\n</formfields>','sales',0,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','order_id','','Order Id','Order','Model_SiteDB','orders','orders_is','orders_hs','order_error','IMPLEMENTATION','2011-11-20 01:11:16','ADMIN','2011-11-20 01:36:25','LIVE',1);
 
 
 UPDATE `halaya`.`menudefs` SET `module` = "useraccount" WHERE `module` = "login";
@@ -39,7 +43,6 @@ UPDATE `halaya`.`menudefs`
 SET 
 `url_input` = IF(url_input="","",CONCAT("core_",module,"_",REPLACE(REPLACE(REPLACE(`url_input`,"_rpt",""),"_enq",""),"_",""))),
 `url_enquiry` = IF(url_enquiry="","",CONCAT("core_",module,"_",REPLACE(REPLACE(REPLACE(`url_enquiry`,"_rpt",""),"_enq",""),"_","")));
-
 
 
 ALTER TABLE `halaya`.`enquirydefs` DROP KEY `uniq_controller`, ADD INDEX `controller` (`controller`);
@@ -61,7 +64,6 @@ UPDATE `halaya`.`enquirydefs` SET `dflag` = "Y";
 UPDATE `halaya`.`params` SET `indexfield`='enquirydef_id' WHERE `id`='18' AND `indexfield`='controller';
 
 
-
 ALTER TABLE `halaya`.`reportdefs` DROP KEY `uniq_controller`, ADD INDEX `controller` (`controller`);
 ALTER TABLE `halaya`.`reportdefs`     
 ADD COLUMN `reportdef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
@@ -69,6 +71,7 @@ ADD COLUMN `dflag` ENUM('Y','N') CHARSET utf8 COLLATE utf8_general_ci NULL AFTER
 UPDATE `halaya`.`reportdefs` 
 SET `reportdef_id` = CONCAT("core_report_",REPLACE(REPLACE(`controller`,"_rpt",""),"_",""));
 ALTER TABLE `halaya`.`reportdefs` ADD KEY `uniq_reportdef_id` (`reportdef_id`);
+
 
 ALTER TABLE `halaya`.`reportdefs_hs`     
 ADD COLUMN `reportdef_id` VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `id`,     
@@ -81,16 +84,13 @@ UPDATE `halaya`.`reportdefs` SET `dflag` = "Y";
 UPDATE `halaya`.`params` SET `indexfield`='reportdef_id' WHERE `id`='27' AND `indexfield`='controller';
 
 
-
 ALTER TABLE `halaya`.`users` CHANGE `last_login` `last_login` INT(10) UNSIGNED DEFAULT '0' NULL;
 ALTER TABLE `halaya`.`users_is` CHANGE `last_login` `last_login` INT(10) UNSIGNED DEFAULT '0' NULL;
-
 
 
 CALL sp_CopyRecord("menudefs","menu_id",56,62,"250056");
 UPDATE `halaya`.`menudefs` SET `parent_id`='2500',`sortpos`='2500.55000',`label_input`='PDF Template',`url_input`='core_developer_pdftemplate',`url_enquiry`='core_developer_pdftemplate/enquirydefault' where `id`='62';
 INSERT INTO `menudefs` (`id`, `menu_id`, `parent_id`, `sortpos`, `nleft`, `nright`, `nlevel`, `node_or_leaf`, `module`, `label_input`, `label_enquiry`, `url_input`, `url_enquiry`, `controls_input`, `controls_enquiry`, `inputter`, `input_date`, `authorizer`, `auth_date`, `record_status`, `current_no`) VALUES('63','250056','2500','2500.56006','81','82','3','L','developer','Auto Definitions','','core_developer_autodef','','vw','','IMPLEMENTATION','2013-02-13 19:02:48','ADMIN','2013-02-13 19:23:28','LIVE','1');
-
 
 
 ALTER TABLE `halaya`.`inventorys` ADD COLUMN `inventory_id` VARCHAR(255) NULL AFTER `id`;
@@ -100,11 +100,6 @@ ALTER TABLE `halaya`.`inventorys_hs` ADD COLUMN `inventory_id` VARCHAR(255) NULL
 UPDATE `halaya`.`inventorys_hs` SET `inventory_id` = CONCAT(product_id,"-",branch_id);
 ALTER TABLE `halaya`.`inventorys_hs` CHANGE `inventory_id` `inventory_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
 ALTER TABLE `halaya`.`inventorys_is` ADD COLUMN `inventory_id` VARCHAR(255) NULL AFTER `id`;
-UPDATE `halaya`.`params` SET `indexfield`='inventory_id' WHERE `id`='404' AND `indexfield`='id';
-
-
-ALTER TABLE `halaya`.`orders_is` CHANGE `invoice_date` `invoice_date` DATE DEFAULT '0001-01-01' NULL ;
-
 
 
 /* Autodef tables */
@@ -134,10 +129,86 @@ CREATE TABLE `_adi_updatedefs` (`id` VARCHAR(255) NOT NULL, `sql_code` TEXT) ENG
 CREATE TABLE `_adi_mvcdefs` (`id` VARCHAR(1024) NOT NULL, `src` VARCHAR(1024) NOT NULL, `target` VARCHAR(1024) NOT NULL) ENGINE=INNODB DEFAULT CHARSET=utf8;
 CREATE TABLE `_adi_formdefs` (`id` VARCHAR(50) NOT NULL, `controller` VARCHAR(255), `module` VARCHAR(50), `sql_code` TEXT) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
+
+INSERT INTO `_sys_autoids` VALUES ('chargeaccounts_is',1001,0);
+INSERT INTO `menudefs` VALUES (426,501051,5010,5010.50977,108,109,2,'L','customer','Charge Account','magicon016.png%IMG%','core_customer_chargeaccount','core_customer_chargeaccount/enquirydefault','if,vw,nw,cp,in,ao,as,rj,hd,va','ls,is,hs,ex','IMPLEMENTATION','2013-02-18 03:02:37','ADMIN','2013-02-18 03:45:22','LIVE',1);
+INSERT INTO `params` VALUES (414,'core_customer_chargeaccount','chargeaccount','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>customer_id</name><label>Customer Id</label><type>input</type><value></value><options>size=10 onFocus=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%) onKeyUp=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%)</options>\r\n	<onnew>readonly_po</onnew><onedit>readonly</onedit>\r\n	<popout><enable>yes</enable><table>customers</table><selectfields>id,customer_id,customer_type,business_type,first_name,last_name,phone_mobile1</selectfields><idfield>customer_id</idfield></popout>\r\n	<sideinfo>\r\n		<enable>yes</enable><table>customers</table><selectfields>first_name,last_name,customer_type,business_type</selectfields><idfield>customer_id</idfield><format>*_*;_*;_*</format>\r\n	</sideinfo>\r\n	</field>	\r\n	<field><name>activation_date</name><label>Activation Date</label><type>date</type><value></value><options>size=12 maxlength=10</options><onnew>enabled_po</onnew><onedit>enabled</onedit></field>\n	<field><name>status_change_date</name><label>Status Change Date</label><type>date</type><value></value><options>size=12 maxlength=10</options><onnew>enabled_po</onnew><onedit>enabled_po</onedit></field>\n	<field><name>active</name><label>Active</label><type>dropdown</type><value></value><options>N,Y::N,Y</options><onnew></onnew><onedit></onedit></field>\r\n	<field><name>special_instructions</name><label>Special Instructions</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\r\n	<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n</formfields>','customer',0,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','customer_id','','Customer Id','Charge Account','Model_SiteDB','chargeaccounts','chargeaccounts_is','chargeaccounts_hs','chargeaccount_error','ADMIN','2013-02-18 06:20:21','ADMIN','2013-02-18 06:20:48','LIVE',1);
+
+
+ALTER TABLE `halaya`.`orders`  
+ADD COLUMN `is_co` ENUM('N','Y') CHARSET utf8 COLLATE utf8_general_ci NOT NULL AFTER `customer_id`, 
+ADD COLUMN `cc_id` VARCHAR(8) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `is_co`; 
+ALTER TABLE `halaya`.`orders_hs`  
+ADD COLUMN `is_co` ENUM('N','Y') CHARSET utf8 COLLATE utf8_general_ci NULL DEFAULT 'N' AFTER `customer_id`, 
+ADD COLUMN `cc_id` VARCHAR(8) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `is_co`;
+ALTER TABLE `halaya`.`orders_hs`  
+ADD COLUMN `is_co` ENUM('N','Y') CHARSET utf8 COLLATE utf8_general_ci NOT NULL AFTER `customer_id`, 
+ADD COLUMN `cc_id` VARCHAR(8) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `is_co`;    
+ALTER TABLE `halaya`.`orders_is` CHANGE `invoice_date` `invoice_date` DATE DEFAULT '1901-12-14' NULL ;
+
+
 /* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
 /*
-update view vw_core_fixedselections_available
-update table params inventory field formfields
-update view vw_inventprod_available
-
+--update view vw_core_fixedselections_available
+--update table params inventory field formfields
+--update view vw_inventprod_available
+Note: when upgrading gbiz, delete all inventchkouts records, set order checkout status to "COMPLETED"
+UPDATE orders set inventory_checkout_status = "COMPLETED";
 */
+
+DELIMITER $$
+USE `halaya`$$
+DROP VIEW IF EXISTS `vw_core_fixedselections_available`$$
+CREATE ALGORITHM=UNDEFINED DEFINER=`dbuser`@`localhost` SQL SECURITY DEFINER VIEW `halaya`.`vw_core_fixedselections_available` AS 
+SELECT
+`halaya`.`params`.`controller` AS `fixedselection_id`
+FROM `halaya`.`params`
+WHERE 
+((`halaya`.`params`.`controller` <> 'site')
+ AND (`halaya`.`params`.`dflag` = 'Y')
+ AND (NOT(`halaya`.`params`.`controller` IN(SELECT
+ `halaya`.`fixedselections`.`fixedselection_id` AS `fixedselection_id`
+ FROM `halaya`.`fixedselections`))))UNION SELECT
+ `halaya`.`enquirydefs`.`controller` AS `fixedselection_id`
+ FROM `halaya`.`enquirydefs`
+ WHERE ((`halaya`.`enquirydefs`.`dflag` = 'Y')
+ AND (NOT(`halaya`.`enquirydefs`.`controller` IN(SELECT
+ `halaya`.`fixedselections`.`fixedselection_id` AS `fixedselection_id`
+ FROM `halaya`.`fixedselections`))))
+ORDER BY `fixedselection_id`$$
+DELIMITER ;
+
+DELIMITER $$
+USE `halaya`$$
+DROP VIEW IF EXISTS `vw_inventprod_available`$$
+CREATE ALGORITHM=UNDEFINED DEFINER=`dbuser`@`localhost` SQL SECURITY DEFINER VIEW `halaya`.`vw_inventprod_available` AS (
+SELECT
+  `halaya`.`products`.`id`                  AS `id`,
+  `halaya`.`products`.`product_id`          AS `product_id`,
+  `halaya`.`products`.`product_description` AS `description`
+FROM `halaya`.`products`
+WHERE (`halaya`.`products`.`type` = 'STOCK'))$$
+DELIMITER ;
+
+DELIMITER $$
+USE `halaya`$$
+DROP VIEW IF EXISTS `vw_active_charge_customers`$$
+CREATE ALGORITHM=UNDEFINED DEFINER=`dbuser`@`localhost` SQL SECURITY DEFINER VIEW `vw_active_charge_customers` AS (
+SELECT
+  `chargeaccounts`.`id`                   AS `id`,
+  `chargeaccounts`.`customer_id`          AS `customer_id`,
+  `customers`.`customer_type`             AS `customer_type`,
+  `customers`.`business_type`             AS `business_type`,
+  `customers`.`first_name`                AS `first_name`,
+  `customers`.`last_name`                 AS `last_name`,
+  `customers`.`phone_mobile1`             AS `phone_mobile1`,
+  `chargeaccounts`.`activation_date`      AS `activation_date`,
+  `chargeaccounts`.`status_change_date`   AS `status_change_date`,
+  `chargeaccounts`.`active`               AS `active`,
+  `chargeaccounts`.`special_instructions` AS `special_instructions`,
+  `chargeaccounts`.`comments`             AS `comments`
+FROM (`chargeaccounts`
+   JOIN `customers`
+     ON ((`chargeaccounts`.`customer_id` = `customers`.`customer_id`)))
+WHERE (`chargeaccounts`.`active` = 'Y'))$$
+DELIMITER ;

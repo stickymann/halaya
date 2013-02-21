@@ -95,74 +95,7 @@ class Controller_Core_Site extends Controller_Include
 		$this->param['htmlhead'] = $htmlhead->get_html();
 		$this->param['enqhead'] = $htmlhead->get_html();
 	}
-	/*
-	public function _before()
-	{
-       	parent::before();
-		$this->db = Database::instance();
-		$this->model = new Model_SiteDB;
-		//$this->param = $this->get_controller_params('site');
-		
-		// Initialize these values form constructor template
-		$this->template->head = '';
-		$this->template->userbttns = '';
-		$this->template->menutitle = '';
-		$this->template->content = '';
-		$this->template->auditfields = '';
-	
-		if(Auth::instance()->logged_in())
-		{
-			$this->template->username = Auth::instance()->get_user()->username;
-		}
-		else
-			$this->template->username = 'expired';
-		
 
-		// By adding this we are making the database object available to all controllers that extend Site_Controller
-        $user = ORM::factory('User')->where('username','=',$this->template->username)->find();
-		$this->template->idname = $user->idname; 
-		$this->frmaudtfields = $this->merge_form_with_audit_fields($this->form,$this->label);
-    
-		// Initialize controller params
-		$this->param = $this->get_controller_params($this->controller);
-		$this->param['url_enquiry'] = $this->param['url_input'] = $this->param['param_id'];
-		$this->param['primarymodel'] = new $this->param['primarymodel'];
-		$this->param['defaultlookupfields'] = $this->param['primarymodel']->get_formfields($this->controller);
-		// Setup form field, fill arrays with default values
-		$this->set_sysconfig_global_modes();
-		$this->formdata = $this->get_controller_formdefs($this->controller);
-		$this->set_formfields_and_labels();
-		
-		// Application shared stylesheets and javascripts
-		$htmlhead = new Controller_Core_Sitehtml;
-		
-		// External
-		$htmlhead->add( HTML::style($this->css['tablesorterblue'], array('screen')) );
-		$htmlhead->add( HTML::style($this->css['easyui'], array('screen')) );
-		$htmlhead->add( HTML::style($this->css['easyui_icon'], array('screen')) );
-		$htmlhead->add( HTML::style($this->css['datepick'], array('screen')) );
-		
-		// Internal
-		$htmlhead->add( HTML::style($this->css['site'], array('screen')) );
-
-		// External
-		$htmlhead->add( HTML::script($this->js['jquery']) );
-		$htmlhead->add( HTML::script($this->js['easyui']) );
-		$htmlhead->add( HTML::script($this->js['datepick']) );
-		$htmlhead->add( HTML::script($this->js['tablesorter']) );
-		$htmlhead->add( HTML::script($this->js['tablesorterpager']) );
-		$htmlhead->add( HTML::script($this->js['datevalidate']) );
-		
-		// Internal
-		$htmlhead->add( HTML::script($this->js['siteutils']) );
-		$htmlhead->add( HTML::script($this->js['sideinfo']) );
-		$htmlhead->add( HTML::script($this->js['enquiry']) );
-		$htmlhead->add( HTML::script($this->js['popout']) );
-		
-		$this->param['htmlhead'] = $htmlhead->get_html();
-		$this->param['enqhead'] = $htmlhead->get_html();
-	}
-*/
 	public function set_start_controller($controller)
 	{
 		$this->controller = $controller;
@@ -2065,7 +1998,7 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 		$TABLEHEADER = ""; $TABLEROWS ="";
 		$HTML = "<table id='subformview' width='90%'>"."\n";
 
-		$subopt  = $this->param['primarymodel']->getFormSubTableOptions($controller,$key);
+		$subopt  = $this->param['primarymodel']->get_form_subtable_options($controller,$key);
 		foreach($subopt as $subkey => $row)
 		{
 			$sublabel = $row['sublabel'];
@@ -2115,7 +2048,7 @@ $HTML .= "</table></div>"."\n";
 	public function xml_subform_columndef($controller,$key)
 	{
 		$COLDEFROW = ""; $coldef = "";
-		$subopt  = $this->param['primarymodel']->getFormSubTableOptions($controller,$key);
+		$subopt  = $this->param['primarymodel']->get_form_subtable_options($controller,$key);
 		foreach($subopt as $subkey => $row)
 		{
 			$coldef = "";
@@ -2167,8 +2100,6 @@ _text_;
 	{
 		$HTML = "<table id='subformview' width='90%'>"."\n";
 		$TABLEHEADER = ""; $TABLEROWS ="";
-//print_r($results);
-//print "[DATA]<hr>";
 		foreach($labels as $key => $val)
 		{
 			$TABLEHEADER .= sprintf("<th>%s</th>",$val);

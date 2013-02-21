@@ -11,6 +11,12 @@ $(document).ready(function()
 {
 	order_status = $('#order_status').val();
 	init_order_status = $('#order_status').val();
+	init_cc = $('#cc_id').val();
+	init_cc_id_sideinfo = $('#cc_id_sideinfo').html();
+	
+	$('#is_co').change(function() {order_SetChargeCustomer();});
+	$('#cc_id').focus(function() {order_SetChargeCustomerBlank();});
+
 	if( $('#order_status').val() == "NEW" || $('#order_status').val() == "QUOTATION" || $('#current_no').val() == 0)
 	{
 		subform_InitDataGridReadWrite(subtable); 
@@ -190,7 +196,7 @@ function order_UpdateDetails()
 	var xmlhr = "<?xml version='1.0' standalone='yes'?>"+"<rows>";
 	var xmlft = "</rows>";
 	//var xmlrowcount = "<rowcount>0</rowcount>";
-	var xmltxt = "", summaryhtml = "";
+	var xmltxt = "", summaryhtml = ""; products = ""; quatities = "";
 	var grandtotal = 0, subtotal = 0, tax_total = 0, discount_amount = 0; 
 
 	var rows = $('#'+subtable).datagrid('getRows');
@@ -226,11 +232,24 @@ function order_UpdateDetails()
 		subtotal		+= parseFloat((rows[i].subform_order_details_qty*rows[i].subform_order_details_unit_price))-parseFloat(discount_amount);
 		tax_total		+= parseFloat(rows[i].subform_order_details_tax_amount);
 		grandtotal		+= parseFloat(rows[i].subform_order_details_total);
+		
+		products	+= getCellsValue(rows[i].subform_order_details_product_id) + ",";
+		quatities	+= getCellsValue(rows[i].subform_order_details_qty) + ",";
 	}  
-	
+	products  = products.substring(0,products.lastIndexOf(","));
+	quantities = quatities.substring(0,quatities.lastIndexOf(","));
+	branch	  = $('#branch_id').val();
+	order	  = $('#order_id').val();
+	icstat	  = $('#inventory_checkout_status').val();
+
+	stockcheck_url  = "option=stockcheck&order=" + order + "&icstat=" + icstat + "&branch=" + branch + "&products=" + products + "&quantities=" + quantities;
+	//alert(stockcheck_url);
+	stockcheck_data = siteutils.getAjaxURL() + stockcheck_url;
+
 	//xmlrowcount = "<rowcount>" + rowlength + "</rowcount>" + "\\n";
 	xmltxt = xmlhr + xmltxt + xmlft;
 	//alert(xmltxt);
+	
 	summaryhtml += '<table width="30%">';
 	summaryhtml += '<tr><td width="50%"><b>Sub Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(subtotal) + '</td></tr>';
 	summaryhtml += '<tr><td width="50%"><b>Tax Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(tax_total) + '</td></tr>';
@@ -318,7 +337,7 @@ function order_SetInvoiceDate()
 function order_CreateID()
 {
 	ctrlid = $('#id').val();
-	order_params = "option=atlid&controller=order&prefix=ORD&ctrlid=" + ctrlid;
+	order_params = "option=altid&controller=order&prefix=ORD&ctrlid=" + ctrlid;
 	siteutils.runQuery(order_params,'order_id','val');
 }
 		
@@ -327,6 +346,19 @@ function order_GetUserBranch()
 	idname = $("#js_idname").val();
 	order_params = "option=userbranch&idname=" + idname;
 	siteutils.runQuery(order_params,'branch_id','val');
+}
+
+function order_SetChargeCustomer()
+{
+	if($('#is_co').val() == "N") 
+	{ $('#cc_id').val(""); $('#cc_id_sideinfo').html(""); } 
+	else 
+	{ $('#cc_id').val(init_cc); $('#cc_id_sideinfo').html(init_cc_id_sideinfo); }
+}
+
+function order_SetChargeCustomerBlank()
+{
+	if($('#is_co').val() == "N") { $('#cc_id').val(""); $('#cc_id_sideinfo').html(""); } 
 }
 
 function order_ToggleCheckoutType()

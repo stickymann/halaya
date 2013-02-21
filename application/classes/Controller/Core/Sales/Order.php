@@ -119,7 +119,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 			$grandtotal		+= $row['total'];
 		}  
 		
-		$summaryhtml = '<table class="viewtext" width="30%">';
+		$summaryhtml = '<table class="viewtext" width="30%" border="1">';
 		$summaryhtml .= sprintf('<tr><td width="50%s" style="color:%s;"><b>Sub Total :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;">%s</td></tr>',"%",$color,"%",$color,number_format($subtotal, 2, '.', ''));
 		$summaryhtml .= sprintf('<tr><td width="50%s" style="color:%s;"><b>Tax Total :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;">%s</td></tr>',"%",$color,"%",$color,number_format($tax_total, 2, '.', ''));
 		$summaryhtml .= sprintf('<tr><td width="50%s" style="color:%s;"><b>GRAND TOTAL :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;"><b>%s</b></td></tr>',"%",$color,"%",$color,number_format($grandtotal, 2, '.', ''));
@@ -144,7 +144,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 			$param	= $this->param['primarymodel']->get_controller_params("product");
 			$table	= $param['tb_live'];
 			$unique_id = "product_id";
-			$fields = array('order_id','type','package_items','product_description');
+			$fields = array('product_id','type','package_items','product_description');
 
 			$rows = new SimpleXMLElement($_POST['order_details']);
 			if($rows->row) 
@@ -212,7 +212,7 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 
 	public function update_order_status($table,$order_id,$status,$status_change_date)
 	{
-		$querystr = sprintf('update %s set order_status = "%s", status_change_date = "%s" where order_id = "%s"',$table,$status,$status_change_date,$order_id);
+		$querystr = sprintf('UPDATE %s SET order_status = "%s", status_change_date = "%s" WHERE order_id = "%s"',$table,$status,$status_change_date,$order_id);
 		$this->param['primarymodel']->execute_update_query($querystr);
 	}
 
@@ -221,7 +221,7 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 		if(!($_POST['order_status'] == "NEW") && !($_POST['order_status'] == "QUOTATION") && !($_POST['order_status'] == "ZERO.CHARGE") && $_POST['current_no'] > 0)
 		{
 			$order_id = $_POST['order_id'];
-			$querystr = sprintf('select order_total from vw_orderbalances where order_id = "%s"',$order_id);
+			$querystr = sprintf('SELECT order_total FROM vw_orderbalances WHERE order_id = "%s"',$order_id);
 			$result = $this->param['primarymodel']->execute_select_query($querystr);
 			$order_total = $result[0]->order_total;
 			if($order_total == 0)
@@ -241,7 +241,7 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 		
 		if($current_no == 1 && $seq_no == "0001")
 		{
-			$querystr = sprintf('update %s set order_status = "QUOTATION.EXPIRED" where quotation_date < (select date_add("%s", interval -30 day)) and order_status = "QUOTATION"',$table,$current_date);
+			$querystr = sprintf('UPDATE %s SET order_status = "QUOTATION.EXPIRED" WHERE quotation_date < (SELECT DATE_ADD("%s", INTERVAL -30 day)) AND order_status = "QUOTATION"',$table,$current_date);
 			$this->param['primarymodel']->execute_update_query($querystr);
 		}	
 	}
@@ -254,15 +254,15 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 	
 	public function authorize_post_update_existing_record()
 	{
-		//$this->inventoryCheckout();
-		//$this->SetZeroChargeOrderStatus();
+		$this->inventory_checkout();
+		$this->set_zero_charge_order_status();
 	}
 
 	public function authorize_post_insert_new_record()
 	{
-		//$this->inventoryCheckout();
-		//$this->SetZeroChargeOrderStatus();
-		//$this->ExpireQuotations();
+		$this->inventory_checkout();
+		$this->set_zero_charge_order_status();
+		$this->expire_quotations();
 	}
 
 }//End Controller_Core_Sales_Order
