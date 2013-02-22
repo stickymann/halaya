@@ -196,13 +196,13 @@ function order_UpdateDetails()
 	var xmlhr = "<?xml version='1.0' standalone='yes'?>"+"<rows>";
 	var xmlft = "</rows>";
 	//var xmlrowcount = "<rowcount>0</rowcount>";
-	var xmltxt = "", summaryhtml = ""; products = ""; quatities = "";
+	var xmltxt = "", summaryhtml = ""; products = ""; quatities = ""; stockcheck_report = "";
 	var grandtotal = 0, subtotal = 0, tax_total = 0, discount_amount = 0; 
 
 	var rows = $('#'+subtable).datagrid('getRows');
 	rowlength = rows.length;
 	for(var i=0; i<rowlength; i++)
-	{  
+	{   
 		id				= "<id>" + getCellsValue(rows[i].subform_order_details_id) + "</id>";
 		order_id		= "<order_id>" + getCellsValue(rows[i].subform_order_details_order_id) + "</order_id>";
 		product_id		= "<product_id>" + getCellsValue(rows[i].subform_order_details_product_id) + "</product_id>";
@@ -242,19 +242,30 @@ function order_UpdateDetails()
 	order	  = $('#order_id').val();
 	icstat	  = $('#inventory_checkout_status').val();
 
-	stockcheck_url  = "option=stockcheck&order=" + order + "&icstat=" + icstat + "&branch=" + branch + "&products=" + products + "&quantities=" + quantities;
+	stockcheck_url  = "option=stockcheckreport&order=" + order + "&icstat=" + icstat + "&branch=" + branch + "&products=" + products + "&quantities=" + quantities;
+	stockcheck_url = siteutils.getAjaxURL() + stockcheck_url;
 	//alert(stockcheck_url);
-	stockcheck_data = siteutils.getAjaxURL() + stockcheck_url;
-
+	$.get(stockcheck_url, function(data) 
+	{ 
+		alert(data);
+		var stockcheck_report = data; 
+	});
+	
+	
 	//xmlrowcount = "<rowcount>" + rowlength + "</rowcount>" + "\\n";
 	xmltxt = xmlhr + xmltxt + xmlft;
 	//alert(xmltxt);
 	
-	summaryhtml += '<table width="30%">';
+	summaryhtml += '<table width="100%" id="rpttbl">';
+	summaryhtml += '<tr valign="top"><td>';
+	summaryhtml += '<table width="50%">';
 	summaryhtml += '<tr><td width="50%"><b>Sub Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(subtotal) + '</td></tr>';
 	summaryhtml += '<tr><td width="50%"><b>Tax Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(tax_total) + '</td></tr>';
 	summaryhtml += '<tr><td width="50%"><b>GRAND TOTAL :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;"><b>' + siteutils.formatCurrency(grandtotal) + '</b></td></tr>';
 	summaryhtml += '</table>';
+	summaryhtml += '</td><td>' + stockcheck_report + '</td></tr>';
+	summaryhtml += '</table>';
+
 	$('#subform_summary_order_details').html(summaryhtml);
 	$('#order_details').val(xmltxt);
 }

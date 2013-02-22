@@ -533,13 +533,23 @@ class Controller_Core_Ajaxtodb extends Controller
 				print json_encode($result); 
 			break;
 
-			case 'stockcheck';
+			case 'stockcheckreport';
 				$order		= $_REQUEST['order'];
 				$icstat		= $_REQUEST['icstat'];
 				$branch		= $_REQUEST['branch'];
 				$products	= $_REQUEST['products'];
 				$quantities	= $_REQUEST['quantities'];
 				$this->do_stockcheck($order,$icstat,$branch,$products,$quantities);
+				print( $this->stockcheck_report() );
+			break;
+
+			case 'stockcheckstatus';
+				$order		= $_REQUEST['order'];
+				$icstat		= $_REQUEST['icstat'];
+				$branch		= $_REQUEST['branch'];
+				$products	= $_REQUEST['products'];
+				$quantities	= $_REQUEST['quantities'];
+				print( $this->do_stockcheck($order,$icstat,$branch,$products,$quantities) );
 			break;
 		}
 	}
@@ -1320,7 +1330,6 @@ _SCRIPT_;
 		if( $icstat == "COMPLETED" ) 
 		{ 
 			print ""; 
-print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			return $stockcheck_status; 
 		}
 		$p_arr = preg_split('/,/',$products);
@@ -1343,48 +1352,38 @@ print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[
 			}
 			$index++;
 		}
+				
+		if ( $icstat == "PARTIAL" )
+		{
+			$valid_stock_item = $this->get_checkout_details($order,$branch);
+			$stockcheck_status = "FAIL";
+		}
+		
 		if( count($valid_stock_item) == 0 ) 
 		{ 
 			print ""; 
-print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			return $stockcheck_status; 
 		}
 
-print "<b>[DEBUG]---></b> "; print_r($valid_stock_item); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+	
 		$stockcheck_status = "PASS";
-		
-		if( $icstat == "NONE" )
+		foreach ($valid_stock_item as $inventory_id => $qty_required)
 		{
-			$i = 0;
-			foreach ($valid_stock_item as $inventory_id => $qty_required)
-			{
-				$this->stockcheck_result[$inventory_id] = $this->get_stock_status_none($inventory_id,$qty_required);
-				$i++;
-			}
-print "<b>[DEBUG]---></b> "; print_r($this->stockcheck_result); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
-			
-		}
-		else if ( $icstat == "PARTIAL" )
-		{
-
-		
+			$this->stockcheck_result[$inventory_id] = $this->get_stock_status($inventory_id,$qty_required);
 		}
 		
 		foreach($this->stockcheck_result as $inventory_id => $value)
 		{
 			//$value = $tmpval[$inventory_id];
-print "<b>[DEBUG]---></b> "; print_r($value); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			
 			if( in_array("OUT OF STOCK",$value) || 
 			in_array("INSUFFICIENT QUANTITY",$value) ||
 			in_array("ITEM NOT IN INVENTORY",$value) )
 			{ 
-				
-
+				$stockcheck_status = "FAIL";
 				break;
 			}
 		}
-print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		return $stockcheck_status;
 	}
 
@@ -1396,7 +1395,7 @@ print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[
 		if($count > 0 ) { return TRUE; } else { return FALSE; }  
 	}
 	
-	function get_stock_status_none($inventory_id,$qty_required)
+	function get_stock_status($inventory_id,$qty_required)
 	{
 		$querystr	= sprintf('SELECT qty_instock FROM inventorys WHERE inventory_id ="%s"',$inventory_id);
 		$result		= $this->sitedb->execute_select_query($querystr);
@@ -1422,6 +1421,48 @@ print "<b>[DEBUG]---></b> "; print($stockcheck_status); print( sprintf('<br><b>[
 			$arr = array("0","ITEM NOT IN INVENTORY");
 			return $arr;
 		} 
+	}
+
+	function get_checkout_details($order_id,$branch)
+	{
+		$querystr	= sprintf('SELECT checkout_details FROM inventchkouts WHERE order_id ="%s"',$order_id);
+		$result		= $this->sitedb->execute_select_query($querystr);
+		if($result)
+		{
+			$formfields = new SimpleXMLElement($result[0]->checkout_details);
+			if($formfields->rows) 
+			{ 
+				$valid_stock_item = array();
+				foreach ($formfields->rows->row as $row) 
+				{ 
+					$status = sprintf('%s',$row->status);
+					if( $status != "COMPLETED" )
+					{
+						$inventory_id = sprintf('%s',$row->product_id)."-".$branch;
+						if( array_key_exists($inventory_id, $valid_stock_item) )
+						{
+							$valid_stock_item[$inventory_id] = $valid_stock_item[$inventory_id] + sprintf('%s',$row->checkout_qty);
+						}
+						else
+						{
+							$valid_stock_item[$inventory_id] = sprintf('%s',$row->checkout_qty);		
+						}
+					}
+				}	
+			}
+			return $valid_stock_item;
+		}
+		else
+		{
+			$arr = array();
+			return $arr;
+		} 
+	}
+
+	function stockcheck_report()
+	{
+
+		return "html_table";
 	}
 
 } // End Core_Ajaxtodb
