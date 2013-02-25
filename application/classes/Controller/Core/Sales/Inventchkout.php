@@ -83,6 +83,7 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 		$chk_c = 0; $chk_p = 0; $chk_n = 0;  $chk_e = 0; $pre_filled_count = 0; $post_filled_count = 0;
 		if( $data['run'] == "Y" )
 		{
+			$this->order_id = $data['order_id'];
 			$order = new Controller_Core_Sales_Order();
 			$querystr = sprintf('select branch_id,inventory_update_type from %s where order_id = "%s"',$order->param['tb_live'],$data['order_id']);
 			$result = $this->param['primarymodel']->execute_select_query($querystr);
@@ -94,14 +95,15 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 				{
 					foreach ($formfields->rows->row as $row) 
 					{ 
-						$val['branch_id'] = $result[0]->branch_id;
+						$val['inventory_id']	= sprintf('%s',$row->product_id)."-".$result[0]->branch_id;
+						$val['branch_id']		= $result[0]->branch_id;
 						$val['inventory_update_type'] = $result[0]->inventory_update_type;
-						$val['product_id'] = sprintf('%s',$row->product_id);
-						$val['description'] = sprintf('%s',$row->description);
-						$val['order_qty'] = sprintf('%s',$row->order_qty);
-						$val['filled_qty'] = sprintf('%s',$row->filled_qty);
-						$val['checkout_qty'] = sprintf('%s',$row->checkout_qty);
-						$val['status'] = sprintf('%s',$row->status);						
+						$val['product_id']		= sprintf('%s',$row->product_id);
+						$val['description']		= sprintf('%s',$row->description);
+						$val['order_qty']		= sprintf('%s',$row->order_qty);
+						$val['filled_qty']		= sprintf('%s',$row->filled_qty);
+						$val['checkout_qty']	= sprintf('%s',$row->checkout_qty);
+						$val['status']			= sprintf('%s',$row->status);						
 						$pre_filled_count =  $pre_filled_count + $val['filled_qty'];
 						
 						if($val['order_qty'] > $val['filled_qty'])
@@ -199,6 +201,8 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 				$current_no = $result[0]->current_no;
 				if($this->param['primarymodel']->insert_from_table_to_table($inventory->param['tb_hist'],$inventory->param['tb_live'],$iid))
 				{
+					$this->param['primarymodel']->set_record_status_hist($this->param['tb_hist'],$iid,$current_no);
+					//update inventory
 					$arr['id'] = $iid;
 					$arr['qty_instock']		 = $val['adjust_qty'];
 					$arr['qty_diff']		 = $val['adjust_qty'] - $qty_instock;
@@ -210,6 +214,22 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 					$arr['record_status']	 = "LIVE";
 					$arr['current_no']		 = $current_no + 1;
 					$this->param['primarymodel']->update_record($inventory->param['tb_live'],$arr);
+					
+					//insert into inventory_sale_logs
+					$salearr['inventory_id']	 = $val['inventory_id'];
+					$salearr['order_id']		 = $this->order_id;
+					$salearr['product_id']		 = $val['product_id'];
+					$salearr['branch_id']		 = $val['branch_id'];
+					$salearr['qty_instock']		 = $val['adjust_qty'];
+					$salearr['qty_diff']		 = $val['adjust_qty'] - $qty_instock;
+					$salearr['last_update_type'] = $val['inventory_update_type'];
+					$salearr['inputter']		 = Auth::instance()->get_user()->idname;
+					$salearr['input_date']		 = date('Y-m-d H:i:s'); 
+					$salearr['authorizer']		 = 'SYSAUTH';
+					$salearr['auth_date']		 = date('Y-m-d H:i:s'); 
+					$salearr['record_status']	 = "LIVE";
+					$salearr['current_no']		 = $current_no + 1;
+					$this->param['primarymodel']->insert_record('inventory_sale_logs',$salearr);
 				}
 			}
 		}

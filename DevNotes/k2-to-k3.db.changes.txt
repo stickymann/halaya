@@ -146,6 +146,27 @@ ADD COLUMN `is_co` ENUM('N','Y') CHARSET utf8 COLLATE utf8_general_ci NOT NULL A
 ADD COLUMN `cc_id` VARCHAR(8) CHARSET utf8 COLLATE utf8_general_ci NULL AFTER `is_co`;    
 ALTER TABLE `halaya`.`orders_is` CHANGE `invoice_date` `invoice_date` DATE DEFAULT '1901-12-14' NULL ;
 
+CREATE TABLE `inventory_sale_logs` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `inventory_id` varchar(255) NOT NULL,
+  `order_id` varchar(16) NOT NULL,
+  `product_id` varchar(50) NOT NULL,
+  `branch_id` varchar(50) NOT NULL,
+  `qty_instock` float(16,2) unsigned NOT NULL,
+  `qty_diff` float(16,2) NOT NULL,
+  `last_update_type` varchar(50) NOT NULL,
+  `comments` text,
+  `inputter` varchar(50) NOT NULL,
+  `input_date` datetime NOT NULL,
+  `authorizer` varchar(50) NOT NULL,
+  `auth_date` datetime NOT NULL,
+  `record_status` char(4) NOT NULL,
+  `current_no` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8
+INSERT INTO `menudefs` VALUES (427,50400053,504000,504000.53125,127,128,3,'L','sales','Inventory Sale Log','magicon016.png%IMG%','core_sales_inventorysalelog','core_sales_inventorysalelog/enquirydefault','if,vw','ls,is,ex','IMPLEMENTATION','2013-02-25 13:02:43','ADMIN','2013-02-25 13:50:50','LIVE',1);
+INSERT INTO `params` VALUES (415,'core_sales_inventorysalelog','inventorysalelog','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>inventory_id</name><label>Inventory Id</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>order_id</name><label>Order Id</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>product_id</name><label>Product Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit>\n		<sideinfo>\n			<enable>yes</enable><table>products</table><selectfields>product_description</selectfields><idfield>product_id</idfield><format>*</format>\n		</sideinfo>\n	</field>\n	<field><name>branch_id</name><label>Branch Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit>\n		<sideinfo>\n			<enable>yes</enable><table>branches</table><selectfields>description</selectfields><idfield>branch_id</idfield><format>*</format>\n		</sideinfo>\n	</field>\n	<field><name>qty_instock</name><label>Quantity Instock</label><type>input</type><value></value><options>size=12</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>qty_diff</name><label>Difference</label><type>input</type><value></value><options>size=12</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>last_update_type</name><label>Update Type</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit>\n		<sideinfo>\n			<enable>yes</enable><table>inventupdtypes</table><selectfields>description,stock_movement</selectfields><idfield>update_type_id</idfield><format>*;_*</format>\n		</sideinfo>\n	</field>\n	<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n</formfields>','sales',1,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','id','','Id','Inventory Sale Log','Model_SiteDB','inventory_sale_logs','inventory_sale_logs','inventory_sale_logs','inventorysalelog_error','ADMIN','2013-02-25 14:21:51','ADMIN','2013-02-25 14:22:14','LIVE',1);
+
 
 /* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
 /*
