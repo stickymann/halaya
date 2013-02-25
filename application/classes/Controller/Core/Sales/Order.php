@@ -12,6 +12,8 @@
  */
 class Controller_Core_Sales_Order extends Controller_Core_Site
 {
+	public $BACK_ORDER_MODE = FALSE;
+
 	public function __construct()
     {
 		parent::__construct("order");
@@ -62,7 +64,8 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 			->rule('invoice_date','date');
 		$validation
 			->rule('order_details','not_empty')
-			->rule('order_details', array($this,'order_details_exist'), array(':validation', ':field'));
+			->rule('order_details', array($this,'order_details_exist'), array(':validation', ':field'))
+			->rule('order_details', array($this,'stockcheck_pass'), array(':validation', ':field'));
 		$validation
 			->rule('inventory_checkout_type','not_empty')
 			->rule('inventory_checkout_type','in_array', array(':value', array('AUTO', 'MANUAL')));
@@ -92,6 +95,45 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 		if( $usertext_required ) { $validation->error($field, 'usertext_required');}
 	}
 
+	public function stockcheck_pass(Validation $validation,$field)
+	{
+		if( $this->BACK_ORDER_MODE ) { return; }
+		$products = ""; $quantities = "";
+		$rows = new SimpleXMLElement($_POST['order_details']);
+		if($rows->row) 
+		{ 
+			foreach ($rows->row as $row) 
+			{ 
+				$products	.= sprintf('%s',$row->product_id).",";
+				$quantities	.= sprintf('%s',$row->qty).",";
+			} 
+		}
+		$products   = substr_replace($products, '', -1);
+		$quantities = substr_replace($quantities, '', -1);
+		
+		$order_statuses = array('QUOTATION','QUOTATION.EXPIRED','ORDER.CANCELLED','REOPENED');
+		if( !( in_array($_POST['order_status'],$order_statuses) ))
+		{
+			$chk = new Controller_Core_Sales_Inventchkout();
+			$querystr = sprintf('SELECT COUNT(order_id) AS count FROM %s WHERE order_id ="%s"',$chk->param['tb_live'], $_POST['order_id']);
+			$result	  = $this->param['primarymodel']->execute_select_query($querystr);
+			$count	  = $result[0]->count;
+			if($count == 0 ) 
+			{
+				$order_id   = $_POST['order_id'];
+				$branch_id  = $_POST['branch_id'];
+				$icstat		= $_POST['inventory_checkout_status'];
+				$baseurl    = URL::base(TRUE,'http');
+$url = sprintf('%score_ajaxtodb?option=stockcheckstatus&order=%s&icstat=%s&branch=%s&products=%s&quantities=%s',$baseurl,$order_id,$icstat,$branch_id,$products,$quantities);
+				$status = Controller_Core_Sitehtml::get_html_from_url($url);
+				if($status == "FAIL")
+				{
+					$validation->error($field, 'stock_required');
+				}
+			}  
+		}
+	}
+
 	public function order_status_ok(Validation $validation,$field)
 	{
 		$status_new = false;
@@ -101,7 +143,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 
 	public function subform_summary_html($results=null,$labels=null,$color=null)
 	{
-		$subtotal =0; $tax_total = 0; $grandtotal = 0;
+		$subtotal =0; $tax_total = 0; $grandtotal = 0; $products = ""; $quantities = "";
 		foreach($results as $index => $row)
 		{
 			$row = (array) $row;
@@ -117,13 +159,28 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 			$subtotal		+= ($row['qty']*$row['unit_price']) - $discount_amount;
 			$tax_total		+= $row['tax_amount'];
 			$grandtotal		+= $row['total'];
+			$products		.= $row['product_id'].",";
+			$quantities		.= $row['qty'].",";
 		}  
-		
-		$summaryhtml = '<table class="viewtext" width="30%" border="1">';
-		$summaryhtml .= sprintf('<tr><td width="50%s" style="color:%s;"><b>Sub Total :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;">%s</td></tr>',"%",$color,"%",$color,number_format($subtotal, 2, '.', ''));
-		$summaryhtml .= sprintf('<tr><td width="50%s" style="color:%s;"><b>Tax Total :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;">%s</td></tr>',"%",$color,"%",$color,number_format($tax_total, 2, '.', ''));
-		$summaryhtml .= sprintf('<tr><td width="50%s" style="color:%s;"><b>GRAND TOTAL :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;"><b>%s</b></td></tr>',"%",$color,"%",$color,number_format($grandtotal, 2, '.', ''));
+		$products   = substr_replace($products, '', -1);
+		$quantities = substr_replace($quantities, '', -1);
+		$order_id   = $this->form['order_id'];
+		$branch_id  = $this->form['branch_id'];
+		$icstat		= $this->form['inventory_checkout_status'];
+		$baseurl    = URL::base(TRUE,'http');
+$url = sprintf('%score_ajaxtodb?option=stockcheckreport&order=%s&icstat=%s&branch=%s&products=%s&quantities=%s&style=viewtbl',$baseurl,$order_id,$icstat,$branch_id,$products,$quantities);
+		$loadval = Controller_Core_Sitehtml::get_html_from_url($url);
+	
+		$summaryhtml  = '<div id="summary_container">';
+		$summaryhtml .= '<div id="total_vw" name="total_vw" class="total_vw">';
+		$summaryhtml .= '<table class="viewtext" >';
+		$summaryhtml .= sprintf('<tr><td style="color:%s;"><b>Sub Total :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;">%s</td></tr>',$color,"%",$color,number_format($subtotal, 2, '.', ''));
+		$summaryhtml .= sprintf('<tr><td style="color:%s;"><b>Tax Total :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;">%s</td></tr>',$color,"%",$color,number_format($tax_total, 2, '.', ''));
+		$summaryhtml .= sprintf('<tr><td style="color:%s;"><b>GRAND TOTAL :</b></td><td width="25%s" style="text-align:right; padding 5px 5px 5px 5px; color:%s;"><b>%s</b></td></tr>',$color,"%",$color,number_format($grandtotal, 2, '.', ''));
 		$summaryhtml .= '</table>';
+		$summaryhtml .= '</div>';
+		$summaryhtml .= sprintf('<div id="stock_chk_inp" name="stock_chk_inp" class="stock_chk_inp">%s</div>',$loadval);
+		$summaryhtml .= '</div>';
 		return $summaryhtml;
 	}
 

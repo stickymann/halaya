@@ -1,5 +1,6 @@
 var po_return_id = "";
 var po_lkparam =  "";
+var qfldlen = 0;
 var nonselect = false;
 	
 var popout = new function()
@@ -52,6 +53,7 @@ var popout = new function()
 		var po_HTML = '<form id="poform" name="poform"><table>'; var po_HTML_LABEL = ""; var po_HTML_INPUT =""; var label ="";
 		qfieldarr = qfields.split(",");
 		len = qfieldarr.length;
+		qfldlen = qfieldarr.length;
 		for(var i=0; i<len; i++) 
 		{	idfield = 'po_'+ qfieldarr[i]; 
 			label = qfieldarr[i];
@@ -68,7 +70,7 @@ var popout = new function()
 		var e=document.getElementById('poform').elements;
 		//var e=document.forms[0].elements;
 		var i, po_LKFLDS = "", po_params = "";
-		for(i in e)
+		for(i=0 ;i < qfldlen; i++)
 		{
 			if(e[i].type=='text')
 			{

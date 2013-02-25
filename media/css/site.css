@@ -175,3 +175,18 @@ label.valid {display: block; width: 16px; height: 16px;}
 #rptbp {padding: 0px 0px 10px 0px;}
 #rptlp {padding: 0px 0px 0px 10px;}
 #rptap {padding: 15px 10px 15px 10px;}
+
+/*VIEW/INPUT SUMMARY STYLES*/
+#summary_container {border: 0px solid red; background: transparent; font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; text-align: left; padding: 2px}
+.total_inp {border:solid 1px #0000ad; width:30%; float:left; padding: 1px; overflow:auto;}
+.stock_chk_inp {border:solid 0px silver; width:65%; float:right; padding: 1px; overflow:auto; position: relative;}
+.total_vw {border:solid 1px brown; width:30%; float:left; padding: 1px; overflow:auto;}
+.stock_chk_vw {border:solid 0px silver; width:65%; float:right; padding: 1px; overflow:auto; position: relative;}
+
+#scrtbl { border: 1px solid #000066; font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; text-align: left; border-collapse: collapse;}
+#scrtbl th {border: 1px solid #000066;  font-weight: bold; padding: 2px; background: #000066; color: #ffffff;}
+#scrtbl td {border: 1px solid #000066; font-weight: normal; padding: 2px; background: transparent; color:#0000ad; }
+
+#viewtbl { border: 1px solid brown; font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; text-align: left; border-collapse: collapse;}
+#viewtbl th {border: 1px solid brown;  font-weight: normal; padding: 2px; background: brown; color: #ffffff;}
+#viewtbl td {border: 1px solid brown; font-weight: normal; padding: 2px; background: transparent; color: brown;}

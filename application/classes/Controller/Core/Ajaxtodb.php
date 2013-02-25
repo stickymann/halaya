@@ -539,8 +539,19 @@ class Controller_Core_Ajaxtodb extends Controller
 				$branch		= $_REQUEST['branch'];
 				$products	= $_REQUEST['products'];
 				$quantities	= $_REQUEST['quantities'];
-				$this->do_stockcheck($order,$icstat,$branch,$products,$quantities);
-				print( $this->stockcheck_report() );
+				$STATUS = $this->do_stockcheck($order,$icstat,$branch,$products,$quantities);
+				if( count($this->stockcheck_result) > 0 )
+				{
+					if( isset($_REQUEST['style']) )
+					{
+						$style = $_REQUEST['style'];
+						print( $this->stockcheck_report($style) );
+					}
+					else
+					{
+						print( $this->stockcheck_report() );
+					}
+				}
 			break;
 
 			case 'stockcheckstatus';
@@ -1326,52 +1337,70 @@ _SCRIPT_;
 
 	function do_stockcheck($order,$icstat,$branch,$products,$quantites)
 	{
+		$valid_stock_item = array();
+		$this->stockcheck_result = array();
 		$stockcheck_status = "COMPLETED";
+		
 		if( $icstat == "COMPLETED" ) 
 		{ 
 			print ""; 
 			return $stockcheck_status; 
 		}
-		$p_arr = preg_split('/,/',$products);
-		$q_arr = preg_split('/,/',$quantites);
-		$valid_stock_item = array();
-		$index = 0;
-		foreach($p_arr as $key => $product_id)
+		else if( $icstat == "NONE" )
 		{
-			if( $this->is_stock_item($product_id) )
+			$p_arr = preg_split('/,/',$products);
+			$q_arr = preg_split('/,/',$quantites);
+			$index = 0;
+			foreach($p_arr as $key => $product_id)
 			{
-				$inventory_id = $product_id."-".$branch;
-				if( array_key_exists($inventory_id, $valid_stock_item) )
+				if( $this->is_stock_item($product_id) )
 				{
-					$valid_stock_item[$inventory_id] = $valid_stock_item[$inventory_id] + $q_arr[$index];
+					$inventory_id = $product_id."-".$branch;
+					if( array_key_exists($inventory_id, $valid_stock_item) )
+					{
+						$valid_stock_item[$inventory_id] = $valid_stock_item[$inventory_id] + $q_arr[$index];
+					}
+					else
+					{
+						$valid_stock_item[$inventory_id] = $q_arr[$index];		
+					}
 				}
-				else
+				else if ( $this->is_package_item($product_id) )
 				{
-					$valid_stock_item[$inventory_id] = $q_arr[$index];		
+					$ppkg_arr = $this->get_package_stock_items($product_id);
+					foreach($ppkg_arr as $product_id => $pkg_qty )
+					{
+						$inventory_id = $product_id."-".$branch;
+						if( array_key_exists($inventory_id, $valid_stock_item) )
+						{
+							$valid_stock_item[$inventory_id] = $valid_stock_item[$inventory_id] + ($q_arr[$index] * $pkg_qty);
+						}
+						else
+						{	
+							$valid_stock_item[$inventory_id] = ($q_arr[$index] * $pkg_qty);		
+						}
+					}
 				}
+				$index++;
 			}
-			$index++;
 		}
-				
-		if ( $icstat == "PARTIAL" )
+		else if ( $icstat == "PARTIAL" )
 		{
 			$valid_stock_item = $this->get_checkout_details($order,$branch);
-			$stockcheck_status = "FAIL";
 		}
-		
+	
+		$stockcheck_status = "FAIL";
 		if( count($valid_stock_item) == 0 ) 
 		{ 
 			print ""; 
 			return $stockcheck_status; 
 		}
-
 	
 		$stockcheck_status = "PASS";
 		foreach ($valid_stock_item as $inventory_id => $qty_required)
 		{
-			$this->stockcheck_result[$inventory_id] = $this->get_stock_status($inventory_id,$qty_required);
+			$this->stockcheck_result[$inventory_id]= $this->get_stock_status($inventory_id,$qty_required);
 		}
-		
 		foreach($this->stockcheck_result as $inventory_id => $value)
 		{
 			//$value = $tmpval[$inventory_id];
@@ -1395,6 +1424,46 @@ _SCRIPT_;
 		if($count > 0 ) { return TRUE; } else { return FALSE; }  
 	}
 	
+	function is_package_item($product_id)
+	{
+		$querystr	= sprintf('SELECT COUNT(product_id) AS count FROM products WHERE product_id ="%s" AND type = "PACKAGE"',$product_id);
+		$result		= $this->sitedb->execute_select_query($querystr);
+		$count		= $result[0]->count;
+		if($count > 0 ) { return TRUE; } else { return FALSE; }  
+	}
+	
+	function get_package_stock_items($product_id)
+	{
+		$querystr	= sprintf('SELECT package_items FROM products WHERE product_id ="%s" AND type = "PACKAGE"',$product_id);
+		$result		= $this->sitedb->execute_select_query($querystr);
+		$arr = array();
+		
+		if($result)
+		{
+			$row = $result[0];
+			
+			if( preg_match('/;/',$row->package_items) )
+			{
+				$items = preg_split('/;/',$row->package_items);
+			}
+			else
+			{
+				$items = array($row->package_items);
+			}
+			
+			foreach($items as $index => $value)
+			{
+				$p_product = preg_split('/=/',$value);
+				if( $this->is_stock_item( $p_product[0]) )
+				{
+					$arr[ $p_product[0] ] = $p_product[1];
+				}
+			}
+		}
+		return $arr;
+	}
+
+
 	function get_stock_status($inventory_id,$qty_required)
 	{
 		$querystr	= sprintf('SELECT qty_instock FROM inventorys WHERE inventory_id ="%s"',$inventory_id);
@@ -1459,10 +1528,22 @@ _SCRIPT_;
 		} 
 	}
 
-	function stockcheck_report()
+	function stockcheck_report($style="scrtbl")
 	{
+		$TABLEHEADER = ""; $TABLEROWS ="";
+		$HTML = sprintf('<table id="%s" width="90%s">',$style,"%")."\n";
+		$TABLEHEADER .= sprintf('<th>%s</th><th style="text-align:center;">%s</th><th>%s</th>',"Inventory Item", "Qty In Stock", "Inventory Status" );
+		$TABLEHEADER = '<tr valign="top">'.$TABLEHEADER.'</tr>'."\n";
 
-		return "html_table";
+		foreach( $this->stockcheck_result as $inventory_id => $row )
+		{
+			$TABLEROWS .= '<tr valign="top" >';
+			$TABLEROWS .= sprintf('<td>%s</td><td style="text-align:center;">%s</td><td>%s</td>',$inventory_id, $row[0], $row[1]);
+			$TABLEROWS .= '</tr>';
+		}
+
+		$HTML .= $TABLEHEADER.$TABLEROWS."\n".'</table>'."\n";
+		return $HTML;
 	}
 
 } // End Core_Ajaxtodb

@@ -44,6 +44,8 @@ $(document).ready(function()
 	}
 	init_status_change_date = $('#status_change_date').val();
 	init_invoice_date = $('#invoice_date').val();
+	order_UpdateTable();
+	order_UpdateDetails();
 });
 
 function DefaultColumns(tt)
@@ -189,7 +191,48 @@ function doAcceptChanges()
 	$('#'+subtable).datagrid('refreshRow', index);
 	order_UpdateDetails();
 }
-	
+
+function order_UpdateTable()
+{
+	var row = $('#'+subtable).datagrid('getRows');
+	rowlength = row.length;
+	for(var i=0; i<rowlength; i++)
+	{
+		if(row[i].subform_order_details_id == "") { row[i].subform_order_details_id == "undefined"; }
+		if(row[i].subform_order_details_discount_type=="PERCENT")
+		{
+			discount_amount = parseFloat(row[i].subform_order_details_qty*row[i].subform_order_details_unit_price) * parseFloat(row[i].subform_order_details_discount_amount / 100);
+		}
+		else
+		{
+			discount_amount =  row[i].subform_order_details_discount_amount;
+		}
+			
+		if(row[i].subform_order_details_taxable == 'Y')
+		{
+			if(row[i].subform_order_details_product_id=="MISC")
+			{
+				row[i].subform_order_details_tax_percentage = "15.00";
+			}
+			row[i].subform_order_details_tax_amount = siteutils.formatCurrency(((row[i].subform_order_details_qty*row[i].subform_order_details_unit_price)-discount_amount) * (row[i].subform_order_details_tax_percentage/100)); 
+		}
+		else
+		{
+			if(row[i].subform_order_details_product_id=="MISC")
+			{
+				row[i].subform_order_details_tax_percentage = "0.00";
+			}
+			row[i].subform_order_details_tax_amount ="0.00";
+		}
+		row[i].subform_order_details_extended = siteutils.formatCurrency(parseFloat((row[i].subform_order_details_qty*row[i].subform_order_details_unit_price)) - parseFloat(discount_amount));
+		row[i].subform_order_details_total = siteutils.formatCurrency(parseFloat((row[i].subform_order_details_qty*row[i].subform_order_details_unit_price)) - parseFloat(discount_amount) + parseFloat(row[i].subform_order_details_tax_amount));
+		row[i].subform_order_details_discount_amount = siteutils.formatCurrency(row[i].subform_order_details_discount_amount);
+		row[i].subform_order_details_unit_total = siteutils.formatCurrency(parseFloat(row[i].subform_order_details_qty*row[i].subform_order_details_unit_price));
+		row[i].subform_order_details_unit_price = siteutils.formatCurrency(row[i].subform_order_details_unit_price);
+		$('#'+subtable).datagrid('refreshRow', i);
+	}
+}
+
 function order_UpdateDetails()
 {
 	//var xmlhr = "<?xml version='1.0' standalone='yes'?>"+"\\n"+"<rows>"+"\\n";
@@ -247,24 +290,21 @@ function order_UpdateDetails()
 	//alert(stockcheck_url);
 	$.get(stockcheck_url, function(data) 
 	{ 
-		alert(data);
-		var stockcheck_report = data; 
+		$('#stock_chk_inp').html(data);
 	});
 	
-	
-	//xmlrowcount = "<rowcount>" + rowlength + "</rowcount>" + "\\n";
 	xmltxt = xmlhr + xmltxt + xmlft;
-	//alert(xmltxt);
-	
-	summaryhtml += '<table width="100%" id="rpttbl">';
-	summaryhtml += '<tr valign="top"><td>';
-	summaryhtml += '<table width="50%">';
-	summaryhtml += '<tr><td width="50%"><b>Sub Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(subtotal) + '</td></tr>';
-	summaryhtml += '<tr><td width="50%"><b>Tax Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(tax_total) + '</td></tr>';
-	summaryhtml += '<tr><td width="50%"><b>GRAND TOTAL :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;"><b>' + siteutils.formatCurrency(grandtotal) + '</b></td></tr>';
+			
+	summaryhtml += '<div id="summary_container">';
+	summaryhtml += '<div id="total_inp" name="total_inp" class="total_inp">';
+	summaryhtml += '<table>';
+	summaryhtml += '<tr><td><b>Sub Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(subtotal) + '</td></tr>';
+	summaryhtml += '<tr><td><b>Tax Total :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;">' + siteutils.formatCurrency(tax_total) + '</td></tr>';
+	summaryhtml += '<tr><td><b>GRAND TOTAL :</b></td><td width="20%" style="text-align:right; padding 5px 5px 5px 5px;"><b>' + siteutils.formatCurrency(grandtotal) + '</b></td></tr>';
 	summaryhtml += '</table>';
-	summaryhtml += '</td><td>' + stockcheck_report + '</td></tr>';
-	summaryhtml += '</table>';
+	summaryhtml += '</div>';
+	summaryhtml += '<div id="stock_chk_inp" name="stock_chk_inp" class="stock_chk_inp"></div>';
+	summaryhtml += '</div>';
 
 	$('#subform_summary_order_details').html(summaryhtml);
 	$('#order_details').val(xmltxt);

@@ -1759,7 +1759,7 @@ _HTML_;
 				$url = sprintf('%score_ajaxtodb?option=sideinfo&fields=%s&table=%s&idfield=%s&idval=%s&format=%s',$baseurl,$fields,$table,$idfield,$idval,$format);
 				$url = str_replace('"','',$url);
 
-				$loadval = Controller_Core_Sitehtml::get_HTML_from_url($url);
+				$loadval = Controller_Core_Sitehtml::get_html_from_url($url);
 				$SIDEINFO_HTML = sprintf('<span id="%s_sideinfo" name="%s_sideinfo"> %s</span>',$key,$key,$loadval)."\n";
 			}
 		}
@@ -1788,7 +1788,7 @@ _HTML_;
 				$url = sprintf('%score_ajaxtodb?option=sidefunc&func=%s&parameter=%s&format=%s',$baseurl,$func,$value,$format);
 				$url = str_replace('"','',$url);
 
-				$loadval = Controller_Core_Sitehtml::get_HTML_from_url($url);
+				$loadval = Controller_Core_Sitehtml::get_html_from_url($url);
 				$SIDEFUNC_HTML = sprintf('<span id="%s_sidefunc" name="%s_sidefunc"> %s</span>',$key,$key,$loadval)."\n";
 			}
 		}
@@ -2146,18 +2146,44 @@ _text_;
 		if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld))
 		{
 			$rowsExist = false;
+			$count = 0;
 			foreach($subtable_inau as $key => $subtable)
 			{
 				$xml = simplexml_load_string($_POST[$key]);
 				$json = json_encode($xml);
 				$arr = json_decode($json,TRUE);
+				$farr = array();
 				if(isset($arr['row'])) 
 				{ 
 					$tmp = $arr['row'];  
-					if(!isset($tmp['id'])) { $arr = $arr['row'];} 
+					if( !(isset($tmp['id'])) ) 
+					{ 
+						if( is_array($tmp[$count]) )
+						{
+							foreach( $tmp as $aid => $aarr)
+							{
+								$nxt = $aarr;
+								if( is_array($nxt['id']) ) { $nxt['id'] = "undefined"; } 
+								$farr[$aid] = $nxt;
+							}
+						}
+						else
+						{
+							$farr = $arr['row']; 
+						}
+					} 
+					else if( is_array($tmp['id']) ) 
+					{ 
+						$tmp['id'] = "undefined";
+						$farr['row'] = $tmp;
+					}
+					else
+					{
+						$farr = $arr;
+					}
 					$rowsExist = true;
 				}
-	
+				
 				$querystr = sprintf('delete from %s where %s = "%s"',$subtable,$parent_idfield,$idval);
 				if($result = $this->param['primarymodel']->execute_delete_query($querystr))
 				{
@@ -2166,7 +2192,7 @@ _text_;
 				
 				if($rowsExist)
 				{
-					foreach ($arr as $index => $row)
+					foreach ($farr as $index => $row)
 					{
 						$row['inputter']		= $_POST['inputter'];
 						$row['authorizer']		= $_POST['authorizer'];
