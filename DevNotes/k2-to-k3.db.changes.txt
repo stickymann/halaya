@@ -155,6 +155,7 @@ CREATE TABLE `inventory_sale_logs` (
   `qty_instock` float(16,2) unsigned NOT NULL,
   `qty_diff` float(16,2) NOT NULL,
   `last_update_type` varchar(50) NOT NULL,
+  `update_date` date NOT NULL,
   `comments` text,
   `inputter` varchar(50) NOT NULL,
   `input_date` datetime NOT NULL,
@@ -233,3 +234,16 @@ FROM (`chargeaccounts`
      ON ((`chargeaccounts`.`customer_id` = `customers`.`customer_id`)))
 WHERE (`chargeaccounts`.`active` = 'Y'))$$
 DELIMITER ;
+
+
+/**
+ * Creates an inventory checkout record. 
+ *
+ * $Id: Inventchkout.php 2013-01-13 00:00:00 dnesbit $
+ *
+ * @package		Halaya Core
+ * @module	    core
+ * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
+ * @copyright   (c) 2013
+ * @license      
+ */

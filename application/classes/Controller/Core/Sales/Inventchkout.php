@@ -222,7 +222,11 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 					$salearr['branch_id']		 = $val['branch_id'];
 					$salearr['qty_instock']		 = $val['adjust_qty'];
 					$salearr['qty_diff']		 = $val['adjust_qty'] - $qty_instock;
+					$salearr['update_date']		 = $val['inventory_update_type'];
 					$salearr['last_update_type'] = $val['inventory_update_type'];
+					$salearr['update_date']		 = date('Y-m-d<map name="">
+						<area shape="" href="" coords="" alt="">
+					</map>'); 
 					$salearr['inputter']		 = Auth::instance()->get_user()->idname;
 					$salearr['input_date']		 = date('Y-m-d H:i:s'); 
 					$salearr['authorizer']		 = 'SYSAUTH';

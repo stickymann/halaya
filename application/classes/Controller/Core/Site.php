@@ -2019,8 +2019,8 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 			}
 			$TABLEROWS .= "</tr>";
 		}
-
 		$HTML .= $TABLEHEADER.$TABLEROWS."\n"."</table>"."\n";
+		$HTML .= $this->xml_table_summary();
 		return $HTML;
 	}
 
@@ -2028,7 +2028,7 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 	{
 		$TABLEHEADER = ""; $TABLEROWS ="";
 		$subtable_id = "subform_table_".$key;
-		$baseurl = url::base(TRUE,'http');
+		$baseurl = URL::base(TRUE,'http');
 		$controller = $this->param['controller'];
 		$field = $key;
 		$idfield = $this->param['indexfield'];
@@ -2042,6 +2042,7 @@ $HTML .= "</table></div>"."\n";
 
 		$COLDEF = $this->xml_subform_columndef($controller,$key);
 		$HTML .= $HTML.$JSURL."\n".$COLDEF."\n";
+		$HTML .= $this->xml_table_summary();
 		return $HTML;
 	}
 	
@@ -2311,5 +2312,6 @@ _text_;
 	public function subform_summary_html($results=null,$labels=null,$color=null) {}
 	public function subform_field_exclusion_list() { return false;}
 	public function xml_subform_additional_columndef() { return "";}
+	public function xml_table_summary() { return "";};
 }
 ?>
