@@ -236,14 +236,3 @@ WHERE (`chargeaccounts`.`active` = 'Y'))$$
 DELIMITER ;
 
 
-/**
- * Creates an inventory checkout record. 
- *
- * $Id: Inventchkout.php 2013-01-13 00:00:00 dnesbit $
- *
- * @package		Halaya Core
- * @module	    core
- * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
- * @copyright   (c) 2013
- * @license      
- */

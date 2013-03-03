@@ -2312,6 +2312,7 @@ _text_;
 	public function subform_summary_html($results=null,$labels=null,$color=null) {}
 	public function subform_field_exclusion_list() { return false;}
 	public function xml_subform_additional_columndef() { return "";}
-	public function xml_table_summary() { return "";};
-}
-?>
+	public function xml_table_summary() { return "";}
+
+} //End Core_Site
+
