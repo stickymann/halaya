@@ -1,9 +1,9 @@
-var lastIndex = 0;
-var es_fields = "product_id,product_description,TYPE,taxable,unit_price,total_price,category,sub_category";
-var es_table  = "vw_estimator_products";
+var lastIndex  = 0;
+var es_fields  = "product_id,product_description,TYPE,taxable,unit_price,total_price,category,sub_category";
+var es_table   = "vw_estimator_products";
 var es_idfield = "product_id";
-var subtable = "subform_table_order_details";
-var edittype = "DEFAULT";
+var subtable   = "subform_table_order_details";
+var edittype   = "DEFAULT";
 var url_products = siteutils.getAjaxURL() + "option=jdata&controller=product&fields=product_id&prefix=&wfields=status&orderby=product_id&wvals=ACTIVE";
 
 $(document).ready(function()	
@@ -12,6 +12,7 @@ $(document).ready(function()
 	popout.SelectorInput(es_fields,es_idfield);
 	popout.NonSelectorOpenDefault(es_fields,es_table,es_idfield);
 	subform_InitDataGridReadWrite(subtable);
+	order_GetUserBranch();
 });
 
 function DefaultColumns(tt)
@@ -164,7 +165,7 @@ function order_UpdateDetails()
 	var xmlhr = "<?xml version='1.0' standalone='yes'?>"+"<rows>";
 	var xmlft = "</rows>";
 	//var xmlrowcount = "<rowcount>0</rowcount>";
-	var xmltxt = "", summaryhtml = "";
+	var xmltxt = "", summaryhtml = ""; products = ""; quatities = ""; 
 	var grandtotal = 0, subtotal = 0, tax_total = 0, discount_amount = 0; 
 
 	var rows = $('#'+subtable).datagrid('getRows');
@@ -200,7 +201,26 @@ function order_UpdateDetails()
 		subtotal		+= parseFloat((rows[i].subform_order_details_qty*rows[i].subform_order_details_unit_price)) - parseFloat(discount_amount);
 		tax_total		+= parseFloat(rows[i].subform_order_details_tax_amount);
 		grandtotal		+= parseFloat(rows[i].subform_order_details_total);
+		
+		products		+= getCellsValue(rows[i].subform_order_details_product_id) + ",";
+		quatities		+= getCellsValue(rows[i].subform_order_details_qty) + ",";
 	}  
+	
+	products  = products.substring(0,products.lastIndexOf(","));
+	quantities = quatities.substring(0,quatities.lastIndexOf(","));
+	
+	branch	  = $('#branch_id').val();
+	order	  = "NOT-SET";
+	icstat	  = "NONE";
+
+	stockcheck_url  = "option=stockcheckreport&order=" + order + "&icstat=" + icstat + "&branch=" + branch + "&products=" + products + "&quantities=" + quantities;
+	stockcheck_url = siteutils.getAjaxURL() + stockcheck_url;
+	//alert(stockcheck_url);
+	$.get(stockcheck_url, function(data) 
+	{ 
+		$('#inventory_status').html(data);
+	});
+ 
 	
 	//xmlrowcount = "<rowcount>" + rowlength + "</rowcount>" + "\\n";
 	xmltxt = xmlhr + xmltxt + xmlft;
@@ -212,6 +232,13 @@ function order_UpdateDetails()
 	summaryhtml += '</table>';
 	$('#estimator_summary').html(summaryhtml);
 	$('#order_details').val(xmltxt);
+}
+
+function order_GetUserBranch() 
+{
+	idname = $("#js_idname").val();
+	order_params = "option=userbranch&idname=" + idname;
+	siteutils.runQuery(order_params,'branch_id','val');
 }
 
 function order_GetProductData()

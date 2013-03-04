@@ -952,6 +952,7 @@ class Model_SiteDB extends Model
 		}
 		$vals = substr($vals,0,-1);
 		$querystr = sprintf('UPDATE `%s` set %s WHERE `%s` = "%s" AND  `%s` = "%s"' ,$table,$vals,$field1,$value1,$field2,$value2);
+print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$result = $this->execute_non_select_query(Database::UPDATE,$querystr);
 		return $result;
 	}

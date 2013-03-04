@@ -17,35 +17,35 @@ class Controller_Core_Sales_Estimator extends Controller_Include
 		else
 		{
 			$this->template->username = 'expired';
-			url::redirect('autologout');
+			URL::redirect('autologout');
 		}
 		
-		$htmlhead = new Sitehtml_Controller(html::stylesheet(array('media/css/site','media/css/tablesorterblue',$this->easyui_css,$this->easyui_icon),array('screen','screen','screen','screen')));
-		$htmlhead->add(html::script(array($this->jquery_js,$this->easyui_js,'media/js/jquery.tablesorter','media/js/siteutils.js'.$this->randomstring,'media/js/popoutselector.js'.$this->randomstring, 'media/js/estimator.js'.$this->randomstring )));
+		$htmlhead = new Controller_Core_Sitehtml( $this->get_htmlhead() );
 		
-		$this->sitedb = new Site_Model;
+		$this->sitedb = new Model_SiteDB;
 		$this->template->head = '';
 		$this->template->content = '';
 		$this->template->menutitle = '';
 		$this->template->userbttns = '';
 
-		$this->param['controller'] = "estimator";
-		$this->param['inputview'] = "estimator_view";
-		$this->param['pageheader'] = "Estimator";
-		$this->param['htmlhead'] = $htmlhead->getHtml();
+		$this->param['param_id']	= "core_sales_estimator";
+		$this->param['controller']	= "estimator";
+		$this->param['inputview']	= "estimator.view";
+		$this->param['pageheader']	= "Estimator";
+		$this->param['htmlhead']	= $htmlhead->get_html();
 	}	
 		
-	public function index()
+	public function action_index()
     {
-      $this->processRequest();
+      $this->process_request();
 	}
 
-	public static function redirectToLogin()
+	public static function redirect_to_login()
 	{
-		url::redirect('autologout');
+		URL::redirect('autologout');
 	}
 
-	function processRequest()
+	function process_request()
 	{
 		if(!$_POST)
         {
@@ -59,8 +59,24 @@ class Controller_Core_Sales_Estimator extends Controller_Include
 			}
 		}
 	}
-
-	public function setPageContent($_head='',$_body='')
+	
+	
+	function get_htmlhead()
+	{	
+		$head  = sprintf('%s',HTML::style( $this->css['site'], array('screen') ))."\n"; 
+		$head .= sprintf('%s',HTML::style( $this->css['tablesorterblue'], array('screen') ))."\n"; 
+		$head .= sprintf('%s',HTML::style( $this->css['easyui_gray'], array('screen') ))."\n"; 
+		$head .= sprintf('%s',HTML::style( $this->css['easyui_icon'], array('screen') ))."\n"; 
+		$head .= sprintf('%s',HTML::script( $this->randomize($this->js['jquery']) ))."\n";
+		$head .= sprintf('%s',HTML::script( $this->randomize($this->js['tablesorter']) ))."\n";
+		$head .= sprintf('%s',HTML::script( $this->randomize($this->js['easyui']) ))."\n";
+		$head .= sprintf('%s',HTML::script( $this->randomize($this->js['siteutils']) ))."\n";
+		$head .= sprintf('%s',HTML::script( $this->randomize($this->js['popout']) ))."\n";
+		$head .= sprintf('%s',HTML::script( $this->randomize('media/js/core.estimator.js') ))."\n";
+		return $head;	
+	}
+ 
+	public function set_page_content($_head='',$_body='')
 	{
 		$this->template->head = $_head;
 		$this->template->content = $_body;
@@ -69,7 +85,7 @@ class Controller_Core_Sales_Estimator extends Controller_Include
 	function input()
 	{
 		$this->input_form();
-		$this->setPageContent($this->param['htmlhead'],$this->param['htmlbody']);
+		$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 	}
 
 	function input_form()
@@ -77,27 +93,30 @@ class Controller_Core_Sales_Estimator extends Controller_Include
 		$content = new View($this->param['inputview']);
 		//add page/form header
 		$content->pageheader = $this->param['pageheader'];
-		$formtag = form::open($this->param['controller'],array('id'=>$this->param['controller'],'name'=>$this->param['controller']));
-		$pagebody = new Sitehtml_Controller( $formtag );
+		$formtag = Form::open($this->param['param_id'],array('id'=>$this->param['param_id'],'name'=>$this->param['param_id']));
+		$pagebody = new Controller_Core_Sitehtml( $formtag );
 		$pagebody->add( $this->summary_header() );
 		$pagebody->add('<div id="ibg">');
 		$pagebody->add( $this->order_details_subform() );
 		$pagebody->add('<input type="hidden" size=100 id="order_details" name="order_details" value=""/>');
+		
+		$pagebody->add( sprintf('<input type="hidden" id="js_idname" name="js_idname" value="%s"/>',$this->template->username) );
+		$pagebody->add('<input type="hidden" id="branch_id" name="branch_id" value=""/>');
+		$pagebody->add('<br><div id="inventory_status"></div>');
 		$pagebody->add("<br></div></form>");
-
 		$pagebody->add("<div id='pofilter'></div>\n");
 		$pagebody->add("<div id='polistresult'></div>\n");
 		//$pagebody->add("</div>\n");
 		
-		$content->pagebody = $pagebody->getHtml();
+		$content->pagebody = $pagebody->get_html();
 		$this->param['htmlbody'] = $content;
 	}
 	
 	function order_details_subform()
 	{
-		$sitectlr = new Site_Controller("order");
+		$sitectlr = new Controller_Core_Site("order");
 		$sitectlr->auto_render = FALSE;
-		return $sitectlr->createSubForm("order_details",0);
+		return $sitectlr->create_subform("order_details",0);
 	}
 
 	function summary_header()
@@ -124,20 +143,20 @@ _HTML_;
 	{
 		unset($_POST['submit']);
 		//set up new order record and insert into order table 
-		$order = new Order_Controller();
+		$order = new Controller_Core_Sales_Order();
 		$order->auto_render = FALSE;
 		
-		$arr = $order->param['primarymodel']->createBlankRecord($order->param['tb_live'],$order->param['tb_inau']);
+		$arr = $order->param['primarymodel']->create_blank_record($order->param['tb_live'],$order->param['tb_inau']);
 		$arr = (array) $arr;
 		
-		$baseurl = url::base(TRUE,'http');
-		$url = sprintf('%sajaxtodb?option=orderid&controller=order&prefix=ORD&ctrlid=%s',$baseurl,$arr['id']);
-		$order_id = Sitehtml_Controller::getHTMLFromUrl($url);
+		$baseurl = URL::base(TRUE,'http');
+		$url = sprintf('%score_ajaxtodb?option=altid&controller=order&prefix=ORD&ctrlid=%s',$baseurl,$arr['id']);
+		$order_id = Controller_Core_Sitehtml::get_html_from_url($url);
 		$order_details = str_replace("%ORDERID%",$order_id, $_POST['order_details']);
 		
 		$idname = Auth::instance()->get_user()->idname;
-		$url = sprintf('%sajaxtodb?option=userbranch&idname=%s',$baseurl,$idname);
-		$branch_id = Sitehtml_Controller::getHTMLFromUrl($url);
+		$url = sprintf('%score_ajaxtodb?option=userbranch&idname=%s',$baseurl,$idname);
+		$branch_id = Controller_Core_Sitehtml::get_html_from_url($url);
 
 		$arr['order_id']				= $order_id;
 		$arr['branch_id']				= $branch_id;
@@ -157,14 +176,14 @@ _HTML_;
 		
 		//createSubFormRecords() requires $_POST array
 		$_POST = $arr;
-		if ( $order->param['primarymodel']->updateRecord($order->param['tb_inau'],$_POST) )
+		if ( $order->param['primarymodel']->update_record($order->param['tb_inau'],$_POST) )
 		{
-			$order->createSubFormRecords();
-			$this->param['recordstatusmsg'] = "<p><b>&nbsp Record  [ <a href='".$order->param['controller']."/index/".$_POST['order_id']."'>".$_POST['order_id']."</a> ] added to ".$_POST['record_status']." successfully, <a href=".$this->param['controller'].">Continue.</a></b></p>"; 
+			$order->create_subform_records();
+			$this->param['recordstatusmsg'] = "<p><b>&nbsp Record  [ <a href='".$order->param['param_id']."/index/".$_POST['order_id']."'>".$_POST['order_id']."</a> ] added to ".$_POST['record_status']." successfully, <a href=".$this->param['param_id'].">Continue.</a></b></p>"; 
 		}
 		else
 		{
-			$this->param['recordstatusmsg'] = $order->param['primarymodel']->getDBErrMsg();
+			$this->param['recordstatusmsg'] = $order->param['primarymodel']->get_db_err_msg();
 		}
 		$this->create_order_status_info();
 	}
@@ -176,7 +195,7 @@ _HTML_;
 		$content->pageheader = $this->param['pageheader'];
 		$content->pagebody	 = $this->param['recordstatusmsg'];
 		$this->param['htmlbody'] = $content;
-		$this->setPageContent($this->param['htmlhead'],$this->param['htmlbody']);
+		$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 	}
 }
 ?>

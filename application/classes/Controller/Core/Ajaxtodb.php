@@ -645,7 +645,7 @@ _TEXT_;
 			{
 				if($firstpass)
 				{
-					$headtxt = Site_Controller::strtotitlecase(str_replace("_"," ",$key));
+					$headtxt = Controller_Core_Site::strtotitlecase(str_replace("_"," ",$key));
 					$header .= '<th>'.$headtxt.'</th>'; 
 				}
 				$data .= '<td>'.HTML::chars($value).'</td>'; 
