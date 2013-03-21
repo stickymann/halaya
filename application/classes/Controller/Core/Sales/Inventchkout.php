@@ -31,7 +31,7 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 		$validation
 			->rule('order_id','not_empty')
 			->rule('order_id','min_length', array(':value', 16))->rule('order_id','max_length', array(':value', 16))
-			->rule('order_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['order_id']));
+			->rule('order_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['order_id']));
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
@@ -222,11 +222,8 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 					$salearr['branch_id']		 = $val['branch_id'];
 					$salearr['qty_instock']		 = $val['adjust_qty'];
 					$salearr['qty_diff']		 = $val['adjust_qty'] - $qty_instock;
-					$salearr['update_date']		 = $val['inventory_update_type'];
 					$salearr['last_update_type'] = $val['inventory_update_type'];
-					$salearr['update_date']		 = date('Y-m-d<map name="">
-						<area shape="" href="" coords="" alt="">
-					</map>'); 
+					$salearr['update_date']		 = date('Y-m-d'); 					
 					$salearr['inputter']		 = Auth::instance()->get_user()->idname;
 					$salearr['input_date']		 = date('Y-m-d H:i:s'); 
 					$salearr['authorizer']		 = 'SYSAUTH';
@@ -270,7 +267,7 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 
 	public function authorize_post_update_existing_record()
 	{
-		$this->process_checkout($_POST);
+		$this->process_checkout($this->OBJPOST);
 	}
 
 } //End Controller_Core_Sales_Inventchkout

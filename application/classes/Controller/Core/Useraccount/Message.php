@@ -32,7 +32,7 @@ class Controller_Core_Useraccount_Message extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);

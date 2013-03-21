@@ -31,12 +31,12 @@ class Controller_Core_Sales_Product extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$_POST['product_id']	= strtoupper($_POST['product_id']);
-		$_POST['category']		= strtoupper($_POST['category']);
-		$_POST['sub_category']	= strtoupper($_POST['sub_category']);
-		$_POST['product_id']	= str_replace(" ","",$_POST['product_id']);
+		$this->OBJPOST['product_id']	= strtoupper($this->OBJPOST['product_id']);
+		$this->OBJPOST['category']		= strtoupper($this->OBJPOST['category']);
+		$this->OBJPOST['sub_category']	= strtoupper($this->OBJPOST['sub_category']);
+		$this->OBJPOST['product_id']	= str_replace(" ","",$this->OBJPOST['product_id']);
 		
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -46,7 +46,7 @@ class Controller_Core_Sales_Product extends Controller_Core_Site
 		$validation
 			->rule('product_id','not_empty')
 			->rule('product_id','min_length', array(':value', 2))->rule('product_id','max_length', array(':value', 50))
-			->rule('product_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['product_id']));
+			->rule('product_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['product_id']));
 		$validation
 			->rule('type','not_empty')
 			->rule('type','min_length', array(':value', 2))->rule('type','max_length', array(':value', 7));

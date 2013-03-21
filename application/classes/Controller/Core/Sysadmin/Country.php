@@ -25,7 +25,7 @@ public function __construct()
 	
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -35,7 +35,7 @@ public function __construct()
 		$validation
 			->rule('country_id','not_empty')
 			->rule('country_id','min_length', array(':value', 2))->rule('country_id','max_length', array(':value', 2))
-			->rule('country_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['country_id']));
+			->rule('country_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['country_id']));
 	
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

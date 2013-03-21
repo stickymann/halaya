@@ -31,7 +31,7 @@ class Controller_Core_Sales_Deliverynote extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Sales_Deliverynote extends Controller_Core_Site
 		$validation
 			->rule('deliverynote_id','not_empty')
 			->rule('deliverynote_id','min_length', array(':value', 16))->rule('deliverynote_id','max_length', array(':value', 16))
-			->rule('deliverynote_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['deliverynote_id']));
+			->rule('deliverynote_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['deliverynote_id']));
 		$validation
 			->rule('order_id','not_empty')
 			->rule('order_id','min_length', array(':value', 16))->rule('order_id','max_length', array(':value', 16));
@@ -64,7 +64,7 @@ class Controller_Core_Sales_Deliverynote extends Controller_Core_Site
 	
 	public function delivery_status(Validation $validation,$field)
 	{
-		if($_POST['status'] == "NEW") { $validation->error($field, 'msg_new');}
+		if($this->OBJPOST['status'] == "NEW") { $validation->error($field, 'msg_new');}
 	}
 	
 	public function insert_into_delivery_note_table($data)

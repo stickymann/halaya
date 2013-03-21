@@ -25,9 +25,9 @@ class Controller_Core_Sysadmin_Pdf extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$_POST['pdf_id']	= strtoupper($_POST['pdf_id']);
+		$this->OBJPOST['pdf_id']	= strtoupper($this->OBJPOST['pdf_id']);
 		
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -37,7 +37,7 @@ class Controller_Core_Sysadmin_Pdf extends Controller_Core_Site
 		$validation
 			->rule('pdf_id','not_empty')
 			->rule('pdf_id','min_length', array(':value', 3))->rule('pdf_id','max_length', array(':value', 30))
-			->rule('pdf_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['pdf_id']));
+			->rule('pdf_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['pdf_id']));
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

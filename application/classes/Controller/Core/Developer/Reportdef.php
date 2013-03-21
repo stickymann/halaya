@@ -25,7 +25,7 @@ class Controller_Core_Developer_Reportdef extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -35,7 +35,7 @@ class Controller_Core_Developer_Reportdef extends Controller_Core_Site
 		$validation
 			->rule('reportdef_id','not_empty')
 			->rule('reportdef_id','min_length', array(':value', 3))->rule('reportdef_id','max_length', array(':value', 255))
-			->rule('reportdef_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['reportdef_id']));
+			->rule('reportdef_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['reportdef_id']));
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

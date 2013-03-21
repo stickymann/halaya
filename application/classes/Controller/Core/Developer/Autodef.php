@@ -2067,7 +2067,7 @@ class $classname extends Controller_Core_Site
 
 	function input_validation()
 	{
-		\$post = \$_POST;	
+		\$post = \$this->OBJPOST;	
 		//validation rules
 		array_map('trim',\$post);
 		\$validation = new Validation(\$post);
@@ -2077,7 +2077,7 @@ class $classname extends Controller_Core_Site
 		\$validation
 			->rule('$alt_id','not_empty')
 			->rule('$alt_id','min_length', array(':value', 16))->rule('$alt_id','max_length', array(':value', 16))
-			->rule('$alt_id', array(\$this,'duplicate_altid'), array(':validation', ':field', \$_POST['id'], \$_POST['$alt_id']));
+			->rule('$alt_id', array(\$this,'duplicate_altid'), array(':validation', ':field', \$this->OBJPOST['id'], \$this->OBJPOST['$alt_id']));
 			
 		\$this->param['isinputvalid'] = \$validation->check();
 		\$this->param['validatedpost'] = \$validation->data();

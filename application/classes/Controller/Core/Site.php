@@ -14,6 +14,7 @@ class Controller_Core_Site extends Controller_Include
 {
 	public $template	= "site.view";
 	public $controller  = NULL; 
+	public $OBJPOST		= array();
 	public $param		= array();
 	public $formdata	= array();
 	public $form		= array();
@@ -37,6 +38,7 @@ class Controller_Core_Site extends Controller_Include
 		//$this->param = $this->get_controller_params('site');
 		
 		// Initialize view variables
+		$this->OBJPOST = $_POST;
 		$this->template->head = '';
 		$this->template->userbttns = '';
 		$this->template->menutitle = '';
@@ -61,6 +63,8 @@ class Controller_Core_Site extends Controller_Include
 		$this->param['url_enquiry'] = $this->param['url_input'] = $this->param['param_id'];
 		$this->param['primarymodel'] = new $this->param['primarymodel'];
 		$this->param['defaultlookupfields'] = $this->param['primarymodel']->get_formfields($this->controller);
+		$this->param['recordstatusmsg'] = "<p><b>&nbsp Completion Status  </b><p>";
+
 		// Setup form field, fill arrays with default values
 		$this->set_sysconfig_global_modes();
 		$this->formdata = $this->get_controller_formdefs($this->controller);
@@ -233,12 +237,17 @@ class Controller_Core_Site extends Controller_Include
 
 	public function set_record_status_message($_post,$_action="added to")
 	{
-		$this->param['recordstatusmsg']="<p><b>&nbsp Record  [ ".$_post['id']." ] ".$_action." ".$_post['record_status']." successfully, <a href=".$this->param['param_id']."/index/".$_post['id'].">Continue.</a></b></p>"; 
+		$this->param['recordstatusmsg'] .= "<p><b>&nbsp Record  [ ".$_post['id']." ] ".$_action." ".$_post['record_status']." successfully, <a href=".$this->param['param_id']."/index/".$_post['id'].">Continue.</a></b></p>"; 
 	}
 
 	public function set_record_status_message_ihld($_post,$_msg="in IHLD, cannot be Authorized,")
 	{
-		$this->param['recordstatusmsg']="<p><b>&nbsp Record  [ ".$_post['id']." ] ".$_msg." <a href=".$this->param['param_id']."/index/".$_post['id'].">Continue.</a></b></p>"; 
+		$this->param['recordstatusmsg'] .= "<p><b>&nbsp Record  [ ".$_post['id']." ] ".$_msg." <a href=".$this->param['param_id']."/index/".$_post['id'].">Continue.</a></b></p>"; 
+	}
+	
+	public function append_to_status_message($message)
+	{
+		$this->param['recordstatusmsg'] .= "&nbsp ".$message."<br>"; 
 	}
 	
 	public function get_record_status_message()
@@ -260,18 +269,18 @@ class Controller_Core_Site extends Controller_Include
 	function process_index()
 	{
 		$this->param['pageheader'] = $this->get_page_header($this->param['appheader'],"");
-		if(!$_POST)
+		if(!$this->OBJPOST)
         {
 			$this->app_index();
         }
 		else
 		{
-			if($_POST['submit']=='Submit')
+			if($this->OBJPOST['submit']=='Submit')
 			{
-				$this->param['pageheader'] = $this->get_page_header($this->param['appheader'],$_POST['func']);
-				$this->param['indexfieldvalue'] = $_POST[$this->param['indexfield']];
+				$this->param['pageheader'] = $this->get_page_header($this->param['appheader'],$this->OBJPOST['func']);
+				$this->param['indexfieldvalue'] = $this->OBJPOST[$this->param['indexfield']];
 				
-				switch($_POST['func'])
+				switch($this->OBJPOST['func'])
 				{
 					case 'v':
 						$this->view();
@@ -297,45 +306,44 @@ class Controller_Core_Site extends Controller_Include
 					break;
 				}
 			}
-			else if($_POST['submit']=='Hold')
+			else if($this->OBJPOST['submit']=='Hold')
 			{
 				$this->hold();
 			}
-			else if($_POST['submit']=='Validate')
+			else if($this->OBJPOST['submit']=='Validate')
 			{
-				//record lock get "mysteriously" delete on manual validation so write it back!
 				$this->validate();
 			}
-			else if($_POST['submit']=='Commit')
+			else if($this->OBJPOST['submit']=='Commit')
 			{
 				if($this->input())
 				{
 					if( (!$this->is_global_auth_mode_on()) || (!$this->is_controller_auth_mode_on()) )
 					{
-						$_POST['submit']='Authorize';
-						$_POST['func']='a'; $_POST['auth']='n'; $_POST['rjct']='n';
+						$this->OBJPOST['submit']='Authorize';
+						$this->OBJPOST['func']='a'; $this->OBJPOST['auth']='n'; $this->OBJPOST['rjct']='n';
 						$this->authorize();
 					}
 				}
 			}
-			else if($_POST['submit']=='Authorize' || $_POST['submit']=='Reject')
+			else if($this->OBJPOST['submit']=='Authorize' || $this->OBJPOST['submit']=='Reject')
 			{
 				$this->authorize();
 			}
-			else if($_POST['submit']=='Delete')
+			else if($this->OBJPOST['submit']=='Delete')
 			{
 				$this->livedelete();
 			}
-			else if($_POST['submit']=='Cancel')
+			else if($this->OBJPOST['submit']=='Cancel')
 			{
-				$arr = $this->param['primarymodel']->get_record_lock_by_id($_POST['recordlockid']);
+				$arr = $this->param['primarymodel']->get_record_lock_by_id($this->OBJPOST['recordlockid']);
 				
 				$subform_exist = false;
 				if($result = $this->param['primarymodel']->get_subform_controller($this->param['controller']))
 				{	
 					$subform_exist = true;
 					$parent_idfield = $this->param['indexfield'];
-					$idval	 = $_POST[$parent_idfield];
+					$idval	 = $this->OBJPOST[$parent_idfield];
 					foreach($result as $key => $val)
 					{
 						$paramdef = $this->param['primarymodel']->get_controller_params($val);
@@ -350,7 +358,7 @@ class Controller_Core_Site extends Controller_Include
 					{
 						if($arr->pre_status == 'NEW')
 						{	//delete INAU record, no change
-							$this->param['primarymodel']->delete_record_by_id($this->param['tb_inau'],$_POST['id']);
+							$this->param['primarymodel']->delete_record_by_id($this->param['tb_inau'],$this->OBJPOST['id']);
 							if($subform_exist)
 							{
 								foreach($subtable_inau as $key => $table)
@@ -364,7 +372,7 @@ class Controller_Core_Site extends Controller_Include
 					{
 						if($arr->pre_status == 'NEW' || $arr->pre_status == 'LIVE')
 						{	//delete INAU record, no change
-							$this->param['primarymodel']->delete_record_by_id($this->param['tb_inau'],$_POST['id']);
+							$this->param['primarymodel']->delete_record_by_id($this->param['tb_inau'],$this->OBJPOST['id']);
 							if($subform_exist)
 							{
 								foreach($subtable_inau as $key => $table)
@@ -376,7 +384,7 @@ class Controller_Core_Site extends Controller_Include
 						}
 						else if($arr->pre_status == 'INAU')
 						{	//set status back to INAU, no change
-							$this->param['primarymodel']->set_record_status($this->param['tb_inau'],$_POST['id'],'INAU');
+							$this->param['primarymodel']->set_record_status($this->param['tb_inau'],$this->OBJPOST['id'],'INAU');
 							if($subform_exist)
 							{
 								foreach($subtable_inau as $key => $table)
@@ -387,9 +395,9 @@ class Controller_Core_Site extends Controller_Include
 							}
 						}
 					}
-					$this->param['primarymodel']->remove_record_lock_by_id($_POST['recordlockid']);
+					$this->param['primarymodel']->remove_record_lock_by_id($this->OBJPOST['recordlockid']);
 				}
-				HTTP::redirect($this->param['param_id'].'/index/'.$_POST['id']);
+				HTTP::redirect($this->param['param_id'].'/index/'.$this->OBJPOST['id']);
 			}
 		}
 	}
@@ -593,7 +601,7 @@ class Controller_Core_Site extends Controller_Include
 		//set index value invalid if hist syntax passed, cannot edit history record 
 		if(strstr($this->param['indexfieldvalue'],';') !== false) {$this->param['indexfieldvalue'] = -1;}
 		
-		if($_POST['func']=='n')
+		if($this->OBJPOST['func']=='n')
         {
 			//create new record in IHLD, populate form 
 			if($this->param['tb_inau'] == $this->param['tb_live'])
@@ -614,16 +622,16 @@ class Controller_Core_Site extends Controller_Include
 				$this->form['record_status'] = 'IHLD';
 				$this->param['primarymodel']->set_record_status($this->param['tb_inau'],$this->form['id'],$this->form['record_status']);;
 			}
-			$this->input_form($_POST['func']);
+			$this->input_form($this->OBJPOST['func']);
 			$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 			return true;
         }
-		else if($_POST['func']=='c')
+		else if($this->OBJPOST['func']=='c')
         {
 			//create new record, copy existing record
 			$empty = array();
 			$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$empty);
-			$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields'],$_POST['func']);
+			$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields'],$this->OBJPOST['func']);
 			$newarr=$this->param['primarymodel']->create_blank_record($this->param['tb_live'],$this->param['tb_inau']);
 			$arr = (array)$newarr;
 			$this->form = array_merge($arr,(array)$formarr);
@@ -634,15 +642,15 @@ class Controller_Core_Site extends Controller_Include
 				$this->form['record_status'] = 'IHLD';
 				$this->param['primarymodel']->set_record_status($this->param['tb_inau'],$this->form['id'],$this->form['record_status']);;
 			}
-			$this->input_form($_POST['func']);
+			$this->input_form($this->OBJPOST['func']);
 			$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 			return true;
         }
-		else if($_POST['func']=='i' || $_POST['func']=='w')
+		else if($this->OBJPOST['func']=='i' || $this->OBJPOST['func']=='w')
 		{	
 			//create edit existing record in IHLD, populate form 
 			$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$this->frmaudtfields);
-			$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields'],$_POST['func']);
+			$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields'],$this->OBJPOST['func']);
 			
 			$this->form = (array)$formarr;
 			if($this->form)
@@ -671,23 +679,23 @@ class Controller_Core_Site extends Controller_Include
 			if($this->validate())
 			{
 				//add  formdata add to database, INAU table updated query
-				$this->param['primarymodel']->remove_record_lock_by_id($_POST['recordlockid']);
+				$this->param['primarymodel']->remove_record_lock_by_id($this->OBJPOST['recordlockid']);
 	
 				//removing indexes 'submit and 'func' from array, do not need for update, not database fields
-				unset($_POST['submit']); unset($_POST['func']); unset($_POST['preval']);unset($_POST['recordlockid']);
-				unset($_POST['bttnclicked']); unset($_POST['js_idname']); unset($_POST['js_tmpvar']);
+				unset($this->OBJPOST['submit']); unset($this->OBJPOST['func']); unset($this->OBJPOST['preval']);unset($this->OBJPOST['recordlockid']);
+				unset($this->OBJPOST['bttnclicked']); unset($this->OBJPOST['js_idname']); unset($this->OBJPOST['js_tmpvar']);
 				
 				//set audit data
-				$_POST['inputter']=Auth::instance()->get_user()->idname; $_POST['authorizer']='SYSINAU';
-				$_POST['input_date']=date('Y-m-d H:i:s'); $_POST['auth_date']=date('Y-m-d H:i:s');  $_POST['record_status']='INAU';
+				$this->OBJPOST['inputter']=Auth::instance()->get_user()->idname; $this->OBJPOST['authorizer']='SYSINAU';
+				$this->OBJPOST['input_date']=date('Y-m-d H:i:s'); $this->OBJPOST['auth_date']=date('Y-m-d H:i:s');  $this->OBJPOST['record_status']='INAU';
 
 				$this->input_pre_update_existing_record();		
-				if( $this->param['primarymodel']->update_record($this->param['tb_inau'],$_POST))
+				if( $this->param['primarymodel']->update_record($this->param['tb_inau'],$this->OBJPOST))
 				{
 					//create  update subform records if any
 					$this->create_subform_records();
 					$this->input_post_update_existing_record();		
-					$this->set_record_status_message($_POST);
+					$this->set_record_status_message($this->OBJPOST);
 										
 					$this->param['htmlbody']->pagebody =  $this->get_record_status_message();
 					$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
@@ -742,12 +750,12 @@ class Controller_Core_Site extends Controller_Include
 					default:
 						if( !(isset($this->formopts[$key]['options'])) )
 						{
-							unset($this->form[$key]); unset($_POST[$key]); continue;
+							unset($this->form[$key]); unset($this->OBJPOST[$key]); continue;
 						}
 						
 						$this->formopts[$key]['options'] = str_replace("%FORM%",$this->param['controller'], $this->formopts[$key]['options']); 
 						$this->form[$key] = trim($this->form[$key]);
-						if($_func == 'n' || $_func == 'c' || ($_func == 'l' && $_POST['current_no'] == 0))
+						if($_func == 'n' || $_func == 'c' || ($_func == 'l' && $this->OBJPOST['current_no'] == 0))
 						{ 
 							if($this->formopts[$key]['enable_on_new'] == 'readonly' || $this->formopts[$key]['enable_on_new'] == 'readonly_po')
 							{
@@ -758,7 +766,7 @@ class Controller_Core_Site extends Controller_Include
 							else { $disabled = "";} /*enabled*/
 							$po_type = $this->formopts[$key]['enable_on_new'];
 						}
-						else if ($_func == 'i' || ($_func == 'l' && $_POST['current_no'] > 0))
+						else if ($_func == 'i' || ($_func == 'l' && $this->OBJPOST['current_no'] > 0))
 						{
 							if($this->formopts[$key]['enable_on_edit'] == 'readonly' || $this->formopts[$key]['enable_on_edit'] == 'readonly_po')
 							{
@@ -860,7 +868,7 @@ class Controller_Core_Site extends Controller_Include
 								{
 									if($_func == 'l')
 									{
-										$SUBFORM_HTML = $this->create_subform_from_xml($key,$_POST[$key]);
+										$SUBFORM_HTML = $this->create_subform_from_xml($key,$this->OBJPOST[$key]);
 									}
 									else
 									{
@@ -879,7 +887,7 @@ class Controller_Core_Site extends Controller_Include
 				}
 			}
 			$pagebody->add("</table>");
-			$pagebody->add(Form::hidden('func','*',array('id'=>'func')));
+			$pagebody->add(Form::hidden('func','l',array('id'=>'func')));
 			$pagebody->add(Form::hidden('preval',$_func),array('id'=>'preval'));
 			$html = sprintf('<input type="hidden" id="bttnclicked" name="bttnclicked" value="%s"/>','false');
 			$pagebody->add($html);
@@ -906,10 +914,10 @@ class Controller_Core_Site extends Controller_Include
 	
 	public function input_repopulate($_func)
 	{
-		$_POST['func']=$_func;
-		$formarr=$_POST;
+		$this->OBJPOST['func']=$_func;
+		$formarr=$this->OBJPOST;
 		unset($formarr['submit']); unset($formarr['func']); unset($formarr['preval']);unset($formarr['recordlockid']);
-		//unset($_POST['recordlockid']);
+		//unset($this->OBJPOST['recordlockid']);
 		// repopulate form fields and show errors
 		$this->form = arr::overwrite($formarr, $this->param['validatedpost']);
 	}
@@ -923,9 +931,9 @@ class Controller_Core_Site extends Controller_Include
 		//2) INAU record record inserted into LIVE in not exist, else updated, count incremented if Approved
 		//3) INAU record deleted
 		
-		if($_POST['submit']=='Submit')
+		if($this->OBJPOST['submit']=='Submit')
         {
-			$_POST['func']=='a';
+			$this->OBJPOST['func']=='a';
 			$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$this->frmaudtfields);
 			$formarr=$this->param['primarymodel']->get_record_by_id($this->param['tb_live'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields']);
 			$liverec = (array)$formarr;
@@ -938,7 +946,7 @@ class Controller_Core_Site extends Controller_Include
 			$this->authorize_form($liverec);
 			$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 		}
-		else if($_POST['submit']=='Reject')
+		else if($this->OBJPOST['submit']=='Reject')
 		{
 			//minimal authform required
 			$content = new View('default_authorize');
@@ -946,9 +954,9 @@ class Controller_Core_Site extends Controller_Include
 			$content->pagebody = $this->get_user_controls();
 			$this->param['htmlbody'] = $content;
 
-			$this->param['primarymodel']->remove_record_lock_by_id($_POST['recordlockid']);
-			//$this->param['primarymodel']->removeRecordLock(Auth::instance()->get_user()->idname,$this->param['tb_inau'],$_POST['id']);
-			if($this->param['primarymodel']->delete_record_by_Id($this->param['tb_inau'],$_POST['id']))
+			$this->param['primarymodel']->remove_record_lock_by_id($this->OBJPOST['recordlockid']);
+			//$this->param['primarymodel']->removeRecordLock(Auth::instance()->get_user()->idname,$this->param['tb_inau'],$this->OBJPOST['id']);
+			if($this->param['primarymodel']->delete_record_by_Id($this->param['tb_inau'],$this->OBJPOST['id']))
 			{
 				if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld))
 				{
@@ -964,7 +972,7 @@ class Controller_Core_Site extends Controller_Include
 					}
 				}
 				
-				$this->set_record_status_message($_POST,"deleted from");
+				$this->set_record_status_message($this->OBJPOST,"deleted from");
 				$this->param['htmlbody']->pagebody =  $this->get_record_status_message();
 			}
 			else
@@ -973,7 +981,7 @@ class Controller_Core_Site extends Controller_Include
 			}
 			$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 		}
-		else if($_POST['submit']=='Authorize')
+		else if($this->OBJPOST['submit']=='Authorize')
 		{	
 			//minimal authform required
 			$content = new View('default_authorize');
@@ -984,18 +992,18 @@ class Controller_Core_Site extends Controller_Include
 			//remove recordlocks first then do other  processing
 			if( $this->is_global_auth_mode_on() && $this->is_controller_auth_mode_on() )
 			{
-				$this->param['primarymodel']->remove_record_lock_by_id($_POST['recordlockid']);
+				$this->param['primarymodel']->remove_record_lock_by_id($this->OBJPOST['recordlockid']);
 			}
 			
-			//$this->param['primarymodel']->removeRecordLock(Auth::instance()->get_user()->idname,$this->param['tb_inau'],$_POST['id']);
-			if($_POST['record_status']=='INAU')
+			//$this->param['primarymodel']->removeRecordLock(Auth::instance()->get_user()->idname,$this->param['tb_inau'],$this->OBJPOST['id']);
+			if($this->OBJPOST['record_status']=='INAU')
 			{
 				//authorization permission is set/used only if auth modes on 
 				if( $this->is_global_auth_mode_on() && $this->is_controller_auth_mode_on() )
 				{
 					$authorize = false;
 					$ctrl = $this->param['permissions'];
-					if($_POST['inputter']==Auth::instance()->get_user()->idname && $ctrl['as'])
+					if($this->OBJPOST['inputter']==Auth::instance()->get_user()->idname && $ctrl['as'])
 					{ 
 						$authorize = true; 
 					} 
@@ -1005,7 +1013,7 @@ class Controller_Core_Site extends Controller_Include
 						$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 					}
 
-					if(!($_POST['inputter']==Auth::instance()->get_user()->idname) && $ctrl['ao'])
+					if(!($this->OBJPOST['inputter']==Auth::instance()->get_user()->idname) && $ctrl['ao'])
 					{ 
 						$authorize = true; 
 					} 
@@ -1022,21 +1030,21 @@ class Controller_Core_Site extends Controller_Include
 
 				if($authorize)
 				{
-					$PRINT_POST = $_POST;
+					$PRINT_POST = $this->OBJPOST;
 					$PRINT_POST['record_status']='LIVE';
 					//remove indexes 'submit and 'func' from array, do not need for update, not database fields
-					unset($_POST['submit']); unset($_POST['func']); unset($_POST['preval']); unset($_POST['recordlockid']);
-					unset($_POST['auth']); unset($_POST['rjct']);
+					unset($this->OBJPOST['submit']); unset($this->OBJPOST['func']); unset($this->OBJPOST['preval']); unset($this->OBJPOST['recordlockid']);
+					unset($this->OBJPOST['auth']); unset($this->OBJPOST['rjct']);
 				
 					//set audit data
-					$_POST['authorizer']=Auth::instance()->get_user()->idname; $_POST['auth_date']=date('Y-m-d H:i:s');
-					$_POST['record_status']='LIVE'; 
+					$this->OBJPOST['authorizer']=Auth::instance()->get_user()->idname; $this->OBJPOST['auth_date']=date('Y-m-d H:i:s');
+					$this->OBJPOST['record_status']='LIVE'; 
 
-					if($_POST['current_no']==0) //new record
+					if($this->OBJPOST['current_no']==0) //new record
 					{
-						$_POST['current_no']++;
+						$this->OBJPOST['current_no']++;
 						$this->authorize_pre_insert_new_record();
-						if( $this->param['primarymodel']->insert_record($this->param['tb_live'],$_POST))
+						if( $this->param['primarymodel']->insert_record($this->param['tb_live'],$this->OBJPOST))
 						{
 							$subform_exist = false;
 							if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld))
@@ -1048,10 +1056,10 @@ class Controller_Core_Site extends Controller_Include
 									foreach($arr as $index => $row)
 									{
 										$sub_post = (array)$row;
-										$sub_post['authorizer']		= $_POST['authorizer']; 
-										$sub_post['auth_date']		= $_POST['auth_date'];
-										$sub_post['record_status']	= $_POST['record_status'];
-										$sub_post['current_no']		= $_POST['current_no'];
+										$sub_post['authorizer']		= $this->OBJPOST['authorizer']; 
+										$sub_post['auth_date']		= $this->OBJPOST['auth_date'];
+										$sub_post['record_status']	= $this->OBJPOST['record_status'];
+										$sub_post['current_no']		= $this->OBJPOST['current_no'];
 										if($this->param['primarymodel']->insert_record($table,$sub_post))
 										{/*do nothing*/} else {	return false; }
 									}
@@ -1061,7 +1069,7 @@ class Controller_Core_Site extends Controller_Include
 							$this->authorize_post_insert_new_record();
 							$this->set_record_status_message($PRINT_POST);
 										
-							if($this->param['primarymodel']->delete_record_by_id($this->param['tb_inau'],$_POST['id']))
+							if($this->param['primarymodel']->delete_record_by_id($this->param['tb_inau'],$this->OBJPOST['id']))
 							{
 								if($subform_exist)
 								{
@@ -1091,10 +1099,10 @@ class Controller_Core_Site extends Controller_Include
 					}
 					else //existing record
 					{
-						if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$_POST['id']))
+						if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$this->OBJPOST['id']))
 						{
-							$this->param['primarymodel']->set_record_status_hist($this->param['tb_hist'],$_POST['id'],$_POST['current_no']);
-							$_POST['current_no']++;
+							$this->param['primarymodel']->set_record_status_hist($this->param['tb_hist'],$this->OBJPOST['id'],$this->OBJPOST['current_no']);
+							$this->OBJPOST['current_no']++;
 							
 							$subform_exist = false;
 							if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld))
@@ -1116,7 +1124,7 @@ class Controller_Core_Site extends Controller_Include
 							}
 							
 							$this->authorize_pre_update_existing_record();		
-							if($this->param['primarymodel']->update_record($this->param['tb_live'],$_POST))
+							if($this->param['primarymodel']->update_record($this->param['tb_live'],$this->OBJPOST))
 							{
 								if($subform_exist)
 								{
@@ -1137,10 +1145,10 @@ class Controller_Core_Site extends Controller_Include
 										foreach($arr as $index => $row)
 										{
 											$sub_post = (array)$row;
-											$sub_post['authorizer']		= $_POST['authorizer']; 
-											$sub_post['auth_date']		= $_POST['auth_date'];
-											$sub_post['record_status']	= $_POST['record_status'];
-											$sub_post['current_no']		= $_POST['current_no'];
+											$sub_post['authorizer']		= $this->OBJPOST['authorizer']; 
+											$sub_post['auth_date']		= $this->OBJPOST['auth_date'];
+											$sub_post['record_status']	= $this->OBJPOST['record_status'];
+											$sub_post['current_no']		= $this->OBJPOST['current_no'];
 											if($this->param['primarymodel']->insert_record($table,$sub_post))
 											{/*do nothing*/} else {	return false; }
 										}
@@ -1152,7 +1160,7 @@ class Controller_Core_Site extends Controller_Include
 								if($this->param['tb_inau'] == $this->param['tb_live']){ $isTrue = true; }
 								else 
 								{ 
-									if($isTrue = $this->param['primarymodel']->delete_record_by_Id($this->param['tb_inau'],$_POST['id']))
+									if($isTrue = $this->param['primarymodel']->delete_record_by_Id($this->param['tb_inau'],$this->OBJPOST['id']))
 									{
 										if($subform_exist)
 										{
@@ -1196,7 +1204,7 @@ class Controller_Core_Site extends Controller_Include
 			}
 			else
 			{
-				$this->set_record_status_message_ihld($_POST);
+				$this->set_record_status_message_ihld($this->OBJPOST);
 				$this->param['htmlbody']->pagebody =  $this->get_record_status_message();
 				$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 			}
@@ -1312,7 +1320,7 @@ class Controller_Core_Site extends Controller_Include
 		//set index value invalid if hist syntax passed, cannot delete history record 
 		if(strstr($this->param['indexfieldvalue'],';') !== false) {$this->param['indexfieldvalue'] = -1;}
 		
-		if($_POST['submit']=='Submit')
+		if($this->OBJPOST['submit']=='Submit')
         {
 			if($this->param['primarymodel']->record_exist($this->param['tb_inau'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['indexfieldvalue']))
 			{
@@ -1321,7 +1329,7 @@ class Controller_Core_Site extends Controller_Include
 			}
 			else
 			{
-				$_POST['func']=='d';
+				$this->OBJPOST['func']=='d';
 				$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$this->frmaudtfields);
 				$formarr=$this->param['primarymodel']->get_record_by_id($this->param['tb_live'],$this->param['indexfield'],$this->param['indexfieldvalue'],$this->param['defaultlookupfields']);
 				$this->form = (array)$formarr;
@@ -1333,12 +1341,12 @@ class Controller_Core_Site extends Controller_Include
 			}			
 			$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 		}
-		else if($_POST['submit']=='Delete')
+		else if($this->OBJPOST['submit']=='Delete')
 		{
 			$this->livedelete_form();
-			if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$_POST['id']))
+			if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$this->OBJPOST['id']))
 			{
-				$this->param['primarymodel']->set_record_status_HIST($this->param['tb_hist'],$_POST['id'],$_POST['current_no']);
+				$this->param['primarymodel']->set_record_status_HIST($this->param['tb_hist'],$this->OBJPOST['id'],$this->OBJPOST['current_no']);
 				
 				$subform_exist = false;
 				if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld))
@@ -1359,9 +1367,9 @@ class Controller_Core_Site extends Controller_Include
 					$subform_exist = true;
 				}
 								
-				$this->set_record_status_message($_POST,'deleted from');
+				$this->set_record_status_message($this->OBJPOST,'deleted from');
 				$this->delete_pre_update_existing_record();		
-				if($this->param['primarymodel']->delete_record_by_Id($this->param['tb_live'],$_POST['id']))
+				if($this->param['primarymodel']->delete_record_by_Id($this->param['tb_live'],$this->OBJPOST['id']))
 				{
 					if($subform_exist)
 					{
@@ -1479,19 +1487,19 @@ class Controller_Core_Site extends Controller_Include
 		//add  formdata add to database, INAU table updated
 		$this->input_form('i');
 		//remove recordlocks before index
-		$this->param['primarymodel']->remove_record_lock_by_id($_POST['recordlockid']);
+		$this->param['primarymodel']->remove_record_lock_by_id($this->OBJPOST['recordlockid']);
 		//removing indexes 'submit and 'func' from array, do not need for update, not database fields
-		unset($_POST['submit']); unset($_POST['func']); unset($_POST['preval']); unset($_POST['recordlockid']); unset($_POST['bttnclicked']);
-		unset($_POST['js_idname']); unset($_POST['js_tmpvar']);
+		unset($this->OBJPOST['submit']); unset($this->OBJPOST['func']); unset($this->OBJPOST['preval']); unset($this->OBJPOST['recordlockid']); unset($this->OBJPOST['bttnclicked']);
+		unset($this->OBJPOST['js_idname']); unset($this->OBJPOST['js_tmpvar']);
 			
 		//set audit data
-		$_POST['inputter']=Auth::instance()->get_user()->idname; $_POST['authorizer']='SYSINAU';
-		$_POST['input_date']=date('Y-m-d H:i:s'); $_POST['auth_date']=date('Y-m-d H:i:s');  $_POST['record_status']='IHLD';
+		$this->OBJPOST['inputter']=Auth::instance()->get_user()->idname; $this->OBJPOST['authorizer']='SYSINAU';
+		$this->OBJPOST['input_date']=date('Y-m-d H:i:s'); $this->OBJPOST['auth_date']=date('Y-m-d H:i:s');  $this->OBJPOST['record_status']='IHLD';
 		
-		if( $this->param['primarymodel']->update_record($this->param['tb_inau'],$_POST))
+		if( $this->param['primarymodel']->update_record($this->param['tb_inau'],$this->OBJPOST))
 		{
 			$this->create_subform_records();
-			$this->set_record_status_message($_POST);
+			$this->set_record_status_message($this->OBJPOST);
 			$this->param['htmlbody']->pagebody =  $this->get_record_status_message();
 			$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
 		}
@@ -1503,7 +1511,7 @@ class Controller_Core_Site extends Controller_Include
 		$this->input_validation();
 		if (!$this->param['isinputvalid'])
 		{
-			$this->input_repopulate($_POST['preval']);
+			$this->input_repopulate($this->OBJPOST['preval']);
 			$this->input_form('l');
 			
 			foreach ($this->param['inputerrors'] as $key => $value)
@@ -1516,10 +1524,10 @@ class Controller_Core_Site extends Controller_Include
 		}
 		else
 		{
-			$this->input_repopulate($_POST['preval']);
+			$this->input_repopulate($this->OBJPOST['preval']);
 			$this->input_form('l');
 			$errmsg .= 'All input data ok, no errors.';	
-			if($_POST['submit'] == 'Validate')
+			if($this->OBJPOST['submit'] == 'Validate')
 			{	
 				$this->param['htmlbody'] .= $this->validation_alert_window($errmsg);
 				$this->set_page_content($this->param['htmlhead'],$this->param['htmlbody']);
@@ -1543,7 +1551,7 @@ _TEXT_;
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		$validation = new Validation($post);
 		$validation->pre_filter('trim', TRUE);
@@ -1713,7 +1721,7 @@ _HTML_;
 	public function create_popout($key, $current_no)
 	{
 		$POPOUT_HTML = "";
-		if(($this->formopts[$key]['enable_on_edit'] == "readonly" || $this->formopts[$key]['enable_on_edit'] == "disabled") && $_POST['func']=="i" && $current_no > 0)
+		if(($this->formopts[$key]['enable_on_edit'] == "readonly" || $this->formopts[$key]['enable_on_edit'] == "disabled") && $this->OBJPOST['func']=="i" && $current_no > 0)
 		{
 			return $POPOUT_HTML;
 		}
@@ -1798,7 +1806,7 @@ _HTML_;
 	public function create_sidelink($key,$current_no)
 	{
 		$SIDEFUNC_LINK = ""; $linkhtml="";
-		if(($this->formopts[$key]['enable_on_edit'] == "readonly" || $this->formopts[$key]['enable_on_edit'] == "disabled") && $_POST['func']=="i" && $current_no > 0)
+		if(($this->formopts[$key]['enable_on_edit'] == "readonly" || $this->formopts[$key]['enable_on_edit'] == "disabled") && $this->OBJPOST['func']=="i" && $current_no > 0)
 		{
 			return $SIDEFUNC_LINK;
 		}
@@ -2129,7 +2137,7 @@ _text_;
 		{	
 			$subform_exist = true;
 			$parent_idfield = $this->param['indexfield'];
-			$idval = $_POST[$parent_idfield];
+			$idval = $this->OBJPOST[$parent_idfield];
 			foreach($result as $key => $val)
 			{
 				$paramdef = $this->param['primarymodel']->get_controller_params($val);
@@ -2142,15 +2150,16 @@ _text_;
 		return $subform_exist;
 	}
 
-	public function create_subform_records()
+	public function create_subform_records($OBJPOST=array())
 	{
+		if(!$OBJPOST){ $OBJPOST = $this->OBJPOST; }  
 		if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld))
 		{
 			$rowsExist = false;
 			$count = 0;
 			foreach($subtable_inau as $key => $subtable)
 			{
-				$xml = simplexml_load_string($_POST[$key]);
+				$xml = simplexml_load_string($OBJPOST[$key]);
 				$json = json_encode($xml);
 				$arr = json_decode($json,TRUE);
 				$farr = array();
@@ -2195,12 +2204,12 @@ _text_;
 				{
 					foreach ($farr as $index => $row)
 					{
-						$row['inputter']		= $_POST['inputter'];
-						$row['authorizer']		= $_POST['authorizer'];
-						$row['input_date']		= $_POST['input_date'];
-						$row['auth_date']		= $_POST['auth_date'];
-						$row['record_status']	= $_POST['record_status'];
-						$row['current_no']		= $_POST['current_no'];
+						$row['inputter']		= $OBJPOST['inputter'];
+						$row['authorizer']		= $OBJPOST['authorizer'];
+						$row['input_date']		= $OBJPOST['input_date'];
+						$row['auth_date']		= $OBJPOST['auth_date'];
+						$row['record_status']	= $OBJPOST['record_status'];
+						$row['current_no']		= $OBJPOST['current_no'];
 					
 						$list = $this->subform_field_exclusion_list();
 						if(isset($list[$key]))
@@ -2247,8 +2256,11 @@ _text_;
 		$this->form = (array)$formarr;
 		if($this->form)
 		{
+			$pre_status = $this->form['record_status'];
 			$this->form['record_status'] = 'IHLD';
 			$this->param['primarymodel']->set_record_status($this->param['tb_inau'],$this->form['id'],$this->form['record_status']);;
+			//create update subform records if any
+			$this->create_subform_records($this->form);
 			return $this->form;
 		}
 		return false;
@@ -2256,20 +2268,24 @@ _text_;
 	
 	public function update_formless_record($form) 
 	{
-		$_POST = $form;
+		$this->OBJPOST = $form;
 		//setup authorization data
 		$this->param['pageheader'] = $this->get_page_header($this->param['appheader'],"");
-		$_POST['submit']='Authorize'; $_POST['recordlockid']=0; $_POST['func']=""; 
-		$_POST['preval']=""; $_POST['auth']=""; $_POST['rjct']="";
+//print "<b>[DEBUG]---></b> "; print_r($this->OBJPOST); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+		$this->OBJPOST['submit']='Authorize'; $this->OBJPOST['recordlockid']=0; $this->OBJPOST['func']=""; 
+		$this->OBJPOST['preval']=""; $this->OBJPOST['auth']=""; $this->OBJPOST['rjct']="";
 				
 		//set audit data
-		$_POST['inputter']=Auth::instance()->get_user()->idname; $_POST['authorizer']="";
-		$_POST['input_date']=date('Y-m-d H:i:s'); $_POST['auth_date']="";  $_POST['record_status']='INAU';
+		$this->OBJPOST['inputter']=Auth::instance()->get_user()->idname; $this->OBJPOST['authorizer']="";
+		$this->OBJPOST['input_date']=date('Y-m-d H:i:s'); $this->OBJPOST['auth_date']=date('Y-m-d H:i:s');  $this->OBJPOST['record_status']='INAU';
+//print "<b>[DEBUG]---></b> "; print_r($this->OBJPOST); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		
+		$form['inputter']=Auth::instance()->get_user()->idname; $form['authorizer']="";
+		$form['input_date']=date('Y-m-d H:i:s'); $form['auth_date']=date('Y-m-d H:i:s');  $form['record_status']='INAU';
+//print "<b>[DEBUG]---></b> "; print_r($form); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+
 		if( $this->param['primarymodel']->update_record($this->param['tb_inau'],$form))
 		{
-			//create update subform records if any
-			$this->create_subform_records();
 			return true;
 		}
 		return false;
@@ -2286,11 +2302,42 @@ _text_;
 	public function duplicate_composite_id($validation,$fields,$id)
     {
 		//construct $fields array outside of function
-		//$fields = array('product_id'=>$_POST['product_id'],'branch_id'=>$_POST['branch_id']);
+		//$fields = array('product_id'=>$this->OBJPOST['product_id'],'branch_id'=>$this->OBJPOST['branch_id']);
 		if($this->param['primarymodel']->is_duplicate_composite_id($this->param['tb_inau'],$fields,$id) || $this->param['primarymodel']->is_duplicate_composite_id($this->param['tb_live'],$fields,$id))
 		{
 			$validation->error($field, 'msg_duplicate');
 		}
+	}
+
+	public function is_record_unlocked_and_exist($table_live,$table_inau,$field,$altid)
+	{
+		$querystr = sprintf('SELECT id FROM %s WHERE %s = "%s"',$table_live,$field,$altid);
+		$result = $this->param['primarymodel']->execute_select_query($querystr);  
+		if($result)
+		{
+			$id = $result[0]->id;
+			if( $this->param['primarymodel']->is_record_locked($table_inau,$id) )
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			return -1;
+		}
+		return 1;
+	}
+	
+	public function records_exist($table,$idfield,$altid)
+	{
+		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE %s = "%s"',$table,$idfield,$altid);
+		$result = $this->param['primarymodel']->execute_select_query($querystr);
+		$row = $result[0];
+		if ($row->count > 0 )
+		{
+			return TRUE;
+		}
+		return FALSE;
 	}
 	
 	/*abstracts*/

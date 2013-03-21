@@ -13,6 +13,7 @@
 class Controller_Core_Sitereport extends Controller_Include
 {
 	public $template	= "site.view"; //defaults to template but you can set your own view file
+	public $OBJPOST		= array();
 	public $param		= array();
 	public $form		= array();
 	public $formdata	= array();
@@ -32,7 +33,8 @@ class Controller_Core_Sitereport extends Controller_Include
 		$this->db = Database::instance();
 		$this->model = new Model_ReportDB();
 		$this->sitemodel = new Model_SiteDB;
-				
+		
+		$this->OBJPOST = $_POST;
 		$this->controller = $controller;
 		$this->viewable =  false;
 		$this->printable = false;
@@ -102,7 +104,7 @@ class Controller_Core_Sitereport extends Controller_Include
 				/*setup form field,  fill arrays with default value*/
 				$this->formdata = $this->get_report_controller_formdefs($this->controller);
 				$this->set_formfields_and_labels();
-				if($_POST)
+				if($this->OBJPOST)
 				{
 					$this->report_run();
 				}
@@ -188,7 +190,7 @@ class Controller_Core_Sitereport extends Controller_Include
 			foreach($this->form as $key => $value)
 			{
 				$POPOUT_HTML =""; $DATEICON_HTML=""; $table =""; $fields=""; $idstr=""; $po_type=""; $disabled="" ; $style="";
-				if(!(isset($this->formopts[$key]['options']))){unset($this->form[$key]);unset($_POST[$key]); continue;}
+				if(!(isset($this->formopts[$key]['options']))){unset($this->form[$key]);unset($this->OBJPOST[$key]); continue;}
 				
 				$options = $this->formopts[$key]['options'];
 				switch($this->formopts[$key]['inputtype'])

@@ -33,7 +33,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -43,7 +43,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 		$validation
 			->rule('order_id','not_empty')
 			->rule('order_id','min_length', array(':value', 16))->rule('order_id','max_length', array(':value', 16))
-			->rule('order_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['order_id']));
+			->rule('order_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['order_id']));
 		$validation
 			->rule('branch_id','not_empty')
 			->rule('branch_id','min_length', array(':value', 2))->rule('branch_id','max_length', array(':value', 50));
@@ -81,7 +81,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 	public function order_details_exist(Validation $validation,$field)
 	{
 		$count = 0; $usertext_required = false;
-		$rows = new SimpleXMLElement($_POST['order_details']);
+		$rows = new SimpleXMLElement($this->OBJPOST['order_details']);
 		if($rows->row) 
 		{ 
 			foreach ($rows->row as $row) 
@@ -99,7 +99,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 	{
 		if( $this->BACK_ORDER_MODE ) { return; }
 		$products = ""; $quantities = "";
-		$rows = new SimpleXMLElement($_POST['order_details']);
+		$rows = new SimpleXMLElement($this->OBJPOST['order_details']);
 		if($rows->row) 
 		{ 
 			foreach ($rows->row as $row) 
@@ -112,17 +112,17 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 		$quantities = substr_replace($quantities, '', -1);
 		
 		$order_statuses = array('QUOTATION','QUOTATION.EXPIRED','ORDER.CANCELLED','REOPENED');
-		if( !( in_array($_POST['order_status'],$order_statuses) ))
+		if( !( in_array($this->OBJPOST['order_status'],$order_statuses) ))
 		{
 			$chk = new Controller_Core_Sales_Inventchkout();
-			$querystr = sprintf('SELECT COUNT(order_id) AS count FROM %s WHERE order_id ="%s"',$chk->param['tb_live'], $_POST['order_id']);
+			$querystr = sprintf('SELECT COUNT(order_id) AS count FROM %s WHERE order_id ="%s"',$chk->param['tb_live'], $this->OBJPOST['order_id']);
 			$result	  = $this->param['primarymodel']->execute_select_query($querystr);
 			$count	  = $result[0]->count;
 			if($count == 0 ) 
 			{
-				$order_id   = $_POST['order_id'];
-				$branch_id  = $_POST['branch_id'];
-				$icstat		= $_POST['inventory_checkout_status'];
+				$order_id   = $this->OBJPOST['order_id'];
+				$branch_id  = $this->OBJPOST['branch_id'];
+				$icstat		= $this->OBJPOST['inventory_checkout_status'];
 				$baseurl    = URL::base(TRUE,'http');
 $url = sprintf('%score_ajaxtodb?option=stockcheckstatus&order=%s&icstat=%s&branch=%s&products=%s&quantities=%s',$baseurl,$order_id,$icstat,$branch_id,$products,$quantities);
 				$status = Controller_Core_Sitehtml::get_html_from_url($url);
@@ -137,7 +137,7 @@ $url = sprintf('%score_ajaxtodb?option=stockcheckstatus&order=%s&icstat=%s&branc
 	public function order_status_ok(Validation $validation,$field)
 	{
 		$status_new = false;
-		if($_POST['order_status'] == "NEW") { $status_new = true; }
+		if($this->OBJPOST['order_status'] == "NEW") { $status_new = true; }
 		if( $status_new ) { $validation->error($field, 'msg_new');}
 	}
 
@@ -189,21 +189,45 @@ $url = sprintf('%score_ajaxtodb?option=stockcheckreport&order=%s&icstat=%s&branc
 		$list = array("order_details" => array("unit_total","tax_amount","extended"));
 		return $list;
 	}
-
+	
+	public function is_forced_inventory_checkout_rerun()
+	{
+		$order_id = $this->OBJPOST['order_id'];
+		$querystr = sprintf('SELECT count(order_id) as counter FROM _sys_rrcs WHERE order_id = "%s"',$order_id);
+		$result = $this->param['primarymodel']->execute_select_query($querystr);
+		$count = $result[0]->counter;
+		if( $count > 0 ) 
+		{
+			$chk = new Controller_Core_Sales_Inventchkout();
+			$table = $chk->param['tb_live'];
+			
+			/* delete existing checkout record if any */
+			$querystr = sprintf('DELETE FROM %s WHERE order_id = "%s"',$table,$order_id);
+			if( $result = $this->param['primarymodel']->execute_delete_query($querystr) ) { /* wait for deletions */ }
+			
+			/* delete existing _sys_rrcs record */
+			$querystr = sprintf('DELETE FROM _sys_rrcs WHERE order_id = "%s"',$order_id);
+			if( $result = $this->param['primarymodel']->execute_delete_query($querystr) ) { /* wait for deletions */}
+		}
+	}
+	
 	public function inventory_checkout()
 	{
 		$chk = new Controller_Core_Sales_Inventchkout();
 		$idname = Auth::instance()->get_user()->idname;
 		$xmlrows = "";
-
-		if(!($_POST['order_status'] == "NEW") && !($_POST['order_status'] == "QUOTATION") && $_POST['current_no'] > 0)
+		
+		/* forced checkout re-run */
+		$this->is_forced_inventory_checkout_rerun();
+				
+		if(!($this->OBJPOST['order_status'] == "NEW") && !($this->OBJPOST['order_status'] == "QUOTATION") && $this->OBJPOST['current_no'] > 0)
 		{
 			$param	= $this->param['primarymodel']->get_controller_params("product");
 			$table	= $param['tb_live'];
 			$unique_id = "product_id";
 			$fields = array('product_id','type','package_items','product_description');
 
-			$rows = new SimpleXMLElement($_POST['order_details']);
+			$rows = new SimpleXMLElement($this->OBJPOST['order_details']);
 			if($rows->row) 
 			{	
 				$rowcount = 0;
@@ -245,7 +269,7 @@ $xmlheader .= "<header><column>Product Id</column><column>Description</column><c
 $xmlheader .= "<rows>"."\n";
 $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 
-			$data['order_id'] = $_POST['order_id']; 
+			$data['order_id'] = $this->OBJPOST['order_id']; 
 			$data['checkout_details'] = $xmlheader.$xmlrows.$xmlfooter;
 			$data['idname'] = $idname;
 			
@@ -254,13 +278,13 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 				//create inventory checkout profile
 				$chkout_record = $chk->insert_into_checkout_table($data);
 			}
-			else if($rowcount == 0 && $_POST['inventory_checkout_status'] == "NONE")
+			else if($rowcount == 0 && $this->OBJPOST['inventory_checkout_status'] == "NONE")
 			{
 				//update checkout status for nonstock order
-				$chk->update_order_checkout_status($this->param['tb_live'],$_POST['order_id'],"COMPLETED");
+				$chk->update_order_checkout_status($this->param['tb_live'],$this->OBJPOST['order_id'],"COMPLETED");
 			}
 				
-			if( $_POST['inventory_checkout_type'] == "AUTO"  && !($_POST['inventory_checkout_status'] == "COMPLETED") && $rowcount > 0)
+			if( $this->OBJPOST['inventory_checkout_type'] == "AUTO"  && !($this->OBJPOST['inventory_checkout_status'] == "COMPLETED") && $rowcount > 0)
 			{
 				$chk->process_checkout($chkout_record);
 			}
@@ -275,13 +299,13 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 
 	public function set_zero_charge_order_status()
 	{
-		if(!($_POST['order_status'] == "NEW") && !($_POST['order_status'] == "QUOTATION") && !($_POST['order_status'] == "ZERO.CHARGE") && $_POST['current_no'] > 0)
+		if(!($this->OBJPOST['order_status'] == "NEW") && !($this->OBJPOST['order_status'] == "QUOTATION") && !($this->OBJPOST['order_status'] == "ZERO.CHARGE") && $this->OBJPOST['current_no'] > 0)
 		{
-			$order_id = $_POST['order_id'];
+			$order_id = $this->OBJPOST['order_id'];
 			$querystr = sprintf('SELECT order_total FROM vw_orderbalances WHERE order_id = "%s"',$order_id);
 			$result = $this->param['primarymodel']->execute_select_query($querystr);
 			$order_total = $result[0]->order_total;
-			if($order_total == 0)
+			if($order_total == 0 && !($this->OBJPOST['order_status'] == "ORDER.CANCELLED") )
 			{
 				$order_status = "ZERO.CHARGE";
 				$this->update_order_status($this->param['tb_live'],$order_id,$order_status,date('Y-m-d')); 
@@ -291,8 +315,8 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 
 	public function expire_quotations()
 	{
-		$seq_no = substr($_POST['order_id'], -4);
-		$current_no = $_POST['current_no'];
+		$seq_no = substr($this->OBJPOST['order_id'], -4);
+		$current_no = $this->OBJPOST['current_no'];
 		$current_date = date('Y-m-d');
 		$table = $this->param['tb_live'];
 		

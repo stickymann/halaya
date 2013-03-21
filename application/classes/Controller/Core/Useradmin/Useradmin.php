@@ -25,10 +25,10 @@ class Controller_Core_Useradmin_Useradmin extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$_POST['idname']	= strtoupper($_POST['idname']);
-		$_POST['fullname']	= $this->strtotitlecase($_POST['fullname']);
+		$this->OBJPOST['idname']	= strtoupper($this->OBJPOST['idname']);
+		$this->OBJPOST['fullname']	= $this->strtotitlecase($this->OBJPOST['fullname']);
 
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -38,11 +38,11 @@ class Controller_Core_Useradmin_Useradmin extends Controller_Core_Site
 		$validation
 			->rule('idname','not_empty')
 			->rule('idname','min_length', array(':value', 3))->rule('idname','max_length', array(':value', 50))
-			->rule('idname', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['idname']));
+			->rule('idname', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['idname']));
 		$validation
 			->rule('username','not_empty')
 			->rule('username','min_length', array(':value', 3))->rule('username','max_length', array(':value', 32))
-			->rule('username', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['username']));
+			->rule('username', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['username']));
 		$validation
 			->rule('fullname','not_empty')
 			->rule('fullname','min_length', array(':value', 3))->rule('fullname','max_length', array(':value', 255));
@@ -68,7 +68,7 @@ class Controller_Core_Useradmin_Useradmin extends Controller_Core_Site
 	
 	function authorize_post_insert_new_record()
 	{
-		$user = ORM::factory('User')->where('id','=',$_POST['id'])->find();
+		$user = ORM::factory('User')->where('id','=',$this->OBJPOST['id'])->find();
 		$user->add('roles', ORM::factory('Role', array('name' => 'login')));
 		$user->save();
 	}

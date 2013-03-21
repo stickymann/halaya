@@ -31,16 +31,16 @@ class Controller_Core_Customer_Customer extends Controller_Core_Site
 	
 	function input_validation()
 	{
-		$_POST['first_name']	= $this->strtotitlecase($_POST['first_name']);
-		$_POST['last_name']		= $this->strtotitlecase($_POST['last_name']);
-		$_POST['address1']		= $this->strtotitlecase($_POST['address1']);
-		$_POST['address2']		=	$this->strtotitlecase($_POST['address2']);
-		$_POST['city']			= $this->strtotitlecase($_POST['city']);
-		$_POST['email_address']	= strtolower($_POST['email_address']);
-		$_POST['business_type']	= strtoupper($_POST['business_type']);
-		$_POST['business_type'] = str_replace(" ",".",$_POST['business_type']);
+		$this->OBJPOST['first_name']	= $this->strtotitlecase($this->OBJPOST['first_name']);
+		$this->OBJPOST['last_name']		= $this->strtotitlecase($this->OBJPOST['last_name']);
+		$this->OBJPOST['address1']		= $this->strtotitlecase($this->OBJPOST['address1']);
+		$this->OBJPOST['address2']		=	$this->strtotitlecase($this->OBJPOST['address2']);
+		$this->OBJPOST['city']			= $this->strtotitlecase($this->OBJPOST['city']);
+		$this->OBJPOST['email_address']	= strtolower($this->OBJPOST['email_address']);
+		$this->OBJPOST['business_type']	= strtoupper($this->OBJPOST['business_type']);
+		$this->OBJPOST['business_type'] = str_replace(" ",".",$this->OBJPOST['business_type']);
 		
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -50,7 +50,7 @@ class Controller_Core_Customer_Customer extends Controller_Core_Site
 		$validation
 			->rule('customer_id','not_empty')
 			->rule('customer_id','min_length', array(':value', 8))->rule('customer_id','max_length', array(':value', 8))
-			->rule('customer_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['customer_id']));
+			->rule('customer_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['customer_id']));
 		$validation
 			->rule('customer_type','not_empty')
 			->rule('customer_type','min_length', array(':value', 2))->rule('customer_type','max_length', array(':value', 50));

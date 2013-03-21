@@ -31,7 +31,7 @@ class Controller_Core_Sales_Tillmanage extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Sales_Tillmanage extends Controller_Core_Site
 		$validation
 			->rule('till_id','not_empty')
 			->rule('till_id','min_length', array(':value', 2))->rule('till_id','max_length', array(':value', 59))
-			->rule('till_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['till_id']));
+			->rule('till_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['till_id']));
 		$validation
 			->rule('till_user','not_empty')
 			->rule('till_user','min_length', array(':value', 2))->rule('till_user','max_length', array(':value', 50));
@@ -68,8 +68,8 @@ class Controller_Core_Sales_Tillmanage extends Controller_Core_Site
 
 	public function authorize_post_insert_new_record()
 	{
-		$data['till_id']			= $_POST['till_id'];
-		$data['initial_balance']	= $_POST['initial_balance'];
+		$data['till_id']			= $this->OBJPOST['till_id'];
+		$data['initial_balance']	= $this->OBJPOST['initial_balance'];
 		$data['idname']				= Auth::instance()->get_user()->idname; 
 		$tilltransaction = new Controller_Core_Sales_Tilltransaction();
 		$tilltransaction->insert_into_till_transaction_table($data);

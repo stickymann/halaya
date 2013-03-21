@@ -31,7 +31,7 @@ class Controller_Core_Sales_Tilltransaction extends Controller_Core_Site
 	
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Sales_Tilltransaction extends Controller_Core_Site
 		$validation
 			->rule('transaction_id','not_empty')
 			->rule('transaction_id','min_length', array(':value', 2))->rule('transaction_id','max_length', array(':value', 59))
-			->rule('transaction_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['transaction_id']));
+			->rule('transaction_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['transaction_id']));
 		$validation
 			->rule('till_id','not_empty')
 			->rule('till_id','min_length', array(':value', 2))->rule('till_id','max_length', array(':value', 59))
@@ -71,7 +71,7 @@ class Controller_Core_Sales_Tilltransaction extends Controller_Core_Site
 
 	public function is_till_ok(Validation $validation,$field)
 	{
-		$till_id = $_POST['till_id'];
+		$till_id = $this->OBJPOST['till_id'];
 		$idname  = Auth::instance()->get_user()->idname;
 		if( !($this->is_user_till($till_id,$idname)) )
 		{

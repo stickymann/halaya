@@ -31,7 +31,7 @@ class Controller_Core_Customer_Chargeaccount extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Customer_Chargeaccount extends Controller_Core_Site
 		$validation
 			->rule('customer_id','not_empty')
 			->rule('customer_id','min_length', array(':value', 8))->rule('customer_id','max_length', array(':value', 8))
-			->rule('customer_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['customer_id']));
+			->rule('customer_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['customer_id']));
 		$validation
 			->rule('activation_date','date');
 		$validation

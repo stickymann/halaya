@@ -75,29 +75,29 @@ for($pagenum=1; $pagenum < $numpages+1; $pagenum++)
 invoice_summary($this->pdf, $page_config);
 invoice_summary_border($this->pdf, $page_config);
 
-//############## invoice ends here ############## 
+//############## quotation ends here ############## 
 
 function invoice_details(&$pdf,$page_config)
 {
-	$od = new Orderdetail_Controller();
+	$od = new Controller_Core_Sales_Orderdetail();
 	$table = $od->param['tb_live'];
-	$fields = $od->model->getFormFields("orderdetail");
-	$prefix = "";
+	$fields = $od->model->get_formfields("orderdetail");
+	$prefix = ""; $html = "";
 	$formfields = $page_config['formfields'];
 	$item = $formfields->fields;
 	$order_id = $item->order_id->value;
 
 	$where = sprintf('where order_id = "%s"',$order_id);
 	$orderby = "order by id";
-	$result = $od->model->getAllRecsByFields($table,$fields,$prefix,$where,$orderby);
+	$result = $od->model->get_all_recs_by_fields($table,$fields,$prefix,$where,$orderby);
 	if($result)
 	{
-		$html = '<table border="0" cellspacing="3" cellpadding="2" >'; 
+		$html .= '<table border="0" cellspacing="3" cellpadding="2" >'; 
 		foreach($result as $index => $row)
 		{
 			$table = 'products';
 			$querystr = sprintf('select extended_description from %s where product_id = "%s"', $table,$row->product_id);
-			$desc = $od->model->executeSelectQuery($querystr);
+			$desc = $od->model->execute_select_query($querystr);
 			$extended_description = $desc[0]->extended_description;
 		
 			if($row->user_text !="?") 

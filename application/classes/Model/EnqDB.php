@@ -21,13 +21,24 @@ class Model_EnqDB extends Model
 	
 	public function count_records($querystr)
     { 
-        $querystr = $this->db->query(Database::SELECT,$querystr,TRUE);
-		return $query->count();
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+		$row = $result[0];
+		return $row->counter;
+		//$counter = 0; foreach ($result as $row) { $counter++; }
+		//return $counter;
     }
 
     public function browse($querystr)
 	{
-		return $this->db->query(Database::SELECT,$querystr,TRUE);
+		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
+		$arr = array();
+		$i=0;
+		foreach ($result as $row)
+		{
+			$arr[$i] = $row;
+			$i++;
+		}
+		return $arr;
 	}
 
 	public function get_enq_formfields($controller,&$arr1,&$arr2,&$arr3)
@@ -82,11 +93,11 @@ class Model_EnqDB extends Model
 	public function get_enquiry_params($controller)
 	{
 		$table = 'enquirydefs';
-		$fields = array('id','controller','tablename','model','view','idfield','enqheader','showfilter','printuser','printdatetime');
-		$querystr = sprintf('SELECT %s FROM %s WHERE controller = "%s AND dflag = "Y"', join(',',$fields),$table,$controller);
+		$fields = array('id','enquirydef_id','controller','tablename','model','view','idfield','enqheader','showfilter','printuser','printdatetime');
+		$querystr = sprintf('SELECT %s FROM %s WHERE controller = "%s" AND dflag = "Y"', join(',',$fields),$table,$controller);
 		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
-		$idField = $fields[1];
+		$idField = $fields[2];
 		foreach ($result as $row)
 		{
 			$arr[$row->$idField] = $row;
@@ -94,5 +105,5 @@ class Model_EnqDB extends Model
 		return $arr;
 	}
 
-} // End Enq
+} // End EnqDB
 

@@ -31,7 +31,7 @@ class Controller_Core_Developer_Fixedselection extends Controller_Core_Site
 	
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Developer_Fixedselection extends Controller_Core_Site
 		$validation
 			->rule('fixedselection_id','not_empty')
 			->rule('fixedselection_id','min_length', array(':value', 1))->rule('fixedselection_id','max_length', array(':value', 50))
-			->rule('fixedselection_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['fixedselection_id']));
+			->rule('fixedselection_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['fixedselection_id']));
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

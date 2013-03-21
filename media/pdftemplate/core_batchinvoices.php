@@ -178,11 +178,15 @@ _HTML_;
 
 	$id = $item->id->value;				$invoice_date = $item->invoice_date->value;		
 	$order_id = $item->order_id->value;	$inputter = $item->inputter->value;
+	$cc_id = $item->cc_id->value;		$is_co = $item->is_co->value;
+	$charge_customer_id = "";
+	if( $is_co == "Y"){ $charge_customer_id = sprintf('( %s )',$cc_id); }
 	//bgcolor="red"
 	$HTML_HDR_R=<<<_HTML_
 	<table width="400" border=0 cellspacing=0 cellpadding=2 >
 		<tr valign=top><td width="65"><b>Invoice No. :</b> </td><td>$id</td></tr>
 		<tr valign=top><td><b>Order Id :</b> </td><td>$order_id</td></tr>
+		<tr valign=top><td><b>Charge Order :</b> </td><td>$is_co $charge_customer_id</td></tr>
 		<tr valign=top><td><b>Invoice Date :</b> </td><td>$invoice_date</td></tr>
 		<tr valign=top><td><b>Agent :</b> </td><td>$inputter</td></tr>
 	</table>

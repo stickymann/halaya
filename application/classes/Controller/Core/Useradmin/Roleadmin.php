@@ -34,7 +34,7 @@ class Controller_Core_Useradmin_Roleadmin extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -44,7 +44,7 @@ class Controller_Core_Useradmin_Roleadmin extends Controller_Core_Site
 		$validation
 			->rule('name','not_empty')
 			->rule('name','min_length', array(':value', 3))->rule('name','max_length', array(':value', 50))
-			->rule('name', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['name']));
+			->rule('name', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['name']));
 		$validation
 			->rule('description','not_empty')
 			->rule('description','min_length', array(':value', 3))->rule('description','max_length', array(':value', 50));

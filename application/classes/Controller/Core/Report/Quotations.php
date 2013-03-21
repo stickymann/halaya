@@ -24,10 +24,10 @@ class Controller_Core_Report_Quotations extends Controller_Core_Sitereport{
 
 	public function report_run()
 	{
-		$branch_id = $_POST['branch_id'];
-		$order_status = $_POST['order_status'];
-		$start_date = $_POST['start_date'];
-		$end_date = $_POST['end_date'];
+		$branch_id = $this->OBJPOST['branch_id'];
+		$order_status = $this->OBJPOST['order_status'];
+		$start_date = $this->OBJPOST['start_date'];
+		$end_date = $this->OBJPOST['end_date'];
 		$where = ""; $filter = ""; $HTML =""; $RESULT="";
 		
 		/*query filter*/

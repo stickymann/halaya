@@ -31,7 +31,7 @@ class Controller_Core_Sales_Payment extends Controller_Core_Site
 	
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Sales_Payment extends Controller_Core_Site
 		$validation
 			->rule('payment_id','not_empty')
 			->rule('payment_id','min_length', array(':value', 16))->rule('payment_id','max_length', array(':value', 16))
-			->rule('payment_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['payment_id']));
+			->rule('payment_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['payment_id']));
 		$validation
 			->rule('branch_id','not_empty')
 			->rule('branch_id','min_length', array(':value', 2))->rule('branch_id','max_length', array(':value', 50));
@@ -73,7 +73,7 @@ class Controller_Core_Sales_Payment extends Controller_Core_Site
 
 	public function is_till_ok(Validation $validation,$field)
 	{
-		$till_id = $_POST['till_id'];
+		$till_id = $this->OBJPOST['till_id'];
 		$idname  = Auth::instance()->get_user()->idname;
 		if( !($this->is_user_till($till_id,$idname)) )
 		{
@@ -83,7 +83,7 @@ class Controller_Core_Sales_Payment extends Controller_Core_Site
 
 	public function is_orderstatus_ok(Validation $validation,$field)
 	{
-		$order_id = $_POST['order_id'];
+		$order_id = $this->OBJPOST['order_id'];
 		$order = new Controller_Core_Sales_Order();
 
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE order_id = "%s" AND order_status = "QUOTATION"' ,"vw_orderbalances",$order_id);
@@ -113,7 +113,7 @@ class Controller_Core_Sales_Payment extends Controller_Core_Site
 
 	public function order_update()
 	{
-		$order_id = $_POST['order_id'];
+		$order_id = $this->OBJPOST['order_id'];
 		$order = new Controller_Core_Sales_Order();
 
 		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE order_id = "%s"',"vw_orderbalances",$order_id);

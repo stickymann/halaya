@@ -40,9 +40,9 @@ _text_;
 	function input_validation()
 	{
 		//encrypt password
-		$_POST['password'] = Auth::instance()->hash_password($_POST['password']);
+		$this->OBJPOST['password'] = Auth::instance()->hash_password($this->OBJPOST['password']);
 		
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);

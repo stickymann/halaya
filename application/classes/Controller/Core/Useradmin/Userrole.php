@@ -31,7 +31,7 @@ class Controller_Core_Useradmin_Userrole extends Controller_Core_Site
 
 	function insert_roles_users()
 	{
-		$user = ORM::factory('User')->where('id','=',$_POST['id'])->find();
+		$user = ORM::factory('User')->where('id','=',$this->OBJPOST['id'])->find();
 		$role = ORM::factory('Role')->where('name','=','login')->find();
 
 		//delete old user roles
@@ -39,7 +39,7 @@ class Controller_Core_Useradmin_Userrole extends Controller_Core_Site
 		if($this->param['primarymodel']->execute_delete_query($querystr))
 		{
 			//insert new user roles
-			$rolecount = count($rolelist = preg_split('/,/',$_POST['roles']));
+			$rolecount = count($rolelist = preg_split('/,/',$this->OBJPOST['roles']));
 			if(!($rolelist[0] == ''))
 			{
 				foreach($rolelist as $key => $val)
@@ -65,7 +65,7 @@ class Controller_Core_Useradmin_Userrole extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -75,7 +75,7 @@ class Controller_Core_Useradmin_Userrole extends Controller_Core_Site
 		$validation
 			->rule('idname','not_empty')
 			->rule('idname','min_length', array(':value', 3))->rule('idname','max_length', array(':value', 50))
-			->rule('idname', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['idname']));
+			->rule('idname', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['idname']));
 			
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

@@ -12,10 +12,12 @@
  */
 class Controller_Core_Sitecontrol extends Controller
 {	
+	public $OBJPOST = array();
 	public $param = array();
 
 	public function __construct($param_id="",$controller="",$idname="")
     {
+		$this->OBJPOST = $_POST;
 		$this->param['primarymodel'] = new Model_SiteDB();
 		$this->param['url_input']	 = $param_id;
 		$this->param['controller']	 = $controller;
@@ -78,7 +80,7 @@ class Controller_Core_Sitecontrol extends Controller
 	
 	public function get_input_controls()
 	{	
-		$post =$_POST;
+		$post =$this->OBJPOST;
 		$controls = "";
 		$func='?';
 		
@@ -209,7 +211,7 @@ class Controller_Core_Sitecontrol extends Controller
 	
 	public function input_form_button($bttnval)
 	{
-		$html = sprintf('<input type="submit" id="submit" name="submit" class="bttn" value="%s" onclick=window.siteutils.setButtonClicked("Hold") />',$bttnval,$bttnval)."\n"; 
+		$html = sprintf('<input type="submit" id="submit" name="submit" class="bttn" value="%s" onclick=window.siteutils.setButtonClicked("%s") />',$bttnval,$bttnval)."\n"; 
 		return $html;
 	}
 

@@ -24,9 +24,9 @@ class Controller_Core_Report_Sales extends Controller_Core_Sitereport
 
 	public function report_run()
 	{
-		$branch_id = $_POST['branch_id'];
-		$start_date = $_POST['start_date'];
-		$end_date = $_POST['end_date'];
+		$branch_id = $this->OBJPOST['branch_id'];
+		$start_date = $this->OBJPOST['start_date'];
+		$end_date = $this->OBJPOST['end_date'];
 		$where = ""; $filter = ""; $HTML =""; $RESULT="";
 		
 		/*query filter*/

@@ -25,14 +25,14 @@ class Controller_Core_Sysadmin_Region extends Controller_Core_Site
 	
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
 		$validation
 			->rule('id','not_empty')
 			->rule('id','numeric')			
-			->rule('id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['id']));
+			->rule('id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['id']));
 		$validation
 			->rule('area','not_empty')
 			->rule('area','min_length', array(':value', 2))->rule('area','max_length', array(':value', 255));

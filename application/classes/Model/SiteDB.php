@@ -642,7 +642,7 @@ class Model_SiteDB extends Model
 	public function get_form_subtable_options($controller,$fieldname)
 	{
 		$labels = FALSE; 
-		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
+		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s" AND dflag="Y"','formfields','params','controller',$controller);
 		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$row = $result[0];
@@ -671,7 +671,7 @@ class Model_SiteDB extends Model
 
 	public function get_subform_controller($controller)
 	{
-		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s"','formfields','params','controller',$controller);
+		$querystr = sprintf('SELECT %s FROM %s WHERE %s = "%s" AND dflag="Y"','formfields','params','controller',$controller);
 		$result = $this->db->query(Database::SELECT,$querystr,TRUE);
 		$arr = array();
 		$row = $result[0];
@@ -952,10 +952,10 @@ class Model_SiteDB extends Model
 		}
 		$vals = substr($vals,0,-1);
 		$querystr = sprintf('UPDATE `%s` set %s WHERE `%s` = "%s" AND  `%s` = "%s"' ,$table,$vals,$field1,$value1,$field2,$value2);
-print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$result = $this->execute_non_select_query(Database::UPDATE,$querystr);
 		return $result;
-	}
+	} 
 
 	public function insert_record($table,$arr)
 	{

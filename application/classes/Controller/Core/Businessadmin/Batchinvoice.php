@@ -38,7 +38,7 @@ _text_;
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -48,7 +48,7 @@ _text_;
 		$validation
 			->rule('batch_id','not_empty')
 			->rule('batch_id','min_length', array(':value', 3))->rule('batch_id','max_length', array(':value', 50))
-			->rule('batch_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['batch_id']));
+			->rule('batch_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['batch_id']));
 		$validation
 			->rule('batch_description','not_empty')
 			->rule('batch_description','min_length', array(':value', 3))->rule('batch_description','max_length', array(':value', 255));
@@ -67,7 +67,7 @@ _text_;
 	public function batch_details_exist(Validation $validation,$field)
 	{
 		$count = 0;
-		$rows = new SimpleXMLElement($_POST['batch_details']);
+		$rows = new SimpleXMLElement($this->OBJPOST['batch_details']);
 		if($rows->row) 
 		{ 
 			foreach ($rows->row as $row) 

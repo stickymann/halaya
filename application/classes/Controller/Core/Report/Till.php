@@ -24,9 +24,9 @@ class Controller_Core_Report_Till extends Controller_Core_Sitereport
 
 	public function report_run()
 	{
-		$till_owner = $_POST['till_owner'];
-		$start_date = $_POST['start_date'];
-		$end_date = $_POST['end_date'];
+		$till_owner = $this->OBJPOST['till_owner'];
+		$start_date = $this->OBJPOST['start_date'];
+		$end_date = $this->OBJPOST['end_date'];
 		$where = ""; $filter = ""; $HTML =""; $RESULT=""; $filter1="";
 		
 		/*query filter*/
@@ -114,9 +114,9 @@ payments
 WHERE payment_status = "VALID"
 _SQL_;
 		$orderby = 'ORDER BY input_date;';
-		$till_owner = $_POST['till_owner'];
-		$start_date = $_POST['start_date'];
-		$end_date = $_POST['end_date'];
+		$till_owner = $this->OBJPOST['till_owner'];
+		$start_date = $this->OBJPOST['start_date'];
+		$end_date = $this->OBJPOST['end_date'];
 		$where = ""; $filter = "";
 		
 		/*query filter*/
@@ -186,9 +186,9 @@ FROM
 tilltransactions
 _SQL_;
 		$orderby = 'ORDER BY input_date;';
-		$till_owner = $_POST['till_owner'];
-		$start_date = $_POST['start_date'];
-		$end_date = $_POST['end_date'];
+		$till_owner = $this->OBJPOST['till_owner'];
+		$start_date = $this->OBJPOST['start_date'];
+		$end_date = $this->OBJPOST['end_date'];
 		$where = ""; $filter = ""; $filter3 = "";
 		
 		/*query filter*/

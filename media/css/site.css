@@ -133,11 +133,6 @@ table.subform {width:70%; height:250px; 	border-width: 1px;
 #subformview td {border: 1px solid brown; font-weight: normal; padding: 2px; background: transparent; color: brown; }
 #subformview tr:hover td { background: #ebf2f9; color: brown;}
 
-/*#e6e6e6*/
-#order_enq_details { border: 1px solid white; font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; text-align: left; border-collapse: collapse; }
-#order_enq_details th {border: 1px solid white;  font-weight: normal; padding: 2px; background: silver; color: #000000; }
-#order_enq_details td {border: 1px solid silver; font-weight: normal; padding: 2px; background: transparent; color: silver; }
-
 input.error { border: 1px solid red; }
 label.error {padding-left: 16px; margin-left: .3em;}
 label.valid {display: block; width: 16px; height: 16px;}
@@ -190,3 +185,50 @@ label.valid {display: block; width: 16px; height: 16px;}
 #viewtbl { border: 1px solid brown; font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; text-align: left; border-collapse: collapse;}
 #viewtbl th {border: 1px solid brown;  font-weight: normal; padding: 2px; background: brown; color: #ffffff;}
 #viewtbl td {border: 1px solid brown; font-weight: normal; padding: 2px; background: transparent; color: brown;}
+
+
+/*NEW ENQUIRY STYLES*/
+#ne {border:3px solid #000066; color: #000;  font-family: verdana, arial, helvetica, sans-serif; font-size: 8pt; font-weight: normal; background-color: #ffffff; padding: 5px; margin:0; border-radius:5px; -webkit-border-radius:5px;}
+#enq_display {border:0px solid #000; width: 100%; color: #000;  font-family: verdana, arial, helvetica; font-size: 8pt; font-weight: normal; background-color: #ffffff; padding: 0px; margin:0; overflow:none;} 
+#ne_ff  {border:0px solid red; color: #0000;  font-family: verdana, arial, helvetica, sans-serif; font-size: .9em; font-weight: normal; background-color: #ffffff; padding: 0px; border-radius:5px; -webkit-border-radius:2px;}
+#ne_ff fieldset {border:1px solid #000; background-color: #ebf2f9;}
+#ne_ff legend {
+	border:0px solid #000; color: #fff; background-color: #000066; font-weight: bold; font-size: 1.2em; padding: 5px; margin: 0;
+	background-image: linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -webkit-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -moz-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -ms-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -o-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+}
+#ne_ff input[type=text] {border:solid 1px #000; color: #000000; background-color: #ffffff; font-family:  verdana,arial, helvetica, display:block; border-radius:1px; -moz-border-radius:1px; -webkit-border-radius:1px; margin:0 0 0 0px; padding:1px;}
+#enqhdr {width:100%; color: #000000; background-color: #ffffff; font-family: verdana, arial, helvetica, sans-serif; font-size: 13pt; font-weight:  bold; margin: 0px 0px 0px 0px;  padding: 5px 0px 5px 0px; text-align: center; clear: both;}
+#ne_shd {
+	width: 100%; color: #ffffff; font-size: 1.3em; font-weight: bold; background-color:#000066;  margin: 0; padding: 5px; text-align: left; clear: both;
+	background-image: linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -webkit-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -moz-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -ms-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+	background-image: -o-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
+}
+#ne_sct { border:1px solid #000; width: 100%; color: #000; background-color: transparent; font-weight: normal; margin: 0; padding: 0px;}
+/*
+#nesct tr { border:1px solid #000; width: 100%; color: #000; background-color: #ebf2f9; font-weight: normal; margin: 0; padding: 0px;}
+#nesct td { border:1px solid #000; width: 100%; color: #000; background-color: #ebf2f9; font-weight: normal; margin: 0; padding: 0px;}
+*/
+
+.ne_tab { border-width: 0px; border-spacing: 0px; border-style: outset; border-color: #000;border-collapse: collapse; }
+.ne_td0 { border:0px solid gray; border-collapse: collapse; background-color: #fff; padding: 2px 4px 2px 4px; text-align: left;}
+.ne_td1 { border:1px solid gray; border-collapse: collapse; color: #000;background-color: #ebf2f9; font-weight:bold; padding: 2px 4px 4px 2px; text-align: left;}
+.ne_td2 { border:1px solid gray; border-collapse: collapse; background-color: #fff; padding: 2px 4px 2px 4px; text-align: left;}
+
+#ne_scb { border: 1px solid #000; margin: 0; padding: 1px 2px 1px 2px;}
+#ne_spacer1 { height:1px; margin: 0px;; padding: 0px;}
+#ne_spacer2 { height:2px; margin: 0px;; padding: 0px;}
+#ne_spacer3 { height:3px; margin: 0px;; padding: 0px;}
+#ne_spacer4 { height:4px; margin: 0px;; padding: 0px;}
+#ne_spacer5 { height:5px; margin: 0px;; padding: 0px;}
+
+/*#e6e6e6*/
+#ne_tlist { border: 1px solid white; font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; text-align: left; border-collapse: collapse; }
+#ne_tlist th {border: 1px solid gray;  font-weight: bold; padding: 2px; background: #ebf2f9; color: #000000; }
+#ne_tlist td {border: 1px solid gray; font-weight: normal; padding: 2px; background: transparent; color: #000000; }

@@ -24,7 +24,7 @@ class Controller_Core_Report_Stockreorder extends Controller_Core_Sitereport
 
 	public function report_run()
 	{
-		$branch_id = $_POST['branch_id'];
+		$branch_id = $this->OBJPOST['branch_id'];
 		$where = ""; $filter = ""; $HTML =""; $RESULT="";
 		
 		/*query filter*/

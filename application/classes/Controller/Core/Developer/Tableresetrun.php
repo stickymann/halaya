@@ -25,9 +25,9 @@ class Controller_Core_Developer_Tableresetrun extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$_POST['csv_id']	= strtoupper($_POST['csv_id']);
+		$this->OBJPOST['csv_id']	= strtoupper($this->OBJPOST['csv_id']);
 		
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -37,7 +37,7 @@ class Controller_Core_Developer_Tableresetrun extends Controller_Core_Site
 		$validation
 			->rule('resetconfig_id','not_empty')
 			->rule('resetconfig_id','min_length', array(':value', 3))->rule('resetconfig_id','max_length', array(':value', 30))
-			->rule('resetconfig_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['resetconfig_id']));
+			->rule('resetconfig_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['resetconfig_id']));
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

@@ -31,7 +31,7 @@ class Controller_Core_Sales_Inventory extends Controller_Core_Site
 
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -41,7 +41,7 @@ class Controller_Core_Sales_Inventory extends Controller_Core_Site
 		$validation
 			->rule('inventory_id','not_empty')
 			->rule('inventory_id','min_length', array(':value', 2))->rule('inventory_id','max_length', array(':value', 50))
-			->rule('inventory_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['inventory_id']));
+			->rule('inventory_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['inventory_id']));
 		$validation
 			->rule('product_id','not_empty')
 			->rule('product_id','min_length', array(':value', 2))->rule('product_id','max_length', array(':value', 50));

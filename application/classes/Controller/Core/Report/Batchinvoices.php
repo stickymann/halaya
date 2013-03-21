@@ -24,7 +24,7 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 
 	public function report_run()
 	{
-		$batch_id = $_POST['batch_id'];
+		$batch_id = $this->OBJPOST['batch_id'];
 		$table = 'batchinvoices';
 		$querystr = sprintf('select batch_description from %s where batch_id = "%s"', $table,$batch_id);
 		$desc = $this->sitemodel->execute_select_query($querystr);
@@ -36,83 +36,90 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 			$fields = array('id','order_id','invoice_id','alt_invoice_id');
 			$querystr = sprintf('select %s from %s where batch_id = "%s"', join(',',$fields),$table,$batch_id);
 			$batch_res = $this->sitemodel->execute_select_query($querystr);
-			foreach($batch_res as $row => $linerec)
+			if($batch_res)
 			{
-				$linerec = (array)$linerec;
-				$table = 'vw_orderbalances';
-				$order_id = $linerec['order_id'];
-				$fields = array
-				(
-					'order_id','branch_id','inputter','first_name','last_name','customer_type','address1','address2','city',
-					'phone_mobile1','phone_home','phone_work','current_no','order_date','invoice_date','quotation_date',
-					'order_total','extended_total','tax_total','payment_total','balance','discount_total','order_details','payment_type'
-				);
-				$querystr = sprintf('select %s from %s where order_id = "%s"', join(',',$fields),$table,$order_id);
-				$order_res = $this->sitemodel->execute_select_query($querystr);
-				$item = (array) $order_res[0];
-				$merge_r = array_merge($linerec,$item);
-				$batch_res[$row] = $merge_r;
-				$result[$row] = array
-				(
-					'invoice_id'=>$merge_r['invoice_id'], 'alt_invoice_id'=>$merge_r['alt_invoice_id'], 'order_id'=>$merge_r['order_id'],
-					'order_date'=>$merge_r['order_date'], 'first_name'=>$merge_r['first_name'], 'last_name'=>$merge_r['last_name'],
-					'order_details'=>$merge_r['order_details'], 'extended_total'=>$merge_r['extended_total'], 'tax_total'=>$merge_r['tax_total'],
-					'order_total'=>$merge_r['order_total'], 'payment_total'=>$merge_r['payment_total'], 'balance'=>$merge_r['balance'],
-					'payment_type'=>$merge_r['payment_type']
-				);
-			}	
-			
-			$num = rand(0,999999);
-			$num = str_pad($num, 6, "0", STR_PAD_LEFT);
-			$invoices	  = 'BCHI'.date("YmdHis").$num;
-			$payments = 'BCHP'.date("YmdHis").$num;
-			$pdfurl = ""; 
-			if($this->printable)
-			{
-				$pdfurl = sprintf('<div id=enqprt>[ <a href=%sindex.php/core_pdfbuilder/index/%s target=_blank>Payments</a> ] ',URL::base(),$payments);
-				$pdfurl .= sprintf(' [ <a href=%sindex.php/core_pdfbuilder/index/%s target=_blank>Invoices</a> ] </div>',URL::base(),$invoices)."\n";
-			}
-		
-			$RESULT = '<div id="e" style="padding:5px 5px 5px 5px; overflow:auto;">';
-			$RESULT .= sprintf('<div>Batch Id : %s<br>Batch Description : %s</div> %s',$batch_id, $batch_description, $pdfurl);
-			$RESULT .= '<table id="rpttbl" width="98%">'."\n";
-			$firstpass = true;
-			foreach($result as $row => $linerec)
-			{	
-				$linerec = (array)$linerec;
-				$header = ''; $data = '';
-				foreach ($linerec as $key => $value)
+				foreach($batch_res as $row => $linerec)
 				{
+					$linerec = (array)$linerec;
+					$table = 'vw_orderbalances';
+					$order_id = $linerec['order_id'];
+					$fields = array
+					(
+						'order_id','branch_id','inputter','is_co','cc_id','first_name','last_name','customer_type','address1','address2','city',
+						'phone_mobile1','phone_home','phone_work','current_no','order_date','invoice_date','quotation_date',
+						'order_total','extended_total','tax_total','payment_total','balance','discount_total','order_details','payment_type'
+					);
+					$querystr = sprintf('select %s from %s where order_id = "%s"', join(',',$fields),$table,$order_id);
+					$order_res = $this->sitemodel->execute_select_query($querystr);
+					$item = (array) $order_res[0];
+					$merge_r = array_merge($linerec,$item);
+					$batch_res[$row] = $merge_r;
+					$result[$row] = array
+					(
+						'invoice_id'=>$merge_r['invoice_id'], 'alt_invoice_id'=>$merge_r['alt_invoice_id'], 'order_id'=>$merge_r['order_id'],
+						'order_date'=>$merge_r['order_date'], 'first_name'=>$merge_r['first_name'], 'last_name'=>$merge_r['last_name'],
+						'order_details'=>$merge_r['order_details'], 'extended_total'=>$merge_r['extended_total'], 'tax_total'=>$merge_r['tax_total'],
+						'order_total'=>$merge_r['order_total'], 'payment_total'=>$merge_r['payment_total'], 'balance'=>$merge_r['balance'],
+						'payment_type'=>$merge_r['payment_type']
+					);
+				}	
+			
+				$num = rand(0,999999);
+				$num = str_pad($num, 6, "0", STR_PAD_LEFT);
+				$invoices	  = 'BCHI'.date("YmdHis").$num;
+				$payments = 'BCHP'.date("YmdHis").$num;
+				$pdfurl = ""; 
+				if($this->printable)
+				{
+					$pdfurl = sprintf('<div id=enqprt>[ <a href=%sindex.php/core_pdfbuilder/index/%s target=_blank>Payments</a> ] ',URL::base(),$payments);
+					$pdfurl .= sprintf(' [ <a href=%sindex.php/core_pdfbuilder/index/%s target=_blank>Invoices</a> ] </div>',URL::base(),$invoices)."\n";
+				}
+		
+				$RESULT = '<div id="e" style="padding:5px 5px 5px 5px; overflow:auto;">';
+				$RESULT .= sprintf('<div>Batch Id : %s<br>Batch Description : %s</div> %s',$batch_id, $batch_description, $pdfurl);
+				$RESULT .= '<table id="rpttbl" width="98%">'."\n";
+				$firstpass = true;
+				foreach($result as $row => $linerec)
+				{	
+					$linerec = (array)$linerec;
+					$header = ''; $data = '';
+					foreach ($linerec as $key => $value)
+					{
+						if($firstpass)
+						{
+							$headtxt = Controller_Core_Site::strtotitlecase(str_replace("_"," ",$key));
+							$header .= '<th>'.$headtxt.'</th>'; 
+						}
+						$data .= '<td>'.HTML::chars($value).'</td>'; 
+					}
+			
 					if($firstpass)
 					{
-						$headtxt = Controller_Core_Site::strtotitlecase(str_replace("_"," ",$key));
-						$header .= '<th>'.$headtxt.'</th>'; 
+						$header = "\n".'<thead>'."\n".'<tr>'.$header.'</tr>'."\n".'</thead>'."\n".'<tbody>'."\n";
+						$RESULT .=$header;
 					}
-					$data .= '<td>'.HTML::chars($value).'</td>'; 
-				}
 			
-				if($firstpass)
-				{
-					$header = "\n".'<thead>'."\n".'<tr>'.$header.'</tr>'."\n".'</thead>'."\n".'<tbody>'."\n";
-					$RESULT .=$header;
+					$data = '<tr>'.$data.'</tr>'."\n"; 
+					$RESULT .= $data;
+					$firstpass = false;
 				}
-			
-				$data = '<tr>'.$data.'</tr>'."\n"; 
-				$RESULT .= $data;
-				$firstpass = false;
-			}
-			$RESULT .='</tbody>'."\n".'</table>'."\n";
-			$RESULT .= '</div>';
-			$this->content->pagebody = $RESULT;
+				$RESULT .='</tbody>'."\n".'</table>'."\n";
+				$RESULT .= '</div>';
+				$this->content->pagebody = $RESULT;
 		
-			$config['batch_id']	= $batch_id;
-			$config['invoices']	= $invoices;
-			$config['payments']	= $payments;
-			$config['results']  = $batch_res;
-			$config['idname']		= Auth::instance()->get_user()->idname;
-			$config['controller']	= $this->controller;
-			$config['type']		= "report";
-			$this->create_pdf($config);
+				$config['batch_id']	= $batch_id;
+				$config['invoices']	= $invoices;
+				$config['payments']	= $payments;
+				$config['results']  = $batch_res;
+				$config['idname']		= Auth::instance()->get_user()->idname;
+				$config['controller']	= $this->controller;
+				$config['type']		= "report";
+				$this->create_pdf($config);
+			}
+			else
+			{
+				$this->content->pagebody = '<div id="i"><div class="frmmsg">No Result.</div></div>';		
+			}
 		}
 		else
 		{
@@ -128,20 +135,22 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 		$label = $enqparam['labels'];
 		
 		$item = $data['item'];
-		$id = $item['alt_invoice_id'];			$order_id = $item['order_id'];
+		$id = $item['alt_invoice_id'];				$order_id = $item['order_id'];
 		$branch_id = $item['branch_id'];			$inputter = $item['inputter'];
-		$first_name = $item['first_name'];		$last_name = $item['last_name'];
+		$is_co = $item['is_co'];					$cc_id = $item['cc_id'];
+		$first_name = $item['first_name'];			$last_name = $item['last_name'];
 		$customer_type = $item['customer_type'];	$city = $item['city'];
-		$address1 = $item['address1'];			$address2 = $item['address2'];
+		$address1 = $item['address1'];				$address2 = $item['address2'];
 		$phone_mobile1 = $item['phone_mobile1'];	$phone_home = $item['phone_home'];		
-		$phone_work = $item['phone_work'];		$current_no = $item['current_no'];
-		$invoice_date = $item['invoice_date'];	$quotation_date = $item['quotation_date'];
+		$phone_work = $item['phone_work'];			$current_no = $item['current_no'];
+		$invoice_date = $item['invoice_date'];		$quotation_date = $item['quotation_date'];
 		$order_total = $item['order_total'];		$payment_total = $item['payment_total']; 
 		$balance = $item['balance'];				$sub_total = $item['extended_total'];
 		$tax_total = $item['tax_total'];			$discount_total = $item['discount_total'];
 
 		$label_id = $label['id'];							$label_order_id = $label['order_id'];
 		$label_branch_id = $label['branch_id'];				$label_inputter = $label['inputter'];
+		$label_is_co = $label['is_co'];						$label_cc_id = $label['cc_id'];
 		$label_first_name = $label['first_name'];			$label_last_name = $label['last_name'];
 		$label_customer_type = $label['customer_type'];		$label_city = $label['city'];
 		$label_address1 = $label['address1'];				$label_address2 = $label['address2'];
@@ -158,6 +167,8 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 	<order_id><label>$label_order_id</label><value>$order_id</value></order_id>
 	<branch_id><label>$label_branch_id</label><value>$branch_id</value></branch_id>
 	<inputter><label>$label_inputter</label><value>$inputter</value></inputter>
+	<is_co><label>$label_is_co</label><value>$is_co</value></is_co>
+	<cc_id><label>$label_cc_id</label><value>$cc_id</value></cc_id>
 	<first_name><label>$label_first_name</label><value>$first_name</value></first_name>
 	<last_name><label>$label_last_name</label><value>$last_name</value></last_name>
 	<customer_type><label>$label_customer_type</label><value>$customer_type</value></customer_type>

@@ -79,20 +79,20 @@ invoice_summary_border($this->pdf, $page_config);
 
 function invoice_details(&$pdf,$page_config)
 {
-	$od = new Orderdetail_Controller();
+	$od = new Controller_Core_Sales_Orderdetail();
 	$table = $od->param['tb_live'];
-	$fields = $od->model->getFormFields("orderdetail");
-	$prefix = "";
+	$fields = $od->model->get_formfields("orderdetail");
+	$prefix = ""; $html = "";
 	$formfields = $page_config['formfields'];
 	$item = $formfields->fields;
 	$order_id = $item->order_id->value;
 
 	$where = sprintf('where order_id = "%s"',$order_id);
 	$orderby = "order by id";
-	$result = $od->model->getAllRecsByFields($table,$fields,$prefix,$where,$orderby);
+	$result = $od->model->get_all_recs_by_fields($table,$fields,$prefix,$where,$orderby);
 	if($result)
 	{
-		$html = '<table border="0" cellspacing="3" cellpadding="2" >'; 
+		$html .= '<table border="0" cellspacing="3" cellpadding="2" >'; 
 		foreach($result as $index => $row)
 		{
 			if($row->user_text !="?") {$description = $row->description."<br>".nl2br($row->user_text); }else { $description = $row->description; }
@@ -166,11 +166,15 @@ _HTML_;
 
 	$id = $item->id->value;				$invoice_date = $item->invoice_date->value;		
 	$order_id = $item->order_id->value;	$inputter = $item->inputter->value;
+	$cc_id = $item->cc_id->value;		$is_co = $item->is_co->value;
+	$charge_customer_id = "";
+	if( $is_co == "Y"){ $charge_customer_id = sprintf('( %s )',$cc_id); }
 	//bgcolor="red"
 	$HTML_HDR_R=<<<_HTML_
 	<table width="400" border=0 cellspacing=0 cellpadding=2 >
 		<tr valign=top><td width="65"><b>Invoice No. :</b> </td><td>$id</td></tr>
 		<tr valign=top><td><b>Order Id :</b> </td><td>$order_id</td></tr>
+		<tr valign=top><td><b>Charge Order :</b> </td><td>$is_co $charge_customer_id</td></tr>
 		<tr valign=top><td><b>Invoice Date :</b> </td><td>$invoice_date</td></tr>
 		<tr valign=top><td><b>Agent :</b> </td><td>$inputter</td></tr>
 	</table>

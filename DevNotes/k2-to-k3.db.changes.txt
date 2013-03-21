@@ -1,3 +1,30 @@
+/* 
+CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
+
+Note: when upgrading gbiz, 
+- delete all inventchkouts records, 
+- set order checkout status to "COMPLETED"
+- UPDATE orders set inventory_checkout_status = "COMPLETED";
+
+Rules:
+- Orders can only be re-opened if no checkout record or no payments 
+- If order is cancelled
+
+(i) Cancel Payments
+(ii) Delete Chkout
+(iii) Delete Delivery Note
+(iv) Reverse Inventory
+
+Add to this script migration SQL for
+- Sales Admin menu
+- tables ordercancels, ordercancels_is, ordercancels_hs
+- tables paymentcancels, paymentcancels_is, paymentcancels_hs
+- params->core_sales_ordercancel, params->core_sales_paymentcancel
+
+*/
+
+
+
 ALTER TABLE `halaya`.`users`     
 CHANGE `password` `password` CHAR(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL ;
 UPDATE `halaya`.`users` SET `password` = '2c2a34b9972dafcd29f246df5d8604ad25d93dfd4dd9384f1ffb0d9eaa2e3343'
@@ -168,16 +195,21 @@ CREATE TABLE `inventory_sale_logs` (
 INSERT INTO `menudefs` VALUES (427,50400053,504000,504000.53125,127,128,3,'L','sales','Inventory Sale Log','magicon016.png%IMG%','core_sales_inventorysalelog','core_sales_inventorysalelog/enquirydefault','if,vw','ls,is,ex','IMPLEMENTATION','2013-02-25 13:02:43','ADMIN','2013-02-25 13:50:50','LIVE',1);
 INSERT INTO `params` VALUES (415,'core_sales_inventorysalelog','inventorysalelog','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>inventory_id</name><label>Inventory Id</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>order_id</name><label>Order Id</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>product_id</name><label>Product Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit>\n		<sideinfo>\n			<enable>yes</enable><table>products</table><selectfields>product_description</selectfields><idfield>product_id</idfield><format>*</format>\n		</sideinfo>\n	</field>\n	<field><name>branch_id</name><label>Branch Id</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit>\n		<sideinfo>\n			<enable>yes</enable><table>branches</table><selectfields>description</selectfields><idfield>branch_id</idfield><format>*</format>\n		</sideinfo>\n	</field>\n	<field><name>qty_instock</name><label>Quantity Instock</label><type>input</type><value></value><options>size=12</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>qty_diff</name><label>Difference</label><type>input</type><value></value><options>size=12</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>last_update_type</name><label>Update Type</label><type>input</type><value></value><options>size=25</options><onnew>readonly</onnew><onedit>readonly</onedit>\n		<sideinfo>\n			<enable>yes</enable><table>inventupdtypes</table><selectfields>description,stock_movement</selectfields><idfield>update_type_id</idfield><format>*;_*</format>\n		</sideinfo>\n	</field>\n	<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n</formfields>','sales',1,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','id','','Id','Inventory Sale Log','Model_SiteDB','inventory_sale_logs','inventory_sale_logs','inventory_sale_logs','inventorysalelog_error','ADMIN','2013-02-25 14:21:51','ADMIN','2013-02-25 14:22:14','LIVE',1);
 
+DELETE FROM `halaya`.`params` WHERE `id`='18';
+INSERT INTO `params` VALUES (18,'core_developer_enqdef','enqdef','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>enquirydef_id</name><label>Enquirydef Id</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\r\n	<field><name>controller</name><label>Controller</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>dflag</name><label>DFlag</label><type>dropdown</type><value></value><options>Y,N::Y,N</options><onnew></onnew><onedit></onedit></field>\r\n	<field><name>formfields</name><label>Formfields</label><type>textarea</type><value></value><options>rows=30 cols=120</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\r\n	<field><name>tablename</name><label>Tablename</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>model</name><label>Model</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>view</name><label>View</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>idfield</name><label>Id Field</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\r\n	<field><name>enqheader</name><label>Enquiry Header</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\r\n	<field><name>showfilter</name><label>Show Filter</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>printuser</name><label>Print Username</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>printdatetime</name><label>Print Datetime</label><type>input</type><value></value><options>size=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n</formfields>\n','developer',1,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','enquirydef_id','','Enquirydef Id','Enquiry Definition','Model_SiteDB','enquirydefs','enquirydefs_is','enquirydefs_hs','enquirydef_error','IMPLEMENTATION','2011-04-28 03:04:09','ADMIN','2011-04-28 03:24:04','LIVE',1);
+DELETE FROM `halaya`.`enquirydefs` WHERE `id`='401';
+INSERT INTO `enquirydefs` VALUES (401,'core_enquiry_orders','orders_enq','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>	\n<field><name>id</name><label>Id</label><filterfield>yes</filterfield></field>	\n<field><name>order_id</name><label>Order Id</label><filterfield>yes</filterfield></field>\n<field><name>branch_id</name><label>Branch Id</label><filterfield>yes</filterfield></field>	\n<field><name>customer_id</name><label>Customer Id</label><filterfield>yes</filterfield></field>	\n<field><name>is_co</name><label>Charge Order</label><filterfield>no</filterfield></field>	\r\n<field><name>cc_id</name><label>Charge Customer Id</label><filterfield>no</filterfield></field>	\r\n<field><name>first_name</name><label>First Name</label><filterfield>yes</filterfield></field>\n<field><name>last_name</name><label>Last Name</label><filterfield>yes</filterfield></field>\n<field><name>order_details</name><label>Order Details</label><filterfield>no</filterfield></field>\r\n<field><name>customer_type</name><label>Customer Type</label><filterfield>yes</filterfield></field>\n<field><name>address1</name><label>Address1</label><filterfield>no</filterfield></field>\n<field><name>address2</name><label>Address2</label><filterfield>no</filterfield></field>\n<field><name>city</name><label>City</label><filterfield>no</filterfield></field>\n<field><name>phone_mobile1</name><label>Phone Mobile1</label><filterfield>no</filterfield></field>\n<field><name>phone_home</name><label>Phone Home</label><filterfield>no</filterfield></field>\n<field><name>phone_work</name><label>Phone Work</label><filterfield>no</filterfield></field>\n<field><name>order_date</name><label>Order Date</label><filterfield>yes</filterfield></field>\n<field><name>quotation_date</name><label>Quotation Date</label><filterfield>yes</filterfield></field>\n<field><name>invoice_date</name><label>Invoice Date</label><filterfield>yes</filterfield></field>\n<field><name>order_status</name><label>Order Status</label><filterfield>yes</filterfield></field>\n<field><name>inventory_checkout_status</name><label>Checkout Status</label><filterfield>yes</filterfield></field>\n<field><name>inventory_update_type</name><label>Update Type</label><filterfield>yes</filterfield></field>\n<field><name>inputter</name><label>Inputter</label><filterfield>yes</filterfield></field>	\r\n<field><name>input_date</name><label>Input Date</label><filterfield>no</filterfield></field>	\r\n<field><name>invoice_note</name><label>Invoice Note</label><filterfield>no</filterfield></field>\r\n<field><name>comments</name><label>Comments</label><filterfield>no</filterfield></field>\n<field><name>current_no</name><label>Current No</label><filterfield>no</filterfield></field>\n<field><name>extended_total</name><label>Sub Total</label><filterfield>no</filterfield></field>\n<field><name>discount_total</name><label>Discount Total</label><filterfield>no</filterfield></field>\n<field><name>tax_total</name><label>Tax Total</label><filterfield>no</filterfield></field>\n<field><name>order_total</name><label>Order Total</label><filterfield>no</filterfield></field>\n<field><name>payment_total</name><label>Payment Total</label><filterfield>no</filterfield></field>\n<field><name>balance</name><label>Balance</label><filterfield>no</filterfield></field>\n</formfields>','vw_orderbalances','EnqDB','enquiry/orders_view','order_id','Orders',1,1,1,'DUNSTAN.NESBIT','2012-07-06 14:03:04','DUNSTAN.NESBIT','2012-07-06 14:03:10','LIVE',2);
+INSERT INTO `enquirydefs` VALUES (402,'core_enquiry_deliverynotes','deliverynotes_enq','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>	\n<field><name>id</name><label>Id</label><filterfield>yes</filterfield></field>	\n<field><name>deliverynote_id</name><label>Deliverynote Id</label><filterfield>yes</filterfield></field>\r\n<field><name>invoice_id</name><label>Invoice Id</label><filterfield>yes</filterfield></field>\r\n<field><name>order_id</name><label>Order Id</label><filterfield>yes</filterfield></field>\n<field><name>deliverynote_date</name><label>Deliverynote Date</label><filterfield>yes</filterfield></field>\r\n<field><name>status</name><label>Delivery Status</label><filterfield>no</filterfield></field>\r\n<field><name>delivered_by</name><label>Delivered By</label><filterfield>yes</filterfield></field>\r\n<field><name>delivery_date</name><label>Delivery Date</label><filterfield>yes</filterfield></field>\r\n<field><name>returned_signed_by</name><label>Returned Signed By</label><filterfield>no</filterfield></field>\r\n<field><name>returned_signed_date</name><label>Returned Signed Date</label><filterfield>no</filterfield></field>\r\n<field><name>comments</name><label>Comments</label><filterfield>no</filterfield></field>    \r\n<field><name>branch_id</name><label>Branch Id</label><filterfield>yes</filterfield></field>	\r\n<field><name>customer_id</name><label>Customer Id</label><filterfield>yes</filterfield></field>	\r\n<field><name>is_co</name><label>Charge Order</label><filterfield>no</filterfield></field>	\r\n<field><name>cc_id</name><label>Charge Customer Id</label><filterfield>no</filterfield></field>	\r\n<field><name>first_name</name><label>First Name</label><filterfield>yes</filterfield></field>\r\n<field><name>last_name</name><label>Last Name</label><filterfield>yes</filterfield></field>\r\n<field><name>customer_type</name><label>Customer Type</label><filterfield>no</filterfield></field>\r\n<field><name>address1</name><label>Address1</label><filterfield>no</filterfield></field>\r\n<field><name>address2</name><label>Address2</label><filterfield>no</filterfield></field>\r\n<field><name>city</name><label>City</label><filterfield>no</filterfield></field>\r\n<field><name>phone_mobile1</name><label>Phone Mobile1</label><filterfield>no</filterfield></field>\r\n<field><name>phone_home</name><label>Phone Home</label><filterfield>no</filterfield></field>\r\n<field><name>phone_work</name><label>Phone Work</label><filterfield>no</filterfield></field>\r\n<field><name>order_date</name><label>Order Date</label><filterfield>yes</filterfield></field>\r\n<field><name>order_status</name><label>Order Status</label><filterfield>no</filterfield></field>\r\n<field><name>inventory_checkout_status</name><label>Checkout Status</label><filterfield>no</filterfield></field>\r\n<field><name>inventory_update_type</name><label>Update Type</label><filterfield>no</filterfield></field>\r\n<field><name>inputter</name><label>Inputter</label><filterfield>no</filterfield></field>	\r\n<field><name>input_date</name><label>Input Date</label><filterfield>no</filterfield></field>	\r\n</formfields>','vw_deliverynotes','EnqDB','enquiry/deliverynotes_view','deliverynote_id','Delivery Notes',1,1,1,'ADMIN','2013-03-16 04:00:54','ADMIN','2013-03-16 04:01:01','LIVE',1);
+INSERT INTO `pdftemplates` VALUES (505,'DELIVERYNOTE','SITEPDF','core_deliverynote.php','P','mm','LETTER','FI',38.00,12.00,15.00,12.00,'courier','helvetica','',9,'ADMIN','2013-03-16 07:51:29','ADMIN','2013-03-16 07:51:37','LIVE',1);
 
-/* CHANGE `formfields` `formfields` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL; */
-/*
---update view vw_core_fixedselections_available
---update table params inventory field formfields
---update view vw_inventprod_available
-Note: when upgrading gbiz, delete all inventchkouts records, set order checkout status to "COMPLETED"
-UPDATE orders set inventory_checkout_status = "COMPLETED";
-*/
+UPDATE orders SET inventory_update_type = "SALE" WHERE inventory_update_type IS NULL;
+UPDATE `halaya`.`_sys_orderstatus` SET `id`='12',`progession_id`='12' WHERE `id`='6';
+INSERT INTO `inventupdtypes` VALUES (11,'ORDER.CANCEL.RETURN','Cancelled Order Item Returned','STOCK.IN','','IMPLEMENTATION','2013-03-18 10:31:25','ADMIN','2013-03-18 10:31:52','LIVE',1);
 
+
+
+
+/*********************************** DATABASE VIEWS ******************************/
 DELIMITER $$
 USE `halaya`$$
 DROP VIEW IF EXISTS `vw_core_fixedselections_available`$$
@@ -235,4 +267,105 @@ FROM (`chargeaccounts`
 WHERE (`chargeaccounts`.`active` = 'Y'))$$
 DELIMITER ;
 
+DELIMITER $$
+USE `halaya`$$
+DROP VIEW IF EXISTS `vw_orders`$$
+CREATE ALGORITHM=UNDEFINED DEFINER=`dbuser`@`localhost` SQL SECURITY DEFINER VIEW `vw_orders` AS (
+SELECT `orders`.`id` AS `id`,`orders`.`order_id` AS `order_id`,`orders`.`branch_id` AS `branch_id`,`orders`.`customer_id` AS `customer_id`,
+`orders`.`is_co` AS `is_co`,
+`orders`.`cc_id` AS `cc_id`,
+`customers`.`first_name` AS `first_name`,`customers`.`last_name` AS `last_name`,`customers`.`customer_type` AS `customer_type`,`customers`.`address1` AS `address1`,`customers`.`address2` AS `address2`,`customers`.`city` AS `city`,`customers`.`phone_mobile1` AS `phone_mobile1`,`customers`.`phone_home` AS `phone_home`,`customers`.`phone_work` AS `phone_work`,GROUP_CONCAT(`orderdetails`.`product_id`,'(',`orderdetails`.`qty`,')' SEPARATOR '; ') AS `order_details`,`orders`.`order_date` AS `order_date`,`orders`.`quotation_date` AS `quotation_date`,`orders`.`invoice_date` AS `invoice_date`,`orders`.`order_status` AS `order_status`,`orders`.`inventory_checkout_status` AS `inventory_checkout_status`,`orders`.`inventory_update_type` AS `inventory_update_type`,`orders`.`inputter` AS `inputter`,`orders`.`input_date` AS `input_date`,`orders`.`invoice_note` AS `invoice_note`,`orders`.`comments` AS `comments`,`orders`.`current_no` AS `current_no`,COALESCE(SUM(`func_OrderDetailUnitTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`)),0) AS `unit_total`,COALESCE(SUM(`func_OrderDetailDiscountTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,`orderdetails`.`discount_amount`,`orderdetails`.`discount_type`)),0) AS `discount_total`,COALESCE(SUM(`func_OrderDetailSubTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,`orderdetails`.`discount_amount`,`orderdetails`.`discount_type`)),0) AS `extended_total`,COALESCE(SUM(`func_OrderDetailTaxTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,`orderdetails`.`discount_amount`,`orderdetails`.`tax_percentage`,`orderdetails`.`taxable`,`orderdetails`.`discount_type`)),0) AS `tax_total`,COALESCE(SUM(`func_OrderDetailOrderTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,`orderdetails`.`discount_amount`,`orderdetails`.`tax_percentage`,`orderdetails`.`taxable`,`orderdetails`.`discount_type`)),0) AS `order_total` FROM ((`orders` JOIN `customers` ON((`orders`.`customer_id` = `customers`.`customer_id`))) LEFT JOIN `orderdetails` ON((`orders`.`order_id` = `orderdetails`.`order_id`))) GROUP BY `orders`.`order_id`)$$
+DELIMITER ;
 
+DELIMITER $$
+USE `halaya`$$
+DROP VIEW IF EXISTS `vw_orderbalances`$$
+CREATE ALGORITHM=UNDEFINED DEFINER=`dbuser`@`localhost` SQL SECURITY DEFINER VIEW `vw_orderbalances` AS (
+SELECT
+  `o`.`id`                        AS `id`,
+  `o`.`order_id`                  AS `order_id`,
+  `o`.`branch_id`                 AS `branch_id`,
+  `o`.`customer_id`               AS `customer_id`,
+  `o`.`is_co`                	  AS `is_co`,
+  `o`.`cc_id`                     AS `cc_id`,
+  `o`.`first_name`                AS `first_name`,
+  `o`.`last_name`                 AS `last_name`,
+  `o`.`customer_type`             AS `customer_type`,
+  `o`.`address1`                  AS `address1`,
+  `o`.`address2`                  AS `address2`,
+  `o`.`city`                      AS `city`,
+  `o`.`phone_mobile1`             AS `phone_mobile1`,
+  `o`.`phone_home`                AS `phone_home`,
+  `o`.`phone_work`                AS `phone_work`,
+  `o`.`order_details`             AS `order_details`,
+  `p`.`payment_type`              AS `payment_type`,
+  `o`.`order_date`                AS `order_date`,
+  `o`.`quotation_date`            AS `quotation_date`,
+  `o`.`invoice_date`              AS `invoice_date`,
+  `o`.`order_status`              AS `order_status`,
+  `o`.`inventory_checkout_status` AS `inventory_checkout_status`,
+  `o`.`inventory_update_type`     AS `inventory_update_type`,
+  `o`.`inputter`                  AS `inputter`,
+  `o`.`input_date`                AS `input_date`,
+  `o`.`invoice_note`              AS `invoice_note`,
+  `o`.`comments`                  AS `comments`,
+  `o`.`current_no`                AS `current_no`,
+  `o`.`discount_total`            AS `discount_total`,
+  `o`.`extended_total`            AS `extended_total`,
+  `o`.`tax_total`                 AS `tax_total`,
+  `o`.`order_total`               AS `order_total`,
+  `p`.`payment_total`             AS `payment_total`,
+  (`o`.`order_total` - `p`.`payment_total`) AS `balance`
+FROM (`vw_orders` `o`
+   JOIN `vw_payments` `p`
+     ON ((`o`.`order_id` = `p`.`order_id`))))$$
+DELIMITER ;
+
+DELIMITER $$
+USE `halaya`$$
+DROP VIEW IF EXISTS `vw_deliverynotes`$$
+CREATE ALGORITHM=UNDEFINED DEFINER=`dbuser`@`localhost` SQL SECURITY DEFINER VIEW `halaya`.`vw_deliverynotes` AS (
+SELECT
+  `d`.`id`                        AS `id`,
+  `d`.`deliverynote_id`           AS `deliverynote_id`,
+  `o`.`id`                        AS `invoice_id`,
+  `o`.`order_id`                  AS `order_id`,
+  `o`.`branch_id`                 AS `branch_id`,
+  `o`.`customer_id`               AS `customer_id`,
+  `o`.`is_co`                     AS `is_co`,
+  `o`.`cc_id`                     AS `cc_id`,
+  `c`.`first_name`                AS `first_name`,
+  `c`.`last_name`                 AS `last_name`,
+  `c`.`customer_type`             AS `customer_type`,
+  `c`.`address1`                  AS `address1`,
+  `c`.`address2`                  AS `address2`,
+  `c`.`city`                      AS `city`,
+  `c`.`phone_mobile1`             AS `phone_mobile1`,
+  `c`.`phone_home`                AS `phone_home`,
+  `c`.`phone_work`                AS `phone_work`,
+  `o`.`order_date`                AS `order_date`,
+  `o`.`quotation_date`            AS `quotation_date`,
+  `o`.`invoice_date`              AS `invoice_date`,
+  `o`.`order_status`              AS `order_status`,
+  `o`.`inventory_checkout_status` AS `inventory_checkout_status`,
+  `o`.`inventory_update_type`     AS `inventory_update_type`,
+  `o`.`inputter`                  AS `inputter`,
+  `o`.`input_date`                AS `input_date`,
+  `o`.`invoice_note`              AS `invoice_note`,
+  `d`.`deliverynote_date`         AS `deliverynote_date`,
+  `d`.`details`                   AS `details`,
+  `d`.`status`                    AS `status`,
+  `d`.`delivered_by`              AS `delivered_by`,
+  `d`.`delivery_date`             AS `delivery_date`,
+  `d`.`returned_signed_by`        AS `returned_signed_by`,
+  `d`.`returned_signed_date`      AS `returned_signed_date`,
+  `d`.`comments`                  AS `comments`
+FROM ((`halaya`.`orders` `o`
+    JOIN `halaya`.`deliverynotes` `d`
+      ON ((`o`.`order_id` = `d`.`order_id`)))
+   JOIN `halaya`.`customers` `c`
+     ON ((`o`.`customer_id` = `c`.`customer_id`))))$$
+DELIMITER ;
+
+
+/********************************END DATABASE VIEWS ******************************/

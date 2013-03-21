@@ -25,7 +25,7 @@ public function __construct()
 	
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -35,7 +35,7 @@ public function __construct()
 		$validation
 			->rule('weekday_id','not_empty')
 			->rule('weekday_id','min_length', array(':value', 2))->rule('weekday_id','max_length', array(':value', 21))
-			->rule('weekday_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['weekday_id']));
+			->rule('weekday_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['weekday_id']));
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

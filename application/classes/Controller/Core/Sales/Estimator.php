@@ -1,9 +1,20 @@
 <?php defined('SYSPATH') or die('No direct script access.');
-
+/**
+ * Creates a estimates of sales order. 
+ *
+ * $Id: Estimator.php 2013-01-13 00:00:00 dnesbit $
+ *
+ * @package		Halaya Core
+ * @module	    core
+ * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
+ * @copyright   (c) 2013
+ * @license      
+ */
 class Controller_Core_Sales_Estimator extends Controller_Include
 {
 	public $template	= 'site.view'; 
 	public $auto_render = TRUE; //defaults to true, renders the template after the controller method is done
+	public $OBJPOST		= array();
 	public $param		= array();
 
 	public function __construct()
@@ -27,7 +38,8 @@ class Controller_Core_Sales_Estimator extends Controller_Include
 		$this->template->content = '';
 		$this->template->menutitle = '';
 		$this->template->userbttns = '';
-
+		
+		$this->OBJPOST = $_POST;
 		$this->param['param_id']	= "core_sales_estimator";
 		$this->param['controller']	= "estimator";
 		$this->param['inputview']	= "estimator.view";
@@ -47,13 +59,13 @@ class Controller_Core_Sales_Estimator extends Controller_Include
 
 	function process_request()
 	{
-		if(!$_POST)
+		if(!$this->OBJPOST)
         {
 			$this->input();
         }
 		else
 		{
-			if($_POST['submit']=='Create Order')
+			if($this->OBJPOST['submit']=='Create Order')
 			{
 				$this->create_order();
 			}
@@ -141,7 +153,7 @@ _HTML_;
 
 	function create_order()
 	{
-		unset($_POST['submit']);
+		unset($this->OBJPOST['submit']);
 		//set up new order record and insert into order table 
 		$order = new Controller_Core_Sales_Order();
 		$order->auto_render = FALSE;
@@ -152,7 +164,7 @@ _HTML_;
 		$baseurl = URL::base(TRUE,'http');
 		$url = sprintf('%score_ajaxtodb?option=altid&controller=order&prefix=ORD&ctrlid=%s',$baseurl,$arr['id']);
 		$order_id = Controller_Core_Sitehtml::get_html_from_url($url);
-		$order_details = str_replace("%ORDERID%",$order_id, $_POST['order_details']);
+		$order_details = str_replace("%ORDERID%",$order_id, $this->OBJPOST['order_details']);
 		
 		$idname = Auth::instance()->get_user()->idname;
 		$url = sprintf('%score_ajaxtodb?option=userbranch&idname=%s',$baseurl,$idname);
@@ -174,12 +186,12 @@ _HTML_;
 		$arr['record_status']			= "IHLD";
 		$arr['current_no']				= "0";
 		
-		//createSubFormRecords() requires $_POST array
-		$_POST = $arr;
-		if ( $order->param['primarymodel']->update_record($order->param['tb_inau'],$_POST) )
+		//createSubFormRecords() requires $this->OBJPOST array
+		$order->OBJPOST = $arr;
+		if ( $order->param['primarymodel']->update_record($order->param['tb_inau'],$order->OBJPOST) )
 		{
 			$order->create_subform_records();
-			$this->param['recordstatusmsg'] = "<p><b>&nbsp Record  [ <a href='".$order->param['param_id']."/index/".$_POST['order_id']."'>".$_POST['order_id']."</a> ] added to ".$_POST['record_status']." successfully, <a href=".$this->param['param_id'].">Continue.</a></b></p>"; 
+			$this->param['recordstatusmsg'] = "<p><b>&nbsp Record  [ <a href='".$order->param['param_id']."/index/".$order->OBJPOST['order_id']."'>".$order->OBJPOST['order_id']."</a> ] added to ".$order->OBJPOST['record_status']." successfully, <a href=".$order->param['param_id'].">Continue.</a></b></p>"; 
 		}
 		else
 		{

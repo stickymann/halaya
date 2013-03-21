@@ -25,7 +25,7 @@ class Controller_Core_Sysadmin_Sysconfig extends Controller_Core_Site
 	
 	function input_validation()
 	{
-		$post = $_POST;	
+		$post = $this->OBJPOST;	
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -35,7 +35,7 @@ class Controller_Core_Sysadmin_Sysconfig extends Controller_Core_Site
 		$validation
 			->rule('sysconfig_id','not_empty')
 			->rule('sysconfig_id','min_length', array(':value', 2))->rule('sysconfig_id','max_length', array(':value', 50))
-			->rule('sysconfig_id', array($this,'duplicate_altid'), array(':validation', ':field', $_POST['id'], $_POST['sysconfig_id']));
+			->rule('sysconfig_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['sysconfig_id']));
 						
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

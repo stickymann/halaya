@@ -765,7 +765,7 @@ _TEXT_;
 					}
 					else if($tabletype=="df")
 					{
-						$url =  sprintf('%s/spage?op=eq&controller=%s&fields=%s&lkvals=%s',$controller,$controller,$idfield,$value);
+						$url =  sprintf('%s/spage?op=eq&controller=%s&fields=%s&lkvals=%s',$param_id,$param_id,$idfield,$value);
 						$data .= '<td>'.HTML::anchor($url,$value,array('target'=>'input'));
 					}
 					else
@@ -782,7 +782,7 @@ _TEXT_;
 					}
 					else if($tabletype=="df")
 					{
-						$url =  sprintf('%s/spage?op=like&controller=%s&fields=%s&lkvals=%s',$controller,$controller,$altidfld,$value);
+						$url =  sprintf('%s/spage?op=like&controller=%s&fields=%s&lkvals=%s',$param_id,$param_id,$altidfld,$value);
 						$data .= '<td>'.HTML::anchor($url,$value,array('target'=>'input'));
 					}
 					else
