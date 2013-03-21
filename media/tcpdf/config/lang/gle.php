@@ -12,10 +12,10 @@
 //
 // (c) Copyright:
 //               Nicola Asuni
-//               Tecnick.com LTD
-//               Manor Coach House, Church Hill
-//               Aldershot, Hants, GU12 4RQ
-//               UK
+//               Tecnick.com s.r.l.
+//               Via Della Pace, 11
+//               09044 Quartucciu (CA)
+//               ITALY
 //               www.tecnick.com
 //               info@tecnick.com
 //============================================================+
