@@ -67,16 +67,17 @@ var popout = new function()
 	
 	this.getInput = function()
 	{
-		var e=document.getElementById('poform').elements;
-		//var e=document.forms[0].elements;
 		var i, po_LKFLDS = "", po_params = "";
-		for(i=0 ;i < qfldlen; i++)
+		var tree = $("#poform input");
+		tree.each(function()
 		{
-			if(e[i].type=='text')
+			type	= $(this).attr("type");
+			value	= $(this).val();
+			if(type == "text")
 			{
-				po_LKFLDS += e[i].value + ',';
+				po_LKFLDS += value + ',';
 			}
-		}
+		});
 		po_params = po_lkparam + "&lkvals=" + po_LKFLDS;
 		//replace last occurrence of comma
 		po_params = po_params.substring(0,po_params.lastIndexOf(","));
