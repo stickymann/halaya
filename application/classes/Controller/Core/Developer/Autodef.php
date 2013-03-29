@@ -1908,6 +1908,7 @@ _TEXT_;
 <formfields>
 _TEXT_;
 		$tablename = $controller."s";
+print "<b>[DEBUG]---></b> "; print htmlspecialchars($tablename); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$res = 0;
 		if ($this->app_table_exist($tablename))
 		{
@@ -1942,6 +1943,7 @@ _TEXT_;
 			}
 			$TEXT2 .= "</formfields>\n</formdef>\n";
 			$XML = $XMLHEADER.$TEXT1.$TEXT2;
+print "<b>[DEBUG]---></b> "; print htmlspecialchars($XML); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		
 			$filename = $dirname.$param_id.".formdef.xml";
 			if ($handle = fopen($filename, 'w')) 

@@ -23,3 +23,20 @@
 				}
 			}
 		*/
+
+
+ROOT;Customers;N;customers;;;;-1
+Customers;Customer;L;customer;core_customer_customer;if,vw,nw,cp,in,ao,as,rj,hd,va;ls,is,hs,ex;-1
+Customers;Charge A
+Support Services;Vehicle Type;L;businessadmin;vehicletype
+Support Services;Vehicle Usage Type;L;businessadmin;vehicleusagetype
+Support Services;Inventory Stock Batch;L;businessadmin;inventory_track
+Support Services;Inventory Stock Batch Detail;L;businessadmin;inventory_track_detail
+Batches;EOM Invoices;L;businessadmin;eominvoice
+
+ROOT;Business Administration;N;businessadmin;;;;-1
+Business Administration;Support Services;N;businessadmin;;;;-1
+Business Administration;Batches;N;businessadmin;;;;-1
+Batches;Batch Invoices;L;businessadmin;core_businessadmin_batchinvoice;if,vw,nw,cp,in,ao,as,rj,hd,va;ls,is,hs,ex;-1
+Batches;Charge Invoices (Monthly);L;businessadmin;core_businessadmin_bicrmonthly;if,vw,nw,in,ao,as,rj,hd,va;ls,is,hs,ex;428
+Batches;Charge Invoices (Period);L;businessadmin;core_businessadmin_bicrperiod;if,vw,nw,in,ao,as,rj,hd,va;ls,is,hs,ex;429
