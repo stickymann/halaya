@@ -206,8 +206,70 @@ UPDATE orders SET inventory_update_type = "SALE" WHERE inventory_update_type IS 
 UPDATE `halaya`.`_sys_orderstatus` SET `id`='12',`progession_id`='12' WHERE `id`='6';
 INSERT INTO `inventupdtypes` VALUES (11,'ORDER.CANCEL.RETURN','Cancelled Order Item Returned','STOCK.IN','','IMPLEMENTATION','2013-03-18 10:31:25','ADMIN','2013-03-18 10:31:52','LIVE',1);
 
+CREATE TABLE `bicrs` (
+  `id` int(11) unsigned NOT NULL,
+  `batchrequest_id` varchar(30) NOT NULL,
+  `requesttype` varchar(20) NOT NULL,
+  `cc_id` varchar(8) DEFAULT NULL,
+  `description` varchar(255) NOT NULL,
+  `start_date` date NOT NULL DEFAULT '0000-00-00',
+  `end_date` date NOT NULL DEFAULT '0000-00-00',
+  `run` enum('N','Y') NOT NULL DEFAULT 'N',
+  `comments` text,
+  `inputter` varchar(50) NOT NULL,
+  `input_date` datetime NOT NULL,
+  `authorizer` varchar(50) NOT NULL,
+  `auth_date` datetime NOT NULL,
+  `record_status` char(4) NOT NULL,
+  `current_no` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_batchrequest_id` (`batchrequest_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
+CREATE TABLE `bicrs_hs` (
+  `id` int(11) unsigned NOT NULL,
+  `batchrequest_id` varchar(30) NOT NULL,
+  `requesttype` varchar(20) NOT NULL,
+  `cc_id` varchar(8) DEFAULT NULL,
+  `description` varchar(255) NOT NULL,
+  `start_date` date NOT NULL DEFAULT '0000-00-00',
+  `end_date` date NOT NULL DEFAULT '0000-00-00',
+  `run` enum('N','Y') NOT NULL DEFAULT 'N',
+  `comments` text,
+  `inputter` varchar(50) NOT NULL,
+  `input_date` datetime NOT NULL,
+  `authorizer` varchar(50) NOT NULL,
+  `auth_date` datetime NOT NULL,
+  `record_status` char(4) NOT NULL,
+  `current_no` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`current_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
+CREATE TABLE `bicrs_is` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `batchrequest_id` varchar(30) DEFAULT NULL,
+  `requesttype` varchar(20) DEFAULT NULL,
+  `cc_id` varchar(8) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `start_date` date DEFAULT '0000-00-00',
+  `end_date` date DEFAULT '0000-00-00',
+  `run` enum('N','Y') DEFAULT 'N',
+  `comments` text,
+  `inputter` varchar(50) DEFAULT NULL,
+  `input_date` datetime DEFAULT NULL,
+  `authorizer` varchar(50) DEFAULT NULL,
+  `auth_date` datetime DEFAULT NULL,
+  `record_status` char(4) DEFAULT NULL,
+  `current_no` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_batchrequest_id` (`batchrequest_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1002 DEFAULT CHARSET=utf8
+
+INSERT INTO `_sys_autoids` VALUES ('bicrs_is',1001,0);
+INSERT INTO `menudefs` VALUES (427,50400053,504000,504000.53125,131,132,3,'L','sales','Inventory Sale Log','magicon016.png%IMG%','core_sales_inventorysalelog','core_sales_inventorysalelog/enquirydefault','if,vw','ls,is,ex','IMPLEMENTATION','2013-02-25 13:02:43','ADMIN','2013-02-25 13:50:50','LIVE',1);
+INSERT INTO `menudefs` VALUES (428,50200151,502001,502001.50000,117,118,3,'L','businessadmin','Charge Invoices (Monthly)','magicon016.png%IMG%','core_businessadmin_bicrmonthly','core_businessadmin_bicrmonthly/enquirydefault','if,vw,nw,in,ao,as,rj,hd,va','ls,is,hs,ex','IMPLEMENTATION','2013-03-29 14:03:49','ADMIN','2013-03-29 14:42:26','LIVE',1);
+INSERT INTO `params` VALUES (418,'core_businessadmin_bicrmonthly','bicrmonthly','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>batchrequest_id</name><label>Batchrequest Id</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>requesttype</name><label>Request Type</label><type>dropdown</type><value></value><options>EOMCC-ALL,EOMCC-ONE::EOMCC-ALL,EOMCC-ONE</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>cc_id</name><label>Charge Customer Id</label><type>input</type><value></value><options>size=10 onFocus=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%) onKeyUp=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%)</options>\n	<onnew>readonly_po</onnew><onedit>readonly</onedit>\n		<popout><enable>yes</enable><table>vw_active_charge_customers</table><selectfields>id,customer_id,customer_type,business_type,first_name,last_name,phone_mobile1</selectfields><idfield>customer_id</idfield></popout>\n		<sideinfo>\n			<enable>yes</enable><table>customers</table><selectfields>first_name,last_name,customer_type,business_type</selectfields><idfield>customer_id</idfield><format>*_*;_*;_*</format>\n		</sideinfo>\n	</field>\n	<field><name>description</name><label>Description</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>start_date</name><label>Start Date</label><type>input</type><value></value><options>size=12 maxlength=10</options><onnew>readonly_po</onnew><onedit>readonly</onedit>\n		<sidelink>\r\n			<link><src>javascript:void(0)</src><attr>onclick=bicr_SelectMonth()</attr><text>Select Month</text></link>\r\n		</sidelink>\r\n	</field>\r\n	<field><name>end_date</name><label>End Date</label><type>input</type><value></value><options>size=12 maxlength=10</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>run</name><label>Run Request Update</label><type>dropdown</type><value></value><options>Y,N::Y,N</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n</formfields>','businessadmin',0,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','batchrequest_id','','Batchrequest Id','Batch Invoice Creation Request (Charge Monthly)','Model_SiteDB','bicrs','bicrs_is','bicrs_hs','bicr_error','ADMIN','2013-03-29 15:22:49','ADMIN','2013-03-29 15:34:50','LIVE',1);
+INSERT INTO `params` VALUES (419,'core_businessadmin_bicrperiod','bicrperiod','Y','<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n	<field><name>id</name><label>Id</label><type>hidden</type><value></value><options></options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>batchrequest_id</name><label>Batchrequest Id</label><type>input</type><value></value><options>size=50</options><onnew>readonly</onnew><onedit>readonly</onedit></field>\n	<field><name>requesttype</name><label>Request Type</label><type>dropdown</type><value></value><options>PERCC-ONE::PERCC-ONE</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>cc_id</name><label>Charge Customer Id</label><type>input</type><value></value><options>size=10 onFocus=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%) onKeyUp=sideinfo.Update(%FIELDS%,%TABLE%,%IDFIELD%,%RETFIELD%,%FORMAT%)</options>\n	<onnew>readonly_po</onnew><onedit>readonly</onedit>\n		<popout><enable>yes</enable><table>vw_active_charge_customers</table><selectfields>id,customer_id,customer_type,business_type,first_name,last_name,phone_mobile1</selectfields><idfield>customer_id</idfield></popout>\n		<sideinfo>\n			<enable>yes</enable><table>customers</table><selectfields>first_name,last_name,customer_type,business_type</selectfields><idfield>customer_id</idfield><format>*_*;_*;_*</format>\n		</sideinfo>\n	</field>\n	<field><name>description</name><label>Description</label><type>input</type><value></value><options>size=50</options><onnew>enable</onnew><onedit>enable</onedit></field>\n	<field><name>start_date</name><label>Start Date</label><type>date</type><value></value><options>size=12 maxlength=10</options><onnew>enabled_po</onnew><onedit>readonly</onedit></field>\n	<field><name>end_date</name><label>End Date</label><type>date</type><value></value><options>size=12 maxlength=10</options><onnew>enabled_po</onnew><onedit>readonly</onedit></field>\n	<field><name>run</name><label>Run Request Update</label><type>dropdown</type><value></value><options>Y,N::Y,N</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n	<field><name>comments</name><label>Comments</label><type>textarea</type><value></value><options>rows=2 cols=50</options><onnew>enabled</onnew><onedit>enabled</onedit></field>\n</formfields>','businessadmin',0,1,'default_index','default_view','default_input','default_authorize','default_delete','default_enquiry','batchrequest_id','','Batchrequest Id','Batch Invoice Creation Request (Charge Period)','Model_SiteDB','bicrs','bicrs_is','bicrs_hs','bicr_error','IMPLEMENTATION','2013-03-29 15:03:17','ADMIN','2013-03-29 15:50:53','LIVE',1);
 
 /*********************************** DATABASE VIEWS ******************************/
 DELIMITER $$
