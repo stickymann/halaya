@@ -1612,8 +1612,12 @@ _TEXT_;
 			</script> 
 _TEXT_;
 			$htmlhead->add( $TEXT );
-			//$htmltable = '<div id="resdiv" style="border:0px solid red; padding: 0px 0px 0px 0px; overflow:auto;">'."\n";
-			$htmltable = '<table id="enqrestab" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width=500%>'."\n";
+			$htmltable  = '<div id="pageheader" class="window">';
+			$htmltable .= $this->param['pageheader']."\n";
+			$htmltable .= '</div>';
+			$htmltable .= '<div id="pagebody">';
+			$htmltable .= '<div id="e">'."\n";
+			$htmltable .= '<table id="enqrestab" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width=500%>'."\n";
 			$firstpass = true;
 			$lbl=$this->label;
 			foreach($arr as $row => $linerec)
