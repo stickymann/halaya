@@ -208,7 +208,7 @@ INSERT INTO `inventupdtypes` VALUES (11,'ORDER.CANCEL.RETURN','Cancelled Order I
 
 CREATE TABLE `bicrs` (
   `id` int(11) unsigned NOT NULL,
-  `batchrequest_id` varchar(30) NOT NULL,
+  `batchrequest_id` varchar(40) NOT NULL,
   `requesttype` varchar(20) NOT NULL,
   `cc_id` varchar(8) DEFAULT NULL,
   `description` varchar(255) NOT NULL,
@@ -228,7 +228,7 @@ CREATE TABLE `bicrs` (
 
 CREATE TABLE `bicrs_hs` (
   `id` int(11) unsigned NOT NULL,
-  `batchrequest_id` varchar(30) NOT NULL,
+  `batchrequest_id` varchar(40) NOT NULL,
   `requesttype` varchar(20) NOT NULL,
   `cc_id` varchar(8) DEFAULT NULL,
   `description` varchar(255) NOT NULL,
@@ -247,7 +247,7 @@ CREATE TABLE `bicrs_hs` (
 
 CREATE TABLE `bicrs_is` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `batchrequest_id` varchar(30) DEFAULT NULL,
+  `batchrequest_id` varchar(40) DEFAULT NULL,
   `requesttype` varchar(20) DEFAULT NULL,
   `cc_id` varchar(8) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,

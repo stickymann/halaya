@@ -96,10 +96,14 @@ function invoice_details(&$pdf,$page_config)
 		foreach($result as $index => $row)
 		{
 			$table = 'products';
-			$querystr = sprintf('select extended_description from %s where product_id = "%s"', $table,$row->product_id);
-			$desc = $od->model->execute_select_query($querystr);
-			$extended_description = $desc[0]->extended_description;
-		
+			$extended_description = "";
+			if($row->product_id != "MISC")
+			{
+				$querystr = sprintf('select extended_description from %s where product_id = "%s"', $table,$row->product_id);
+				$desc = $od->model->execute_select_query($querystr);
+				$extended_description = $desc[0]->extended_description;
+			}
+
 			if($row->user_text !="?") 
 			{
 				$row->user_text = str_replace("^","<br>",$row->user_text);

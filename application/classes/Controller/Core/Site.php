@@ -783,6 +783,7 @@ class Controller_Core_Site extends Controller_Include
 						{	
 							case 'input':
 							case 'date':
+							case 'month':
 							/*popout div*/
 								if($po_type == 'enabled_po' || $po_type == 'readonly_po')
 								{
@@ -791,6 +792,10 @@ class Controller_Core_Site extends Controller_Include
 									if($this->formopts[$key]['inputtype'] == "date")
 									{
 										$DATEICON_HTML = $this->create_date_popout($key);
+									}
+									else if($this->formopts[$key]['inputtype'] == "month")
+									{
+										$DATEICON_HTML = $this->create_month_popout($key);
 									}
 								}
 							/*side info span*/	
@@ -1846,6 +1851,30 @@ _HTML_;
 					showOnFocus: false, 
 					showTrigger: '<span class="dateicon">&nbsp&nbsp<img src="$iconurl" align="absbottom">&nbsp</span>',
 					dateFormat: 'yyyy-mm-dd',
+					yearRange: '1900:c+100',
+					showAnim: '',
+					alignment: 'bottomLeft',
+					onSelect: function() { $('#$key').focus(); }
+				});
+			});
+	</script>
+_text_;
+		return $TEXT;
+	}
+
+	public function create_month_popout($key)
+	{
+		$baseurl = URL::base();
+		$iconurl = $baseurl."media/css/calendar-blue.gif";
+		$TEXT=<<<_text_
+		<script type="text/javascript">
+			$(function() 
+			{
+				$('#$key').datepick(
+				{
+					showOnFocus: false, 
+					showTrigger: '<span class="dateicon">&nbsp&nbsp<img src="$iconurl" align="absbottom">&nbsp</span>',
+					dateFormat: 'yyyy-mm',
 					yearRange: '1900:c+100',
 					showAnim: '',
 					alignment: 'bottomLeft',

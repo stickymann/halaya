@@ -15,7 +15,7 @@ class Controller_Core_Businessadmin_Bicrmonthly extends Controller_Core_Site
 	public function __construct()
     {
 		parent::__construct('bicrmonthly');
-		// $this->param['htmlhead'] .= $this->insert_head_js();
+		$this->param['htmlhead'] .= $this->insert_head_js();
 	}	
 		
 	public function action_index()
@@ -39,9 +39,9 @@ class Controller_Core_Businessadmin_Bicrmonthly extends Controller_Core_Site
 			->rule('id','not_empty')
 			->rule('id','numeric');
 		$validation
-			->rule('bicrmonthly_id','not_empty')
-			->rule('bicrmonthly_id','min_length', array(':value', 16))->rule('bicrmonthly_id','max_length', array(':value', 16))
-			->rule('bicrmonthly_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['bicrmonthly_id']));
+			->rule('batchrequest_id','not_empty')
+			->rule('batchrequest_id','min_length', array(':value', 16))->rule('batchrequest_id','max_length', array(':value', 40))
+			->rule('batchrequest_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['batchrequest_id']));
 			
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

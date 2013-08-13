@@ -15,7 +15,7 @@ class Controller_Core_Businessadmin_Bicrperiod extends Controller_Core_Site
 	public function __construct()
     {
 		parent::__construct('bicrperiod');
-		// $this->param['htmlhead'] .= $this->insert_head_js();
+		$this->param['htmlhead'] .= $this->insert_head_js();
 	}	
 		
 	public function action_index()
@@ -39,13 +39,47 @@ class Controller_Core_Businessadmin_Bicrperiod extends Controller_Core_Site
 			->rule('id','not_empty')
 			->rule('id','numeric');
 		$validation
-			->rule('bicrperiod_id','not_empty')
-			->rule('bicrperiod_id','min_length', array(':value', 16))->rule('bicrperiod_id','max_length', array(':value', 16))
-			->rule('bicrperiod_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['bicrperiod_id']));
-			
+			->rule('batchrequest_id','not_empty')
+			->rule('batchrequest_id','min_length', array(':value', 16))->rule('batchrequest_id','max_length', array(':value', 40))
+			->rule('batchrequest_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['batchrequest_id']));
+		$validation
+			->rule('requesttype','not_empty');
+		$validation
+			->rule('cc_id', array($this,'check_ccid'), array(':validation', ':field'));
+		$validation
+			->rule('description','not_empty')
+			->rule('description','min_length', array(':value', 5))->rule('description','max_length', array(':value', 255));
+		$validation
+			->rule('start_date','date');
+		$validation
+			->rule('end_date','date')
+			->rule('end_date', array($this,'enddate_ok'), array(':validation', ':field'));
+		
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
+	}
+	
+	public function check_ccid(Validation $validation,$field)
+	{
+		if( $this->OBJPOST['requesttype'] == "EOMCC-ALL" && $this->OBJPOST['cc_id'] != "" ) 
+		{ 
+			$validation->error($field, 'ccid_clear');
+		}
+		else if( $this->OBJPOST['requesttype'] != "EOMCC-ALL" && $this->OBJPOST['cc_id'] == "" )
+		{
+			$validation->error($field, 'ccid_required');
+		}
+	}
+
+	public function enddate_ok(Validation $validation,$field)
+	{
+		$startdate = strtotime( $this->OBJPOST['start_date'] );
+		$enddate = strtotime( $this->OBJPOST['end_date'] );
+		if( $startdate > $enddate ) 
+		{ 
+			$validation->error($field, 'enddate_failed');
+		}
 	}
 
 } //End Controller_Core_Businessadmin_Bicrperiod
