@@ -82,4 +82,111 @@ class Controller_Core_Businessadmin_Bicrperiod extends Controller_Core_Site
 		}
 	}
 
+	public function create_batch_invoices()
+	{
+		$batchrequest_id = $this->OBJPOST['batchrequest_id'];
+		$vals = preg_split('/\./',$batchrequest_id);
+		$batch_id = $vals[1].".".$vals[2].".".$vals[3];
+		$batch = new Controller_Core_Businessadmin_Batchinvoice();
+			
+		//create batch details
+		$startdate = $this->OBJPOST['start_date'];
+		$enddate   = $this->OBJPOST['end_date'];
+		$cc_id	   = $this->OBJPOST['cc_id'];
+		if( $this->OBJPOST['requesttype'] == "EOMCC-ALL" )
+		{
+			$querystr = <<<_SQL_
+SELECT order_id, id AS invoice_id,order_date,first_name,last_name,order_details,extended_total,tax_total,order_total,payment_total,balance,payment_type FROM vw_orderbalances
+WHERE is_co = "Y" 
+AND order_date >= "$startdate" AND order_date <= "$enddate";
+_SQL_;
+		}
+		else if ( $this->OBJPOST['requesttype'] == "EOMCC-ONE" OR $this->OBJPOST['requesttype'] == "PERCC-ONE")
+		{
+			$querystr = <<<_SQL_
+SELECT order_id, id AS invoice_id,order_date,first_name,last_name,order_details,extended_total,tax_total,order_total,payment_total,balance,payment_type FROM vw_orderbalances
+WHERE is_co = "Y" 
+AND cc_id = "$cc_id"
+AND order_date >= "$startdate" AND order_date <= "$enddate";
+_SQL_;
+		}
+
+		$rows = "";
+		if ($result = $this->param['primarymodel']->execute_select_query($querystr) )
+		{
+			foreach($result as $key => $val)
+			{
+$rows .= sprintf('<row><id>undefined</id><batch_id>%s</batch_id><order_id>%s</order_id><invoice_id>%s</invoice_id><alt_invoice_id>%s</alt_invoice_id><order_date>%s</order_date><first_name>%s</first_name><last_name>%s</last_name><order_details>%s</order_details><extended_total>%s</extended_total><tax_total>%s</tax_total><order_total>%s</order_total><payment_total>%s</payment_total><balance>%s</balance><payment_type>%s</payment_type></row>',$batch_id,$val->order_id,$val->invoice_id,$val->invoice_id,$val->order_date,$val->first_name,$val->last_name,$val->order_details,$val->extended_total,$val->tax_total,$val->order_total,$val->payment_total,$val->balance,$val->payment_type)."\n";
+			}
+		}
+		
+		$rows = substr_replace($rows, '', -1);
+		$batchdetails = <<<_XML_
+<?xml version='1.0' standalone='yes'?>
+<rows>
+$rows
+</rows>
+_XML_;
+		//replace any ampersand in xml string
+		$batchdetails = str_replace('&','and',$batchdetails); 
+		
+		$querystr = sprintf('SELECT count(batch_id) as counter FROM %s WHERE batch_id = "%s"',$batch->param['tb_live'],$batch_id);
+		$result = $this->param['primarymodel']->execute_select_query($querystr);
+		$count = $result[0]->counter;
+		
+		if( $count < 1 ) 
+		{	
+			//new record created here
+			$formarr = $batch->param['primarymodel']->create_blank_record($batch->param['tb_live'],$batch->param['tb_inau']);
+			$arr = (array)$formarr;
+			$arr['batch_id']		= $batch_id;
+			$arr['batch_date']		= date('Y-m-d');
+			$arr['batch_description'] = $this->OBJPOST['description'];
+			$arr['batch_type']		= $this->OBJPOST['requesttype'];
+			$arr['batch_details']	= $batchdetails;
+			$arr['inputter']		= $this->get_idname();
+			$arr['input_date']		= date('Y-m-d H:i:s'); 
+			$arr['authorizer']		= $this->get_idname();
+			$arr['auth_date']		= date('Y-m-d H:i:s'); 
+			$arr['record_status']	= "HLD";
+			$arr['current_no']		= "0";
+			$batch->form			= $arr;
+			//new record updated here
+			if( $result = $this->param['primarymodel']->update_record($batch->param['tb_inau'],$arr) )
+			{
+				$batch->create_subform_records($arr);
+			}
+		}
+		else
+		{
+			$batch->get_formless_record($batch_id,$batch);
+			$batch->form['batch_details'] = $batchdetails;
+		}
+		$batch->update_formless_record($batch->form);
+		$batch->authorize();
+		$this->update_run_status($this->param['tb_live'],"N",$batchrequest_id);
+	}
+	
+	public function update_run_status($table,$status,$bicr_id)
+	{
+		$querystr = sprintf('UPDATE %s SET run = "%s" WHERE batchrequest_id = "%s"',$table,$status,$bicr_id);
+		$this->param['primarymodel']->execute_update_query($querystr);
+	}
+
+	public function authorize_post_update_existing_record()
+	{
+		if( $this->OBJPOST['run'] == "Y" )
+		{
+			$this->create_batch_invoices();
+		}
+	}
+
+	public function authorize_post_insert_new_record()
+	{
+		if( $this->OBJPOST['run'] == "Y" )
+		{
+			$this->create_batch_invoices();
+		}
+	}
+
 } //End Controller_Core_Businessadmin_Bicrperiod

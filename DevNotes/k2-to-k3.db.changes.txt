@@ -265,6 +265,20 @@ CREATE TABLE `bicrs_is` (
   UNIQUE KEY `uniq_batchrequest_id` (`batchrequest_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1002 DEFAULT CHARSET=utf8
 
+ALTER TABLE `halaya`.`batchinvoices`     CHANGE `batch_id` `batch_id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `halaya`.`batchinvoices_hs`     CHANGE `batch_id` `batch_id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `halaya`.`batchinvoices_is`     CHANGE `batch_id` `batch_id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL;
+ALTER TABLE `halaya`.`batchinvoices`     CHANGE `batch_details` `batch_details` LONGTEXT NOT NULL;
+ALTER TABLE `halaya`.`batchinvoices_hs`     CHANGE `batch_details` `batch_details` LONGTEXT NOT NULL;
+ALTER TABLE `halaya`.`batchinvoices_is`     CHANGE `batch_details` `batch_details` LONGTEXT DEFAULT NULL;
+
+ALTER TABLE `halaya`.`batchinvoicedetails`     CHANGE `batch_id` `batch_id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `halaya`.`batchinvoicedetails_is`     CHANGE `batch_id` `batch_id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL;
+ALTER TABLE `halaya`.`batchinvoicedetails_hs`     CHANGE `batch_id` `batch_id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `halaya`.`batchinvoicedetails`     CHANGE `order_details` `order_details` LONGTEXT NOT NULL;
+ALTER TABLE `halaya`.`batchinvoicedetails_is`     CHANGE `order_details` `order_details` LONGTEXT DEFAULT NULL;
+ALTER TABLE `halaya`.`batchinvoicedetails_hs`     CHANGE `order_details` `order_details` LONGTEXT NOT NULL;
+
 INSERT INTO `_sys_autoids` VALUES ('bicrs_is',1001,0);
 INSERT INTO `menudefs` VALUES (427,50400053,504000,504000.53125,131,132,3,'L','sales','Inventory Sale Log','magicon016.png%IMG%','core_sales_inventorysalelog','core_sales_inventorysalelog/enquirydefault','if,vw','ls,is,ex','IMPLEMENTATION','2013-02-25 13:02:43','ADMIN','2013-02-25 13:50:50','LIVE',1);
 INSERT INTO `menudefs` VALUES (428,50200151,502001,502001.50000,117,118,3,'L','businessadmin','Charge Invoices (Monthly)','magicon016.png%IMG%','core_businessadmin_bicrmonthly','core_businessadmin_bicrmonthly/enquirydefault','if,vw,nw,in,ao,as,rj,hd,va','ls,is,hs,ex','IMPLEMENTATION','2013-03-29 14:03:49','ADMIN','2013-03-29 14:42:26','LIVE',1);

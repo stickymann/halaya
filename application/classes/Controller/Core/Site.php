@@ -2163,14 +2163,15 @@ _text_;
 		return $HTML;
 	}
 
-	public function subform_exist(&$parent_idfield,&$idval,&$subtable_live,&$subtable_inau,&$subtable_hist,&$subtable_idxfld)
+	public function subform_exist(&$parent_idfield,&$idval,&$subtable_live,&$subtable_inau,&$subtable_hist,&$subtable_idxfld,$OBJPOST=array())
 	{
 		$subform_exist = false;
+		if(!$OBJPOST){ $OBJPOST = $this->OBJPOST; }
 		if($result = $this->param['primarymodel']->get_subform_controller($this->param['controller']))
 		{	
 			$subform_exist = true;
 			$parent_idfield = $this->param['indexfield'];
-			$idval = $this->OBJPOST[$parent_idfield];
+			$idval = $OBJPOST[$parent_idfield];
 			foreach($result as $key => $val)
 			{
 				$paramdef = $this->param['primarymodel']->get_controller_params($val);
@@ -2186,7 +2187,7 @@ _text_;
 	public function create_subform_records($OBJPOST=array())
 	{
 		if(!$OBJPOST){ $OBJPOST = $this->OBJPOST; }  
-		if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld))
+		if($this->subform_exist($parent_idfield,$idval,$subtable_live,$subtable_inau,$subtable_hist,$subtable_idxfld,$OBJPOST))
 		{
 			$rowsExist = false;
 			$count = 0;
@@ -2282,11 +2283,21 @@ _text_;
 	} 
 
 	/*formless functions*/
-	public function get_formless_record($idval)
+	public function get_formless_record($idval,$obj = NULL)
 	{
-		$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$this->frmaudtfields);
-		$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$idval,$this->param['defaultlookupfields'],'i');
-		$this->form = (array)$formarr;
+		if(!$obj)
+		{ 
+			$this->param['defaultlookupfields']=array_merge($this->param['defaultlookupfields'],$this->frmaudtfields);
+			$formarr=$this->param['primarymodel']->get_record_by_lookup($this->param['tb_live'],$this->param['tb_inau'],$this->param['indexfield'],$idval,$this->param['defaultlookupfields'],'i');
+			$this->form = (array)$formarr;
+		}
+		else
+		{
+			$obj->param['defaultlookupfields']=array_merge($obj->param['defaultlookupfields'],$obj->frmaudtfields);
+			$formarr=$obj->param['primarymodel']->get_record_by_lookup($obj->param['tb_live'],$obj->param['tb_inau'],$obj->param['indexfield'],$idval,$obj->param['defaultlookupfields'],'i');
+			$this->form = (array)$formarr;
+		}
+		
 		if($this->form)
 		{
 			$pre_status = $this->form['record_status'];
