@@ -15,7 +15,7 @@ abstract class Controller_Include extends Controller
 	/**
 	 *  Setup routine.
 	 */
-	public $global_app_title = "Halaya";
+	public $global_app_title = "GPS Rescue Ltd. - GBIZ";
 	public $auto_render = TRUE;
 
 	//javascript
