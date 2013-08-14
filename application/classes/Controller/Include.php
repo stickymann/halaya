@@ -15,7 +15,7 @@ abstract class Controller_Include extends Controller
 	/**
 	 *  Setup routine.
 	 */
-	public $global_app_title = "Halaya";
+	public $global_app_title = "Curepe Medical Lab Services Ltd.";
 	public $auto_render = TRUE;
 
 	//javascript
