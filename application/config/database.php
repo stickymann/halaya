@@ -19,7 +19,7 @@ return array
 			 * Ports and sockets may be appended to the hostname.
 			 */
 			'hostname'   => 'localhost',
-			'database'   => 'halaya',
+			'database'   => 'soulmap',
 			'username'   => 'dbuser',
 			'password'   => 'dbpass',
 			'persistent' => FALSE,
