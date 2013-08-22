@@ -198,7 +198,7 @@ _HTML_;
 			//$config['refresh_url'] = str_replace("#NO#",$pagenum,$this->refresh_url);
 			$config['refresh_url'] = $this->refresh_url;
 			$config['refresh_icon'] = $this->refresh_icon;
-			$pagenum = $request['page'];
+			if( isset($request['page']) ) { $pagenum = $request['page']; } else { $pagenum = 1; }
 
 			/*from enquirydefs*/
 			$table = $this->enqparam['tablename'];
