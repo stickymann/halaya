@@ -227,7 +227,7 @@ function print_to_screen($enquiryrecords,$pagination,$labels,$config,$param)
 		$pdfurl			= ""; 
 		if($config['printable'])
 		{
-			$pdfurl = sprintf('[ <a href=%s%s/index/%s target=_blank><b>Delivery Note</b></a> ] ',URL::base(),$param['pdfbuilder'],$deliverynote_id)."\n";
+			$pdfurl = sprintf('[ <a href=%sindex.php/%s/index/%s target=_blank><b>Delivery Note</b></a> ] ',URL::base(),$param['pdfbuilder'],$deliverynote_id)."\n";
 		}
 $ENQNAV = <<<_HTML_
 	<div id="ne_nav">
