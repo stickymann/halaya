@@ -395,8 +395,8 @@ function print_to_screen($enquiryrecords,$pagination,$labels,$config,$param)
 		$pdfurl			= ""; 
 		if($config['printable'])
 		{
-			$pdfurl = sprintf('[ <a href=%s%s/index/%s target=_blank><b>Quotation</b></a> ] ',URL::base(),$param['pdfbuilder'],$quotation_id)."\n";
-			$pdfurl .= sprintf(' [ <a href=%s%s/index/%s target=_blank><b>Invoice</b></a> ] ',URL::base(),$param['pdfbuilder'],$invoice_id)."\n";
+			$pdfurl = sprintf('[ <a href=%sindex.php/%s/index/%s target=_blank><b>Quotation</b></a> ] ',URL::base(),$param['pdfbuilder'],$quotation_id)."\n";
+			$pdfurl .= sprintf(' [ <a href=%sindex.php/%s/index/%s target=_blank><b>Invoice</b></a> ] ',URL::base(),$param['pdfbuilder'],$invoice_id)."\n";
 		}
 $ENQNAV = <<<_HTML_
 	<div id="ne_nav">
