@@ -292,6 +292,7 @@ class Kohana_HTML {
 	 */
 	public static function attributes(array $attributes = NULL)
 	{
+			
 		if (empty($attributes))
 			return '';
 
