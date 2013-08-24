@@ -967,16 +967,16 @@ _HTML_;
 				if($attrval=="readonly" && array_key_exists($key,$operand))
 				{
 					$tmpselect = array($operand[$key]=>$operand[$key]);
-					$SELECT = "\n".Form::select(array('id'=>'%ID%','name'=>'%ID%','class'=>'ff'),$tmpselect,$operand[$key])."\n";
+					$SELECT = "\n".Form::select('%ID%',$tmpselect,$operand[$key],array('id'=>'%ID%','class'=>'ff'))."\n";
 				}
 				else if(array_key_exists($key,$operand))
 				{
-					$SELECT = "\n".Form::select(array('id'=>'%ID%','name'=>'%ID%','class'=>'ff'),$selection,$operand[$key])."\n";
+					$SELECT = "\n".Form::select('%ID%',$selection,$operand[$key],array('id'=>'%ID%','class'=>'ff'))."\n";
 				}
 				
 			}
 		
-			if($rochk){$SELECT = "\n".Form::select(array('id'=>'%ID%','name'=>'%ID%','class'=>'ff','onChange'=>'window.fixedselection.setFS();'),$selection,'EQ')."\n";}
+			if($rochk){$SELECT = "\n".Form::select('%ID%',$selection,'EQ',array('id'=>'%ID%','class'=>'ff','onChange'=>'window.fixedselection.setFS();'))."\n";}
 			$idfield = sprintf('%s_%s',$key,'select');
 			$input = sprintf('%s',$key);
 			$select = str_replace("%ID%",$idfield, $SELECT);
