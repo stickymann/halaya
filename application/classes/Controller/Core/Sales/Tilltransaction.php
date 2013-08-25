@@ -102,7 +102,7 @@ class Controller_Core_Sales_Tilltransaction extends Controller_Core_Site
 		$arr = (array) $arr;
 		
 		$baseurl = URL::base(TRUE,'http');
-		$url = sprintf('%score_ajaxtodb?option=altid&controller=tilltransaction&prefix=TLL&ctrlid=%s',$baseurl,$arr['id']);
+		$url = sprintf('%sindex.php/core_ajaxtodb?option=altid&controller=tilltransaction&prefix=TLL&ctrlid=%s',$baseurl,$arr['id']);
 		$transaction_id = Controller_Core_Sitehtml::get_html_from_url($url);
 		
 		$querystr = sprintf('DELETE FROM %s WHERE id = "%s"',$this->param['tb_inau'],$arr['id']);

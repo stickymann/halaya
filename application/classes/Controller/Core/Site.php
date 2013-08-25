@@ -1773,7 +1773,7 @@ _HTML_;
 				$options = $this->formopts[$key]['options'];
 								
 				$baseurl = URL::base(TRUE,'http');
-				$url = sprintf('%score_ajaxtodb?option=sideinfo&fields=%s&table=%s&idfield=%s&idval=%s&format=%s',$baseurl,$fields,$table,$idfield,$idval,$format);
+				$url = sprintf('%sindex.php/core_ajaxtodb?option=sideinfo&fields=%s&table=%s&idfield=%s&idval=%s&format=%s',$baseurl,$fields,$table,$idfield,$idval,$format);
 				$url = str_replace('"','',$url);
 
 				$loadval = Controller_Core_Sitehtml::get_html_from_url($url);
@@ -1802,7 +1802,7 @@ _HTML_;
 
 				$options = $this->formopts[$key]['options'];
 				$baseurl = URL::base(TRUE,'http');
-				$url = sprintf('%score_ajaxtodb?option=sidefunc&func=%s&parameter=%s&format=%s',$baseurl,$func,$value,$format);
+				$url = sprintf('%sindex.php/core_ajaxtodb?option=sidefunc&func=%s&parameter=%s&format=%s',$baseurl,$func,$value,$format);
 				$url = str_replace('"','',$url);
 
 				$loadval = Controller_Core_Sitehtml::get_html_from_url($url);
@@ -1922,7 +1922,7 @@ _text_;
 		{
 			$ttype =sprintf('&tabletype=%s',$subtable_type);
 		}
-		$url = sprintf('%score_ajaxtodb?option=jsubrecs&subcontroller=%s&parentfield=%s&idfield=%s&idval=%s&curno=%s%s',$baseurl,$subcontroller,$key,$idfield,$idval,$current_no,$ttype);
+		$url = sprintf('%sindex.php/core_ajaxtodb?option=jsubrecs&subcontroller=%s&parentfield=%s&idfield=%s&idval=%s&curno=%s%s',$baseurl,$subcontroller,$key,$idfield,$idval,$current_no,$ttype);
 
 $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_%s" resizable="true" title="%s" singleSelect="true" idField="subform_%s_id" url="%s">',$style,$key,$subheader,$key,$url)."\n\n";
 $TABLE = $TABLETAG."\n".$TABLEHEAD."</table></div>"."\n";
@@ -2076,7 +2076,7 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 		$idval = $this->form[$idfield];
 		$prefix = sprintf('subform_%s_',$key);
 		$tabletype = "inau";
-$url = sprintf('%score_ajaxtodb?option=jxmldatabyid&controller=%s&field=%s&idfield=%s&idval=%s&prefix=%s&tabletype=%s',$baseurl,$controller,$field,$idfield,$idval,$prefix,$tabletype);
+$url = sprintf('%sindex.php/core_ajaxtodb?option=jxmldatabyid&controller=%s&field=%s&idfield=%s&idval=%s&prefix=%s&tabletype=%s',$baseurl,$controller,$field,$idfield,$idval,$prefix,$tabletype);
 $JSURL = sprintf('<script type="text/javascript">%s_dataurl="%s"</script>',$subtable_id,$url);
 $HTML = "\n".'<div id="sf" class="sf">'.sprintf('<table id="%s" class="easyui-datagrid" resizable="true" singleSelect="true"  style="width:800px; height:auto;">',$subtable_id)."\n";
 $HTML .= "</table></div>"."\n";

@@ -124,7 +124,7 @@ class Controller_Core_Sales_Order extends Controller_Core_Site
 				$branch_id  = $this->OBJPOST['branch_id'];
 				$icstat		= $this->OBJPOST['inventory_checkout_status'];
 				$baseurl    = URL::base(TRUE,'http');
-$url = sprintf('%score_ajaxtodb?option=stockcheckstatus&order=%s&icstat=%s&branch=%s&products=%s&quantities=%s',$baseurl,$order_id,$icstat,$branch_id,$products,$quantities);
+$url = sprintf('%sindex.php/core_ajaxtodb?option=stockcheckstatus&order=%s&icstat=%s&branch=%s&products=%s&quantities=%s',$baseurl,$order_id,$icstat,$branch_id,$products,$quantities);
 				$status = Controller_Core_Sitehtml::get_html_from_url($url);
 				if($status == "FAIL")
 				{
@@ -168,7 +168,7 @@ $url = sprintf('%score_ajaxtodb?option=stockcheckstatus&order=%s&icstat=%s&branc
 		$branch_id  = $this->form['branch_id'];
 		$icstat		= $this->form['inventory_checkout_status'];
 		$baseurl    = URL::base(TRUE,'http');
-$url = sprintf('%score_ajaxtodb?option=stockcheckreport&order=%s&icstat=%s&branch=%s&products=%s&quantities=%s&style=viewtbl',$baseurl,$order_id,$icstat,$branch_id,$products,$quantities);
+$url = sprintf('%sindex.php/core_ajaxtodb?option=stockcheckreport&order=%s&icstat=%s&branch=%s&products=%s&quantities=%s&style=viewtbl',$baseurl,$order_id,$icstat,$branch_id,$products,$quantities);
 		$loadval = Controller_Core_Sitehtml::get_html_from_url($url);
 	
 		$summaryhtml  = '<div id="summary_container">';
