@@ -162,12 +162,12 @@ _HTML_;
 		$arr = (array) $arr;
 		
 		$baseurl = URL::base(TRUE,'http');
-		$url = sprintf('%score_ajaxtodb?option=altid&controller=order&prefix=ORD&ctrlid=%s',$baseurl,$arr['id']);
+		$url = sprintf('%sindex.php/core_ajaxtodb?option=altid&controller=order&prefix=ORD&ctrlid=%s',$baseurl,$arr['id']);
 		$order_id = Controller_Core_Sitehtml::get_html_from_url($url);
 		$order_details = str_replace("%ORDERID%",$order_id, $this->OBJPOST['order_details']);
 		
 		$idname = Auth::instance()->get_user()->idname;
-		$url = sprintf('%score_ajaxtodb?option=userbranch&idname=%s',$baseurl,$idname);
+		$url = sprintf('%sindex.php/core_ajaxtodb?option=userbranch&idname=%s',$baseurl,$idname);
 		$branch_id = Controller_Core_Sitehtml::get_html_from_url($url);
 
 		$arr['order_id']				= $order_id;
