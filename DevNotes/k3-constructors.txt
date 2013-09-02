@@ -1,7 +1,0 @@
-If a function is called from a url Use "before" function instead of constuctor, major change from version 2.x
-
-
-__construct() method - here was the problem. 
-When it stays in my Controller, Request object is not constructed. 
-When I replace it with before() method as You mentioned, everything is correct. 
-And Yes, $this->req = Request::current() can be omitted. 
