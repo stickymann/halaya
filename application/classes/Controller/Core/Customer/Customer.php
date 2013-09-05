@@ -85,9 +85,11 @@ class Controller_Core_Customer_Customer extends Controller_Core_Site
 		$validation
 			->rule('phone_work','min_length', array(':value', 7))->rule('phone_work','max_length', array(':value', 7));
 		$validation
-			->rule('phone_mobile1','min_length', array(':value', 7))->rule('phone_mobile1','max_length', array(':value', 7));
+			->rule('phone_bmobile','min_length', array(':value', 7))->rule('phone_bmobile','max_length', array(':value', 7));
 		$validation
-			->rule('phone_mobile2','min_length', array(':value', 7))->rule('phone_mobile2','max_length', array(':value', 7));
+			->rule('phone_digicel','min_length', array(':value', 7))->rule('phone_digicel','max_length', array(':value', 7));
+		$validation
+			->rule('phone_mobile_other','min_length', array(':value', 7))->rule('phone_mobile_other','max_length', array(':value', 7));
 		$validation
 			->rule('email_address','email');
 		$validation
