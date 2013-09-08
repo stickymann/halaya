@@ -1,11 +1,11 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Creates a customer record. 
+ * Creates a contact record. 
  *
  * $Id: Contact.php 2013-09-04 21:45:02 dnesbit $
  *
- * @package		Halaya Core
- * @module	    core
+ * @package		Soulmap
+ * @module	    lovecenter
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
  * @copyright   (c) 2013
  * @license      
