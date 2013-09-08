@@ -729,6 +729,7 @@ _HTML_;
 		if($this->defs['menu'])
 		{
 			$HTML .= sprintf('<table width=98%s class="adi_table" >',"%")."\n";
+
 			try
 				{
 					$xml = file_get_contents($files['menu']);

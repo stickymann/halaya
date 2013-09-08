@@ -42,7 +42,7 @@ class Controller_Soulmap_Event_Eventtype extends Controller_Core_Site
 			->rule('id','numeric');
 		$validation
 			->rule('eventtype_id','not_empty')
-			->rule('eventtype_id','min_length', array(':value', 16))->rule('eventtype_id','max_length', array(':value', 16))
+			->rule('eventtype_id','min_length', array(':value', 2))->rule('eventtype_id','max_length', array(':value', 50))
 			->rule('eventtype_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['eventtype_id']));
 		$validation
 			->rule('description','not_empty')
