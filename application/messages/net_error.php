@@ -61,6 +61,14 @@ return array
 		'default' => 'Launch Date: invalid input.'
     ),
     
+    'location' => array
+    (
+        'not_empty' => 'Location: required.',
+		'min_length' => 'Location: must be 2 - 255 characters.',
+        'max_length' => 'Location: must be 2 - 255 characters.',
+		'default' => 'Location: invalid input.'
+    ),
+    
     'meeting_day' => array
     (
         'not_empty' => 'Meeting Day: required.',

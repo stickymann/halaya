@@ -62,6 +62,9 @@ class Controller_Soulmap_Net_Net extends Controller_Core_Site
 			->rule('launch_date','not_empty')
 			->rule('launch_date','date');			
 		$validation
+			->rule('location','not_empty')
+			->rule('location','min_length', array(':value', 2))->rule('location','max_length', array(':value', 255));
+		$validation
 			->rule('meeting_day','not_empty')
 			->rule('meeting_day','min_length', array(':value', 2))->rule('meeting_day','max_length', array(':value', 21));
 		$validation
