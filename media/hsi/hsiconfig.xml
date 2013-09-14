@@ -1,0 +1,19 @@
+<?xml version='1.0' standalone='yes'?>
+<config>
+<database>
+<server>localhost</server>
+<name>hndshkif</name>
+<user>dbuser</user>
+<password>dbpass</password>
+</database>
+<handshake>
+<appurl>https://app.handshake-app.com/</appurl>
+<apikey>dadc68c1ee88efb68f82bd51017645ca6188022d</apikey>
+</handshake>
+<folders>
+<current_import>/zipstore/hsi/current/import</current_import>
+<current_export>/zipstore/hsi/current/export</current_export>
+<archive_import>/zipstore/hsi/archive/import</archive_import>
+<archive_export>/zipstore/hsi/archive/export</archive_export>
+</folders>
+</config>
