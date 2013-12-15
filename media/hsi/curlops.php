@@ -2,7 +2,7 @@
 /**
  * Curl operations for Handshake to DacEasy Interface automation. 
  *
- * $Id: CurlOps.php 2013-09-13 16:15:46 dnesbit $
+ * $Id: curlops.php 2013-09-13 16:15:46 dnesbit $
  *
  * @package		Handshake to DacEasy Interface
  * @module	    hndshkif
@@ -14,21 +14,12 @@ class CurlOps
 {
 	private $hs_apikey = "";
 	
-	public function __construct()
+	public function __construct($config = null)
 	{
-		$configfile = dirname(__FILE__).'/hsiconfig.xml';
-		try
-			{
-				//check for required fields in xml file
-				$xml = file_get_contents($configfile);
-				$config = new SimpleXMLElement($xml);
-				if($config->handshake->apikey) { $this->hs_apikey = sprintf('%s',$config->handshake->apikey); }
-			}
-		catch (Exception $e) 
-			{
-				$desc='Configuration File Error : '.$e->getMessage();
-				print $desc;
-			}
+		if($config)
+		{
+			$this->hs_apikey = $config['hs_apikey'];
+		}
 	}
 	
 	public function get_remote_data($url,&$status)

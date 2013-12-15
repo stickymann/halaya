@@ -2,7 +2,7 @@
 /**
  * Database operations for Handshake to DacEasy Interface automation. 
  *
- * $Id: DbOps.php 2013-09-13 16:15:46 dnesbit $
+ * $Id: dbops.php 2013-09-13 16:15:46 dnesbit $
  *
  * @package		Handshake to DacEasy Interface
  * @module	    hndshkif
@@ -19,26 +19,17 @@ class DbOps
 	private $dbpasswd = "";
 	private $connectstr = "";
 	
-	public function __construct()
+	public function __construct($config = null)
 	{
-		$configfile = dirname(__FILE__).'/hsiconfig.xml';
-		try
-			{
-				//check for required fields in xml file
-				$xml = file_get_contents($configfile);
-				$config = new SimpleXMLElement($xml);
-				if($config->database->server) { $this->dbserver = sprintf('%s',$config->database->server); }
-				if($config->database->name) { $this->dbname = sprintf('%s',$config->database->name); }
-				if($config->database->user) { $this->dbuser = sprintf('%s',$config->database->user); }
-				if($config->database->password) { $this->dbpasswd = sprintf('%s',$config->database->password); }
-				$this->connectstr = sprintf('mysql:host=%s;dbname=%s', $this->dbserver, $this->dbname);
-			}
-		catch (Exception $e) 
-			{
-				$desc='Configuration File Error : '.$e->getMessage();
-				print $desc;
-			}
+		if($config)
+		{
+			$this->dbserver = $config['dbserver'];
+			$this->dbname = $config['dbname'];
+			$this->dbuser = $config['dbuser'];
+			$this->dbpasswd = $config['dbpasswd'];
+			$this->connectstr = $config['connectstr'];
 			$this->connect_to_db();
+		}
 	}
 	
 	public function connect_to_db()
@@ -88,7 +79,7 @@ class DbOps
 		$vals = substr($vals,0,-1);
 		$fields = substr($fields,0,-1);
 		$querystr = sprintf('INSERT INTO `%s` (%s) VALUES(%s)',$table,$fields,$vals);			
-//print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+print "<b>[DEBUG]---></b> "; print htmlspecialchars($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$count = $this->dbh->exec($querystr);
 		return $count;
 	}

@@ -2,7 +2,7 @@
 /**
  * Order operations for Handshake to DacEasy Interface automation. 
  *
- * $Id: OrderOps.php 2013-09-13 16:15:46 dnesbit $
+ * $Id: orderops.php 2013-09-13 16:15:46 dnesbit $
  *
  * @package		Handshake to DacEasy Interface
  * @module	    hndshkif
@@ -10,40 +10,30 @@
  * @copyright   (c) 2013
  * @license      
  */
-
+require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/curlops.php');
 
 class OrderOps 
 {
+	public $cfg 	= null;
 	public $dbops 	= null;
 	public $curlops = null;
-	private $orders_table = "dlorders";
+	private $orders_table = "hsi_orders";
 	private $idfield = "id";
 	private $appurl = "";
 	private $order_processing_opt = "api/v2/orders.xml?status=Processing";
 	
 	public function __construct()
 	{
-		$this->dbops	= new DbOps();
-		$this->curlops 	= new CurlOps();
-				
-		$configfile = dirname(__FILE__).'/hsiconfig.xml';
-		try
-			{
-				//check for required fields in xml file
-				$xml = file_get_contents($configfile);
-				$config = new SimpleXMLElement($xml);
-				if($config->handshake->appurl) { $this->appurl = sprintf('%s',$config->handshake->appurl); }
-			}
-		catch (Exception $e) 
-			{
-				$desc='Configuration File Error : '.$e->getMessage();
-				print $desc;
-			}
+		$this->cfg		= new HSIConfig();
+		$config 		= $this->cfg->get_config();
+		$this->appurl	= $config['appurl'];
+		$this->dbops	= new DbOps($config);
+		$this->curlops 	= new CurlOps($config);
 	}
 	
-	function process_orders_xml($xmldata,$type="string")
+	private function process_orders_xml($xmldata,$type="string")
 	{
 		$meta = array(); $total = 0; $faillist = "";
 		if( $type == "file" )
@@ -89,7 +79,7 @@ orderlines;text;DEFAULT NULL;
 			$arr['cdate']			= sprintf('%s',$object->cdate);
 			$ctimevals 				= preg_split('/T/',sprintf('%s',$object->ctime));
 			$arr['ctime']			= str_replace("Z","", $ctimevals[1]);
-			$arr['orderlines']		= "";
+			$arr['orderlines']		= $this->get_order_lines($object);
 			$arr['inputter']		= "SYSINPUT";
 			$arr['input_date']		= date('Y-m-d H:i:s'); 
 			$arr['authorizer']		= "SYSAUTH";
@@ -122,7 +112,28 @@ orderlines;text;DEFAULT NULL;
 		return $meta;
 	}
 	
-	function update_orders()
+	private function get_order_lines($object)
+	{
+		$xmlrows = "";
+		foreach ($object->lines->object as $lineobj)
+		{		
+			$arr = array();
+			$arr['sku'] 		= sprintf('%s',$lineobj->sku);
+			$arr['description'] = str_replace('"','in',sprintf('%s',$lineobj->description));
+			$arr['qty'] 		= sprintf('%s',$lineobj->qty);
+			$arr['unitprice'] 	= sprintf('%s',$lineobj->unitPrice);
+			$arr['total'] 		= sprintf('%s',$lineobj->total);
+			$xmlrows .= sprintf('<row><sku>%s</sku><description>%s</description><qty>%s</qty><unitprice>%s</unitprice><total>%s</total></row>',$arr['sku'],$arr['description'],$arr['qty'],$arr['unitprice'],$arr['total'])."\n";
+			
+		} 
+		$xmlrows  = "<rows>\n".$xmlrows."</rows>\n";
+		$xmllines = "<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n";
+		$xmllines .= "<header><column>Sku</column><column>Description</column><column>Qty</column><column>Unitprice</column><column>Total</column></header>\n";
+		$xmllines .= $xmlrows."</formfields>\n";
+		return $xmllines;
+	}
+	
+	public function update_orders()
 	{
 		$RESULT = ""; $total_inserts = 0;
 		$url	= $this->appurl.$this->order_processing_opt;
