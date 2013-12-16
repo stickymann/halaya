@@ -14,6 +14,8 @@ require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 
+define("OUT_OF_STOCK","[OUT OF STOCK] ");
+
 class InventoryOps 
 {
 	public $cfg 	= null;
@@ -69,24 +71,54 @@ class InventoryOps
 	public function process_inventory()
 	{
 		$datalist = $this->get_inventory_data();
+/*
+  `id` int(11) unsigned NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `availunits` float(16,1) NOT NULL,
+  `taxable` enum('Y','N') NOT NULL,
+  `unitprice` float(16,2) NOT NULL,
+  `hash1` varchar(64) NOT NULL,
+  `hash2` varchar(64) NOT NULL,
+  `inputter` varchar(50) NOT NULL,
+  `input_date` datetime NOT NULL,
+  `authorizer` varchar(50) NOT NULL,
+  `auth_date` datetime NOT NULL,
+  `record_status` char(4) NOT NULL,
+  `current_no` int(11) NOT NULL,		
+*/		
 		foreach($datalist as $key => $value)
 		{
 			$code = $value[0];
 			//codes that start with "9" do not exist in Handshake and should be excluded
 			if($code[0] != "9")
 			{
-				
+				if( $value[2] < 1 )
+				{
+					$value[1] = OUT_OF_STOCK.$value[1];
+				}
 				$hash1 = hash('sha256',$value[2].$value[3]);
 				$hash2 = hash('sha256',$value[1].$value[4]);
 				
-				if( $this->dbops->record_exist($this->tb_live,"id",$value[0] )
+				if( $this->dbops->record_exist($this->tb_live,"id",$value[0]) )
 				{
 				
 				}
 				else
 				{
-					$arr['id'] = $value[0];
-					
+					$arr['id'] 			= $value[0];
+					$arr['description'] = $value[1];
+					$arr['availunits'] 	= $value[2];
+					$arr['taxable'] 	= $value[3];
+					$arr['unitprice'] 	= $value[4];
+					$arr['hash1'] 		= $hash1;
+					$arr['hash2'] 		= $hash2;
+					$arr['inputter']	= "SYSINPUT";
+					$arr['input_date']	= date('Y-m-d H:i:s'); 
+					$arr['authorizer']	= "SYSAUTH";
+					$arr['auth_date']	= date('Y-m-d H:i:s'); 
+					$arr['record_status'] = "LIVE";
+					$arr['current_no']	= "1";
+					$count = $this->dbops->insert_record($this->tb_live, $arr);
 				}
 			}
 		}

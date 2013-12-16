@@ -16,5 +16,6 @@ $inventoryops->set_inventory_filename($filelist[0]);
 print $inventoryops->get_inventory_filepath()."\n";
 $inventoryops->set_inventory_data();
 print_r( $inventoryops->get_inventory_data() );
+$inventoryops->process_inventory();
 
 ?>
