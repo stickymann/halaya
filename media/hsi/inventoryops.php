@@ -28,7 +28,8 @@ class InventoryOps
 	private $archive_export = "";
 	private $inventory_filename = "";
 	private $tb_live = "hsi_inventorys";
-	private $tb_hist = "hsi_inventorys_hs"; 
+	private $tb_hist = "hsi_inventorys_hs";
+	private $invchglog_tb_live = "hsi_inventorychangelogs";
 	
 	
 	public function __construct()
@@ -86,6 +87,9 @@ class InventoryOps
   `record_status` char(4) NOT NULL,
   `current_no` int(11) NOT NULL,		
 */		
+		$changelog_id = 'ICL-'.date('Ymd-His');
+		$xmlrows = "";
+		
 		foreach($datalist as $key => $value)
 		{
 			$code = $value[0];
@@ -101,7 +105,43 @@ class InventoryOps
 				
 				if( $this->dbops->record_exist($this->tb_live,"id",$value[0]) )
 				{
-				
+					$UPDATE = FALSE; $PUSH = FALSE;
+					$querystr = sprintf('SELECT id,hash1,hash2,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"id",$value[0]);
+//print "[DEBUG]---> "; print($querystr); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+					$formdata = $this->dbops->execute_select_query($querystr);
+					$record	  = $formdata[0];
+//print "[DEBUG]---> "; print_r($record); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+					if( $hash1 != $record['hash1'] )
+					{
+						$arr['availunits'] 	= $value[2];
+						$arr['taxable'] 	= $value[3];
+						$arr['hash1'] 		= $hash1;
+						$UPDATE = TRUE;
+					}
+					
+					if( $hash2 != $record['hash2'] )
+					{
+						$arr['description'] = $value[1];
+						$arr['unitprice'] 	= $value[4];
+						$arr['hash2'] 		= $hash2;
+						$PUSH = TRUE;
+					}
+					
+					if($UPDATE || $PUSH)
+					{
+						$arr['id']	= $value[0];
+						$arr['input_date']	= date('Y-m-d H:i:s'); 
+						$arr['input_date']	= date('Y-m-d H:i:s'); 
+						$arr['auth_date']	= date('Y-m-d H:i:s'); 
+						$arr['current_no']	= $record['current_no'] + 1;
+						if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$value[0]) )
+						{
+							if( $count = $this->dbops->update_record($this->tb_live, $arr) )
+							{
+								$xmlrows .= sprintf('<row><code>%s</code><description>%s</description><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice></row>',$arr['id'],$arr['description'],$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
+							}
+						}
+					}
 				}
 				else
 				{
@@ -118,9 +158,30 @@ class InventoryOps
 					$arr['auth_date']	= date('Y-m-d H:i:s'); 
 					$arr['record_status'] = "LIVE";
 					$arr['current_no']	= "1";
-					$count = $this->dbops->insert_record($this->tb_live, $arr);
+					if( $count = $this->dbops->insert_record($this->tb_live, $arr) )
+					{
+						$xmlrows .= sprintf('<row><code>%s</code><description>%s</description><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice></row>',$arr['id'],$arr['description'],$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
+					}
 				}
 			}
+		
 		}
+		
+		$xmlrows  = "<rows>\n".$xmlrows."</rows>\n";
+		$xmllines = "<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n";
+		$xmllines .= "<header><column>Code</column><column>Description</column><column>Availunits</column><column>Taxable</column><column>Unitprint</column></header>\n";
+		$xmllines .= $xmlrows."</formfields>\n";
+		
+		$invchglog['id']			= $this->dbops->create_record_id($this->invchglog_tb_live);
+		$invchglog['changelog_id']	= $changelog_id;
+		$invchglog['changelog_details']	= $xmllines;
+		$invchglog['inputter']		= "SYSINPUT";
+		$invchglog['input_date']	= date('Y-m-d H:i:s'); 
+		$invchglog['authorizer']	= "SYSAUTH";
+		$invchglog['auth_date']		= date('Y-m-d H:i:s'); 
+		$invchglog['record_status'] = "LIVE";
+		$invchglog['current_no']	= "1";
+		$count = $this->dbops->insert_record($this->invchglog_tb_live, $invchglog);
 	}
-}
+
+} //End InventoryOps
