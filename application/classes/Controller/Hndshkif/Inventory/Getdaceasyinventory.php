@@ -65,6 +65,14 @@ class Controller_Hndshkif_Inventory_Getdaceasyinventory extends Controller_Core_
 		$config   = $cfg->get_config();
 		$fileops  = new FileOps($config);
 		$filelist = $fileops->get_all_filenames_in_directory($config['current_import']);
+		/* foreach file if files is inventory then process file then move file to archive folder
+		 * 
+		 * 
+		 * 
+		 * 
+		 */
+		
+		
 		$inventoryops = new InventoryOps();
 		$inventoryops->set_inventory_filename($filelist[0]);
 		$inventoryops->set_inventory_data();

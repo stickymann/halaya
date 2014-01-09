@@ -16,4 +16,8 @@
 <archive_import>/zipstore/hsi/archive/import</archive_import>
 <archive_export>/zipstore/hsi/archive/export</archive_export>
 </folders>
+<tables>
+<tb_changelogs>hsi_changelogs</tb_changelogs>
+<tb_inventorys>hsi_inventorys</tb_inventorys>
+</tables>
 </config>

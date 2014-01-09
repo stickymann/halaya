@@ -26,6 +26,7 @@ class CurlOps
 	{
 		$curl = curl_init($url);
 //print "<b>[DEBUG]---></b> "; print($url); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+		curl_setopt($curl, CURLOPT_VERBOSE, 0);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
 		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -39,24 +40,30 @@ class CurlOps
 		return $data;
 	}
 	
-	public function put_remote_data($url,$status)
+	public function put_remote_data($url,$data_json,&$status)
 	{
 		//NOTES: http://developers.sugarcrm.com/wordpress/2011/11/22/howto-do-put-requests-with-php-curl-without-writing-to-a-file/
-		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_URL, $closeOppURL);
-		curl_setopt($curl, CURLOPT_USERAGENT, 'SugarConnector/1.4');
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($update_json)));
+		$curl = curl_init($url);
+		//curl_setopt($curl, CURLOPT_URL, $closeOppURL);
+		//curl_setopt($curl, CURLOPT_USERAGENT, 'SugarConnector/1.4');
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_json)));
 		curl_setopt($curl, CURLOPT_VERBOSE, 1);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
 		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT"); 
-		curl_setopt($curl, CURLOPT_POSTFIELDS,$update_json);
+		curl_setopt($curl, CURLOPT_POSTFIELDS,$data_json);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 		
-		$curlresult = curl_exec($curl);
+		$response = curl_exec($curl);
 		$status = curl_getinfo($curl);
-		$curlapierr = curl_errno($curl);
-		$curlerrmsg = curl_error($curl);
+		//$curlapierr = 
+print "[DEBUG]---> "; print ("ERRNO: ".curl_errno($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+print "[DEBUG]---> "; print ("ERROR: ".curl_error($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+		
+		//print (curl_errno($curl));
+		//$curlerrmsg = curl_error($curl);
 		curl_close($curl);
+		return $response;
 	}
 	
 } // End CurlOps

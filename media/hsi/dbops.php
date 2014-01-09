@@ -28,6 +28,7 @@ class DbOps
 			$this->dbuser = $config['dbuser'];
 			$this->dbpasswd = $config['dbpasswd'];
 			$this->connectstr = $config['connectstr'];
+			$this->tb_changelogs = $config['tb_changelogs'];
 			$this->connect_to_db();
 		}
 	}
@@ -53,6 +54,7 @@ class DbOps
 	{
 		$i = 0;
 		$result = $this->dbh->query($querystr);
+//print "[DEBUG]---> "; print($querystr); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 		$mode = $result->setFetchMode(PDO::FETCH_ASSOC);
 		foreach ($result as $row)
 		{
@@ -142,6 +144,26 @@ class DbOps
 			}
 		}
 		return 0;
+	}
+	
+	public function last_changelog_have_new_records($type)
+	{
+		$newrecs = 0;
+		$querystr = sprintf('SELECT id,changelog_details from %s WHERE type = "%s" ORDER BY id DESC LIMIT 1',$this->tb_changelogs,$type);
+		if( $result = $this->execute_select_query($querystr) )
+		{
+			$record	  = $result[0]; 
+			$formfields = simplexml_load_string( $record['changelog_details'] );
+			foreach ( $formfields->rows->row as $row )
+			{
+				if ( sprintf('%s',$row->entry) == "NEW" )
+				{
+					$newrecs++;
+				}
+			}
+			if( $newrecs > 0 ) { return TRUE; }
+		}
+		return FALSE;
 	}
 
 } // End DbOps

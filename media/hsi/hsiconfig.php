@@ -35,6 +35,10 @@ class HSIConfig
 				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = sprintf('%s',$cfg->folders->current_export); }
 				if($cfg->folders->archive_import) { $this->hsiconfig['archive_import'] = sprintf('%s',$cfg->folders->archive_import); }
 				if($cfg->folders->archive_export) { $this->hsiconfig['archive_export'] = sprintf('%s',$cfg->folders->archive_export); }
+				
+				if($cfg->tables->tb_changelogs) { $this->hsiconfig['tb_changelogs'] = sprintf('%s',$cfg->tables->tb_changelogs); }
+				if($cfg->tables->tb_inventorys) { $this->hsiconfig['tb_inventorys'] = sprintf('%s',$cfg->tables->tb_inventorys); }
+	
 				$this->hsiconfig['connectstr'] = sprintf('mysql:host=%s;dbname=%s', $this->hsiconfig['dbserver'], $this->hsiconfig['dbname']);
 			}
 		catch (Exception $e) 
