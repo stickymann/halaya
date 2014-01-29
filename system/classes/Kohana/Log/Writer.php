@@ -73,23 +73,25 @@ abstract class Kohana_Log_Writer {
 	 * @param   string  $format
 	 * @return  string
 	 */
+	
 	public function format_message(array $message, $format = "time --- level: body in file:line")
 	{
+		$additional = isset($message['additional']['exception']) ? $message['additional']['exception'] : null;
 		$message['time'] = Date::formatted_time('@'.$message['time'], Log_Writer::$timestamp, Log_Writer::$timezone, TRUE);
 		$message['level'] = $this->_log_levels[$message['level']];
+		unset($message['additional']);
+		unset($message['trace']);
 
 		$string = strtr($format, $message);
 
-		if (isset($message['additional']['exception']))
+		if ($additional)
 		{
 			// Re-use as much as possible, just resetting the body to the trace
-			$message['body'] = $message['additional']['exception']->getTraceAsString();
+			$message['body'] = $additional->getTraceAsString();
 			$message['level'] = $this->_log_levels[Log_Writer::$strace_level];
-
 			$string .= PHP_EOL.strtr($format, $message);
 		}
-
-		return $string;
-	}
+   return $string;
+}
 
 } // End Kohana_Log_Writer
