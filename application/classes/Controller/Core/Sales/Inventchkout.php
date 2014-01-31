@@ -199,7 +199,7 @@ class Controller_Core_Sales_Inventchkout extends Controller_Core_Site
 				//update inventory
 				$iid = $result[0]->id;
 				$current_no = $result[0]->current_no;
-				if($this->param['primarymodel']->insert_from_table_to_table($inventory->param['tb_hist'],$inventory->param['tb_live'],$iid))
+				if($this->param['primarymodel']->insert_from_table_to_table($inventory->param['tb_hist'],$inventory->param['tb_live'],$iid,$current_no))
 				{
 					$this->param['primarymodel']->set_record_status_hist($this->param['tb_hist'],$iid,$current_no);
 					//update inventory

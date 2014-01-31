@@ -1104,7 +1104,7 @@ class Controller_Core_Site extends Controller_Include
 					}
 					else //existing record
 					{
-						if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$this->OBJPOST['id']))
+						if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$this->OBJPOST['id'],$this->OBJPOST['current_no']))
 						{
 							$this->param['primarymodel']->set_record_status_hist($this->param['tb_hist'],$this->OBJPOST['id'],$this->OBJPOST['current_no']);
 							$this->OBJPOST['current_no']++;
@@ -1119,7 +1119,7 @@ class Controller_Core_Site extends Controller_Include
 									foreach($arr as $index => $row)
 									{
 										$sub_post = (array)$row;
-										if($this->param['primarymodel']->insert_from_table_to_table($subtable_hist[$key],$table,$sub_post['id']))
+										if($this->param['primarymodel']->insert_from_table_to_table($subtable_hist[$key],$table,$sub_post['id'],$sub_post['current_no']))
 										{
 											$this->param['primarymodel']->set_record_status_hist($subtable_hist[$key],$sub_post['id'],$sub_post['current_no']);
 										}
@@ -1349,7 +1349,7 @@ class Controller_Core_Site extends Controller_Include
 		else if($this->OBJPOST['submit']=='Delete')
 		{
 			$this->livedelete_form();
-			if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$this->OBJPOST['id']))
+			if($this->param['primarymodel']->insert_from_table_to_table($this->param['tb_hist'],$this->param['tb_live'],$this->OBJPOST['id'],$this->OBJPOST['current_no']))
 			{
 				$this->param['primarymodel']->set_record_status_HIST($this->param['tb_hist'],$this->OBJPOST['id'],$this->OBJPOST['current_no']);
 				
@@ -1362,7 +1362,7 @@ class Controller_Core_Site extends Controller_Include
 						foreach($arr as $index => $row)
 						{
 							$sub_post = (array)$row;
-							if($this->param['primarymodel']->insert_from_table_to_table($subtable_hist[$key],$table,$sub_post['id']))
+							if($this->param['primarymodel']->insert_from_table_to_table($subtable_hist[$key],$table,$sub_post['id'],$sub_post['current_no']))
 							{
 								$this->param['primarymodel']->set_record_status_HIST($subtable_hist[$key],$sub_post['id'],$sub_post['current_no']);
 							}

@@ -484,7 +484,7 @@ class Model_SiteDB extends Model
 					if($formtype=='i')
 					{
 						//if record is coming FROM live, set status 'IHLD' and pre-status 'LIVE'
-						$this->insert_from_table_to_table($tb_inau,$tb_live,$row->id);
+						$this->insert_from_table_to_table($tb_inau,$tb_live,$row->id,$row->current_no);
 					}
 					else if ($formtype=='w')
 					{
@@ -506,7 +506,7 @@ class Model_SiteDB extends Model
 						if($formtype=='i')
 						{
 							//if record is coming FROM live, set status 'IHLD' and pre-status 'LIVE'
-							$this->insert_from_table_to_table($tb_inau,$tb_live,$row->id);
+							$this->insert_from_table_to_table($tb_inau,$tb_live,$row->id,$row->current_no);
 						}
 						else if ($formtype=='w')
 						{
@@ -880,9 +880,11 @@ class Model_SiteDB extends Model
 		return $result;
 	}
 
-	public function insert_from_table_to_table($table_into,$table_FROM,$id)
+	public function insert_from_table_to_table($table_into,$table_from,$id,$current_no)
 	{
-		$querystr = sprintf('INSERT into %s SELECT * FROM %s WHERE id="%s"',$table_into,$table_FROM,$id);	
+		$querystr = sprintf('DELETE FROM %s WHERE id="%s" AND current_no="%s"',$table_into,$id,$current_no);       
+        if( $result = $this->execute_non_select_query(Database::DELETE,$querystr) ){ /*waiting for deletions of any duplicate records*/ }
+		$querystr = sprintf('INSERT into %s SELECT * FROM %s WHERE id="%s"',$table_into,$table_from,$id);	
 		$result = $this->execute_non_select_query(Database::INSERT,$querystr);
 		return $result;;
 	}
