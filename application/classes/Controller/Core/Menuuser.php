@@ -26,7 +26,7 @@ class Controller_Core_Menuuser extends Controller_Core_Menufunc
 			
 		//delete stale menu
 		$querystr = sprintf('DELETE FROM menudefs_users WHERE inputter = "%s"',Auth::instance()->get_user()->idname);
-		$site->execute_non_select_query(Database::DELETE,$querystr);
+		if( $result = $site->execute_non_select_query(Database::DELETE,$querystr) ) { /*waiting for deletions of any duplicate records*/ }
 		if($site->get_ns_totalrows() > -1)
 		{
 			//select currently assigned roles

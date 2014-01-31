@@ -95,7 +95,7 @@ class Controller_Core_Ajaxtodb extends Controller
 						{
 							$field = $prefix."id";
 							$id = $result[$key]->$field;
-							$this->sitedb->insert_from_table_to_table($param['tb_inau'],$param['tb_live'],$id);
+							$this->sitedb->insert_from_table_to_table($param['tb_inau'],$param['tb_live'],$id,$current_no);
 							$this->sitedb->set_record_status($param['tb_inau'],$id,"IHLD");
 						}
 					}
