@@ -1627,7 +1627,7 @@ _HTML_;
 		$date = date("YmdHis");
 		$dirname = dirname($target); 
 		$backupstr = "new def, no backup";
-		if(!file_exists($dirname)){	mkdir($dirname,777,true);} 
+		if(!file_exists($dirname)){	mkdir($dirname,0777,true);} 
 		
 		if(file_exists($filename))
 		{
@@ -1656,7 +1656,7 @@ _HTML_;
 		$BASE = $sysrow['autogendir'];
 
 		$dirname = $BASE.TABLEDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
 		$id = $row['id']; $tablename = $row['tablename']; $tablefields = $row['tablefields']; $uniquefield = $row['uniquefield'];
 	
 		$date = date("YmdHis");
@@ -1743,7 +1743,7 @@ _TEXT_;
 		$BASE = $sysrow['autogendir'];
 
 		$dirname = $BASE.MENUDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
 		$id = $row['id'];
 	
 		$date = date("YmdHis");
@@ -1819,7 +1819,7 @@ _TEXT_;
 		$sysrow = (array) $sysrow;
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.PARAMDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
 		
 		$indexfield = $controller."_id";
 		$indexlabel = $this->ucfirst_sentence(str_replace("_"," ",sprintf("%s %s",$controller,"Id")));
@@ -1891,7 +1891,7 @@ _TEXT_;
 		$sysrow = (array) $sysarr[0];
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.FORMDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
 
 		$indexlabel = $this->ucfirst_sentence(str_replace("_"," ",sprintf("%s %s",$controller,"Id")));
 		$errormsgfile = $controller."_error";
@@ -1943,7 +1943,7 @@ print "<b>[DEBUG]---></b> "; print htmlspecialchars($tablename); print( sprintf(
 			}
 			$TEXT2 .= "</formfields>\n</formdef>\n";
 			$XML = $XMLHEADER.$TEXT1.$TEXT2;
-print "<b>[DEBUG]---></b> "; print htmlspecialchars($XML); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+//print "<b>[DEBUG]---></b> "; print htmlspecialchars($XML); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		
 			$filename = $dirname.$param_id.".formdef.xml";
 			if ($handle = fopen($filename, 'w')) 
@@ -1971,7 +1971,7 @@ print "<b>[DEBUG]---></b> "; print htmlspecialchars($XML); print( sprintf('<br><
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.MVCDEFS;
 		$ctrldir = $BASE.FORMDIR;
-		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
 
 		$ctrl_srcfile= $ctrldir.$param_id.".controller.php";
 		$date = date("YmdHis");
@@ -2033,7 +2033,7 @@ _TEXT_;
 		$sysrow	= (array) $sysarr[0];
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.FORMDIR;
-		if(!file_exists($dirname)){mkdir($dirname,777,true);} 
+		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
 		
 		$TEXT =<<<_TEXT_
 <?php defined('SYSPATH') or die('No direct script access.');
@@ -2226,7 +2226,8 @@ _TEXT_;
 					foreach($res as $key => $value)
 					{
 						$value = (array)$value;
-						$pathname = $_SERVER['DOCUMENT_ROOT'].'/halaya/autodefs/defs/'.$value['module'];
+//print "<b>[DEBUG]---></b> "; print( URL::base() ); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+						$pathname = $_SERVER['DOCUMENT_ROOT'].URL::base().'autodefs/defs/'.$value['module'];
 						if( !is_dir($pathname) ) { mkdir($pathname,0777,true); }
 					}
 				}
@@ -2240,9 +2241,9 @@ _TEXT_;
 				{
 					//set some default values
 					$arr['id']			= '"'.'system'.'"';
-					$arr['autogendir']	= '"'.$_SERVER['DOCUMENT_ROOT'].'/halaya/autodefs/autogen'.'"';
-					$arr['defdir']		= '"'.$_SERVER['DOCUMENT_ROOT'].'/halaya/autodefs/defs'.'"';
-					$arr['approotdir']	= '"'.$_SERVER['DOCUMENT_ROOT'].'/halaya'.'"';
+					$arr['autogendir']	= '"'.$_SERVER['DOCUMENT_ROOT'].URL::base().'autodefs/autogen'.'"';
+					$arr['defdir']		= '"'.$_SERVER['DOCUMENT_ROOT'].URL::base().'autodefs/defs'.'"';
+					$arr['approotdir']	= '"'.$_SERVER['DOCUMENT_ROOT'].URL::base().'"';
 					$arr['module']		= '"'.'useraccount'.'"';
 					$arr['activedef']	= '"'.'core_useraccount_message'.'"';
 					
