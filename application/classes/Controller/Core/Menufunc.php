@@ -106,7 +106,7 @@ class Controller_Core_Menufunc extends Controller_Include
 						$tmpchkarr = $sparr[ $row->menu_id ];
 						$checked = $tmpchkarr[$ctrlval];
 					}
-					$iperm_checkboxs .= '<span class="ci">'.sprintf('<input type="checkbox" id="%s" name="inp_%s" value="%s" %s onchange=window.roleadmin.UpdateSecurityProfile("%s","P") />',$id,$row->menu_id,$ctrlval,$checked,$id).form::label($id,$ctrlval).' </span>';
+					$iperm_checkboxs .= '<span class="ci">'.sprintf('<input type="checkbox" id="%s" name="inp_%s" value="%s" %s onchange=window.roleadmin.UpdateSecurityProfile("%s","P") />',$id,$row->menu_id,$ctrlval,$checked,$id).Form::label($id,$ctrlval).' </span>';
 				}
 			}
 
@@ -123,7 +123,7 @@ class Controller_Core_Menufunc extends Controller_Include
 						$tmpchkarr = $sparr[ $row->menu_id ];
 						$checked = $tmpchkarr[$ctrlval];
 					}
-					$eperm_checkboxs .=  '<span class="ce">'.sprintf('<input type="checkbox" id="%s" name="enq_%s" value="%s" %s onchange=window.roleadmin.UpdateSecurityProfile("%s","P") />',$id,$row->menu_id,$ctrlval,$checked,$id).form::label($id,$ctrlval).' </span>';
+					$eperm_checkboxs .=  '<span class="ce">'.sprintf('<input type="checkbox" id="%s" name="enq_%s" value="%s" %s onchange=window.roleadmin.UpdateSecurityProfile("%s","P") />',$id,$row->menu_id,$ctrlval,$checked,$id).Form::label($id,$ctrlval).' </span>';
 				}
 			}
 			
