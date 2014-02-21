@@ -19,5 +19,6 @@
 <tables>
 <tb_changelogs>hsi_changelogs</tb_changelogs>
 <tb_inventorys>hsi_inventorys</tb_inventorys>
+<tb_customers>hsi_customers</tb_customers>
 </tables>
 </config>

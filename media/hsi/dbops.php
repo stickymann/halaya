@@ -81,7 +81,7 @@ class DbOps
 		$vals = substr($vals,0,-1);
 		$fields = substr($fields,0,-1);
 		$querystr = sprintf('INSERT INTO `%s` (%s) VALUES(%s)',$table,$fields,$vals);			
-//print "<b>[DEBUG]---></b> "; print htmlspecialchars($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+print "<b>[DEBUG]---></b> "; print $querystr; print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$count = $this->dbh->exec($querystr);
 		return $count;
 	}

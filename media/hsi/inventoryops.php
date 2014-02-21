@@ -235,7 +235,7 @@ class InventoryOps
 			{
 				if( $value[2] < 1 )
 				{
-					$value[1] = OUT_OF_STOCK.$value[1];
+					$value[1] = $value[1].OUT_OF_STOCK;
 				}
 				$hash1 = hash('sha256',$value[2].$value[3]);
 				$hash2 = hash('sha256',$value[1].$value[4]);
