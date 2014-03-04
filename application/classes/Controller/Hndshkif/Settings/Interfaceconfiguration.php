@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * <insert controller description>. 
+ * Interface configuration editor. 
  *
  * $Id: Interfaceconfiguration.php 2013-09-13 16:15:46 dnesbit $
  *

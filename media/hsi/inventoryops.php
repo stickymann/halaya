@@ -49,7 +49,7 @@ class InventoryOps
 		$this->archive_export = $config['archive_export'];
 		$this->tb_live = $config['tb_inventorys'];
 		$this->tb_hist = $config['tb_inventorys']."_hs";
-		$this->invchglog_tb_live = $config['tb_changelogs'];
+		$this->chglog_tb_live = $config['tb_changelogs'];
 	}
 	
 	public function set_inventory_filename($filename)
@@ -112,7 +112,7 @@ class InventoryOps
 					$formdata = $this->dbops->execute_select_query($querystr);
 					$record	  = $formdata[0];
 					$arr['current_no']	= $record['current_no'] + 1;
-					if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$arr['id']) )
+					if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$arr['id'],$record['current_no']) )
 					{
 						$count = $this->dbops->update_record($this->tb_live, $arr);
 						if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
@@ -269,13 +269,12 @@ class InventoryOps
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
 						$arr['auth_date']	= date('Y-m-d H:i:s'); 
 						$arr['current_no']	= $record['current_no'] + 1;
-						if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$value[0]) )
+						if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$value[0],$record['current_no']) )
 						{
 							if( $count = $this->dbops->update_record($this->tb_live, $arr) )
 							{
 //$xmlrows .= sprintf('<row><code>%s</code><description>%s</description><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],str_replace('&','&amp;', $arr['description']),$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
 $xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
-								
 							}
 						}
 					}
@@ -309,17 +308,18 @@ $xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</descr
 		$xmllines .= "<header><column>Code</column><column>ObjID</column><column>Description</column><column>Category</column><column>Availunits</column><column>Taxable</column><column>Unitprice</column><column>Entry</column></header>\n";
 		$xmllines .= $xmlrows."</formfields>\n";
 		
-		$invchglog['id']			= $this->dbops->create_record_id($this->invchglog_tb_live);
-		$invchglog['changelog_id']	= $changelog_id;
-		$invchglog['type']			= "INVENTORY";
-		$invchglog['changelog_details']	= $xmllines;
-		$invchglog['inputter']		= "SYSINPUT";
-		$invchglog['input_date']	= date('Y-m-d H:i:s'); 
-		$invchglog['authorizer']	= "SYSAUTH";
-		$invchglog['auth_date']		= date('Y-m-d H:i:s'); 
-		$invchglog['record_status'] = "LIVE";
-		$invchglog['current_no']	= "1";
-		$count = $this->dbops->insert_record($this->invchglog_tb_live, $invchglog);
+		$chglog['id']			= $this->dbops->create_record_id($this->chglog_tb_live);
+		$chglog['changelog_id']	= $changelog_id;
+		$chglog['type']			= "INVENTORY";
+		$xmllines = str_replace("&","&amp",$xmllines);
+		$chglog['changelog_details'] = $xmllines;
+		$chglog['inputter']		= "SYSINPUT";
+		$chglog['input_date']	= date('Y-m-d H:i:s'); 
+		$chglog['authorizer']	= "SYSAUTH";
+		$chglog['auth_date']	= date('Y-m-d H:i:s'); 
+		$chglog['record_status'] = "LIVE";
+		$chglog['current_no']	= "1";
+		$count = $this->dbops->insert_record($this->chglog_tb_live, $chglog);
 	}
 
 } //End InventoryOps

@@ -45,24 +45,46 @@ class FileOps
 	
 	public function structure_file_data($filepath)
 	{
+		//reads in csv file
 		$dataraw = $this->read_file_into_array( $filepath );
 		$header = trim($dataraw[0]);
-		$count = 0;
+		
+		//for each line in file, value a placed in array with without enclosing inverted commas
 		foreach($dataraw as $key => $value )
 		{
 			$value = trim($value);
 			if($value != $header)
 			{
 				$fieldvals = explode(',', $value);
-//print "<b>[DEBUG]---></b> "; print_r($fieldvals); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
-				foreach($fieldvals as $idx => $fldval )
+				$fixedvals = array();
+				$count = 0;
+				$arrlen = count($fieldvals);
+				$fldval = ""; $nextval = "";
+				for($i=0; $i<$arrlen; $i++ )
 				{
-					$fieldvals[$idx] = trim( trim($fldval,'"') );
+					$fldval = $fieldvals[$i];
+					if( isset($fldval[0]) )
+					{
+						//if a comma occurs in field value re-join field and field+1
+						if($fldval[0] == '"' && $fldval[strlen($fldval) - 1] != '"') 
+						{
+							if( isset($fieldvals[$i+1]) )
+							{
+								$nextval = $fieldvals[$i+1];
+								if($nextval[0] != '"' && $nextval[strlen($nextval) - 1] == '"')
+								{
+									$fldval = $fldval.",".$nextval;
+									$i++;
+								}	 
+							}
+						}
+						//remove enclosing inverted commas from field value
+						$fixedvals[$count] = trim( trim($fldval,'"') );
+						$count++;
+					}
 				}
-				$datafixed[$key] = $fieldvals;
+				$datafixed[$key] = $fixedvals;
 			}
-			//$count++;
-			//if($count == 2) { break; }
 		}
 		return $datafixed;
 	}

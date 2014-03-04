@@ -53,8 +53,9 @@ class DbOps
 	public function execute_select_query($querystr)
 	{
 		$i = 0;
-		$result = $this->dbh->query($querystr);
+		$arr = array();
 //print "[DEBUG]---> "; print($querystr); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+		$result = $this->dbh->query($querystr);
 		$mode = $result->setFetchMode(PDO::FETCH_ASSOC);
 		foreach ($result as $row)
 		{
@@ -66,6 +67,7 @@ class DbOps
 
 	public function execute_non_select_query($querystr)
 	{
+//print "[DEBUG]---> "; print($querystr); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 		$count = $this->dbh->exec($querystr);
 		return $count;
 	}
@@ -81,7 +83,7 @@ class DbOps
 		$vals = substr($vals,0,-1);
 		$fields = substr($fields,0,-1);
 		$querystr = sprintf('INSERT INTO `%s` (%s) VALUES(%s)',$table,$fields,$vals);			
-print "<b>[DEBUG]---></b> "; print $querystr; print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+//print "<b>[DEBUG]---></b> "; print $querystr; print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$count = $this->dbh->exec($querystr);
 		return $count;
 	}
@@ -94,14 +96,16 @@ print "<b>[DEBUG]---></b> "; print $querystr; print( sprintf('<br><b>[line %s - 
 			if(!($key=='id')) {$vals .= "`".$key."`".'="'.$value.'",';}
 		}
 		$vals = substr($vals,0,-1);
-		$querystr = sprintf('UPDATE `%s` set %s WHERE `id` = %s',$table,$vals,$arr['id']);
+		$querystr = sprintf('UPDATE `%s` set %s WHERE `id` = "%s"',$table,$vals,$arr['id']);
 //print "[DEBUG]---> "; print($querystr); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 		$count = $this->execute_non_select_query($querystr);
 		return $count;
 	}
 	
-	public function insert_from_table_to_table($table_into,$table_from,$id)
+	public function insert_from_table_to_table($table_into,$table_from,$id,$current_no)
 	{
+		$querystr = sprintf('DELETE FROM %s WHERE id="%s" AND current_no="%s"',$table_into,$id,$current_no);       
+        if( $result = $this->execute_non_select_query($querystr) ){ /*waiting for deletions of any duplicate records*/ }
 		$querystr = sprintf('INSERT into %s SELECT * FROM %s WHERE id="%s"',$table_into,$table_from,$id);	
 		$count = $this->execute_non_select_query($querystr);
 		return $count;
