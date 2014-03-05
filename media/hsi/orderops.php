@@ -128,7 +128,7 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 			$description = sprintf("%s order batch download",$desc);
 			$log['description']	= $description; 
 		
-			$xmllines = str_replace("&","&amp",$xmllines);
+			$xmllines = str_replace("&","&amp;",$xmllines);
 			$log['batch_details'] = $xmllines;
 		
 			$log['summary'] = sprintf("Total Sucessful Orders : %s\nFailist : %s",$total,$faillist);

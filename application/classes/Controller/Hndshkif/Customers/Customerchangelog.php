@@ -1,8 +1,8 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Inventory changelog. 
+ * Customer changelog. 
  *
- * $Id: Inventorychangelog.php 2014-03-04 17:00:49 dnesbit $
+ * $Id: Customerchangelog.php 2014-03-04 17:00:49 dnesbit $
  *
  * @package		Handshake to DacEasy Interface
  * @module	    hndshkif
@@ -11,11 +11,11 @@
  * @license      
  */
  
-class Controller_Hndshkif_Inventory_Inventorychangelog extends Controller_Core_Site
+class Controller_Hndshkif_Customers_Customerchangelog extends Controller_Core_Site
 {
 	public function __construct()
     {
-		parent::__construct('inventorychangelog');
+		parent::__construct('customerchangelog');
 		// $this->param['htmlhead'] .= $this->insert_head_js();
 	}	
 		
@@ -27,7 +27,7 @@ class Controller_Hndshkif_Inventory_Inventorychangelog extends Controller_Core_S
 	
 	function insert_head_js()
 	{
-		return HTML::script( $this->randomize('media/js/hndshkif.inventorychangelog.js') );
+		return HTML::script( $this->randomize('media/js/hndshkif.customerchangelog.js') );
 	}
 
 	function input_validation()
@@ -41,7 +41,7 @@ class Controller_Hndshkif_Inventory_Inventorychangelog extends Controller_Core_S
 			->rule('id','numeric');
 		$validation
 			->rule('changelog_id','not_empty')
-			->rule('changelog_id','min_length', array(':value', 20))->rule('changelog_id','max_length', array(':value', 16))
+			->rule('changelog_id','min_length', array(':value', 20))->rule('changelog_id','max_length', array(':value', 20))
 			->rule('changelog_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['changelog_id']));
 			
 		$this->param['isinputvalid'] = $validation->check();
@@ -49,4 +49,4 @@ class Controller_Hndshkif_Inventory_Inventorychangelog extends Controller_Core_S
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
 
-} //End Controller_Hndshkif_Inventory_Inventorychangelog
+} //End Controller_Hndshkif_Customers_Customerchangelog
