@@ -2037,28 +2037,34 @@ $TABLETAG = "\n\n".sprintf('<div id="sf" class="sf"><table %s id="subform_table_
 	{
 		$controller = $this->param['controller'];
 		$TABLEHEADER = ""; $TABLEROWS ="";
-		$HTML = "<table id='subformview' width='90%'>"."\n";
-
+		$widths = array(); $totalwidth = 0;
+		$tablewidth = 800;
+		
+		//$HTML = "\n".sprintf('<table id="subformview" width="%s%s">',$tablewidth,"%")."\n";
+		$HTML = "\n".sprintf('<table id="subformview">')."\n";
+		
 		$subopt  = $this->param['primarymodel']->get_form_subtable_options($controller,$key);
 		foreach($subopt as $subkey => $row)
 		{
 			$sublabel = $row['sublabel'];
-			$TABLEHEADER .= sprintf("<th>%s</th>",$sublabel);
+			$widths[ $row['subname'] ] = $row['width'];
+			$totalwidth = $totalwidth + $row['width'];
+			$TABLEHEADER .= sprintf("<th>%s</th>",$sublabel)."\n";
 		}
-
-		$TABLEHEADER = "<tr valign='top'>".$TABLEHEADER."</tr>"."\n";
+		$TABLEHEADER = '<tr valign="top">'."\n".$TABLEHEADER.'</tr>'."\n";
 		
 		$formfields = new SimpleXMLElement($xml);
 		foreach($formfields->rows->row as $row)
 		{
-			$TABLEROWS .= "<tr>";
+			$TABLEROWS .= "<tr>\n";
 			foreach ($row->children() as $field)
 			{
 				$subkey = sprintf('%s',$field->getName() );
 				$val	= sprintf('%s',$row->$subkey);
-				$TABLEROWS .= sprintf("<td valign='top' style='color:%s;'>%s</td>",$color,$val);
+				$width  = round( ( $widths[$subkey] / $totalwidth ) * $tablewidth );
+				$TABLEROWS .= sprintf('<td valign="top" style="color:%s; width:%s%s;">%s</td>',$color,$width,"px",$val)."\n";
 			}
-			$TABLEROWS .= "</tr>";
+			$TABLEROWS .= "</tr>\n";
 		}
 		$HTML .= $TABLEHEADER.$TABLEROWS."\n"."</table>"."\n";
 		$HTML .= $this->xml_table_summary();
