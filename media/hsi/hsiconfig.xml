@@ -22,6 +22,7 @@
 <tb_changelogs>hsi_changelogs</tb_changelogs>
 <tb_inventorys>hsi_inventorys</tb_inventorys>
 <tb_customers>hsi_customers</tb_customers>
+<tb_schedulers>hsi_schedulers</tb_schedulers>
 <tb_pidregs>_hsi_pids</tb_pidregs>
 </tables>
 <extprogs>

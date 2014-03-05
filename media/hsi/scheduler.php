@@ -466,14 +466,6 @@ class SchedulerDate {
 		return -1;
 	}
 
-	function dayValue($s){
-		for ($i = 0; $i < sizeof($this->legalDays); $i++)
-			if ($this->legalDays[$i] == $s)
-				return $i;
-
-		return -1;
-	}
-
 	function isDigit($s){
 		if (preg_match('/^\d+$/', $s))
 			return true;

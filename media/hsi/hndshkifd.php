@@ -22,6 +22,7 @@ class HSIDaemon
         $this->cfg		= new HSIConfig();
 		$config 		= $this->cfg->get_config();
 		$this->dbops	= new DbOps($config);
+		$this->tb_schedulers = $config['tb_schedulers'];
 		$this->tb_pidregs = $config['tb_pidregs'];
 	}
     
@@ -30,7 +31,7 @@ class HSIDaemon
 		$this->procops = new ProcOps();
 		$this->procops->runcmd("scheduler");
     }
-}
+} // End HSIDaemon
 	
 	$fail_message = sprintf("Run with: \n\t php %s -t %s\n\n",__FILE__,"cli");
 	$opts  = "";
@@ -44,18 +45,35 @@ class HSIDaemon
 	}
 	else
 	{
+		$daemon = new HSIDaemon();
 		if( $options["t"] == "cli" )
 		{
-			$daemon = new HSIDaemon();
 			$daemon->register_pid();
 		}
 		elseif($options["t"] == "hsi") { /* do nothing */}
 		else { die($fail_message); }
 	}
 	
-	$cmd = "php "."/shazam/www/hndshkif/media/hsi/hndshkifd.php";
-	$scheduler = new Scheduler();
-	$scheduler->addTask("echo \"wazaaaaa\\n\" >> somefile", "0,5,10,15,20,25,30,35,40,45,50,55 * * * *");
-	$scheduler->run();
-
-?>
+	$querystr = sprintf('SELECT * FROM %s WHERE enabled = "Y"',$daemon->tb_schedulers);
+	if( $result = $daemon->dbops->execute_select_query($querystr) )
+	{ 
+		$scheduler = new Scheduler();
+		foreach( $result as $index => $record )
+		{
+			$cmd = "";
+			if( $record['format'] == "SCRIPT" )
+			{
+				$cmd = sprintf('%s %s %s',$record['type'],$record['fullpath'],$record['args']);
+			}
+			else
+			{
+				$cmd = sprintf('%s %s',$record['fullpath'],$record['args']);
+			}
+print "[DEBUG]---> "; print $cmd." | ".$record['crontab']; print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+			
+			$scheduler->addTask($cmd, $record['crontab']);
+		}
+		$scheduler->run();
+	}
+	// End hndshkifd.php
+?> 

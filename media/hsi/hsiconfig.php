@@ -49,6 +49,7 @@ class HSIConfig
 				if($cfg->tables->tb_changelogs) { $this->hsiconfig['tb_changelogs'] = sprintf('%s',$cfg->tables->tb_changelogs); }
 				if($cfg->tables->tb_inventorys) { $this->hsiconfig['tb_inventorys'] = sprintf('%s',$cfg->tables->tb_inventorys); }
 				if($cfg->tables->tb_customers) { $this->hsiconfig['tb_customers'] = sprintf('%s',$cfg->tables->tb_customers); }
+				if($cfg->tables->tb_schedulers) { $this->hsiconfig['tb_schedulers'] = sprintf('%s',$cfg->tables->tb_schedulers); }
 				if($cfg->tables->tb_pidregs) { $this->hsiconfig['tb_pidregs'] = sprintf('%s',$cfg->tables->tb_pidregs); }
 				
 				//external programs
