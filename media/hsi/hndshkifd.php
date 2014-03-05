@@ -53,10 +53,9 @@ class HSIDaemon
 		else { die($fail_message); }
 	}
 	
-	
-	while(TRUE)
-	{
-		print "Running ";
-	}
+	$cmd = "php "."/shazam/www/hndshkif/media/hsi/hndshkifd.php";
+	$scheduler = new Scheduler();
+	$scheduler->addTask("echo \"wazaaaaa\\n\" >> somefile", "0,5,10,15,20,25,30,35,40,45,50,55 * * * *");
+	$scheduler->run();
 
 ?>

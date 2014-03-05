@@ -19,7 +19,8 @@ class OrderOps
 	public $cfg 	= null;
 	public $dbops 	= null;
 	public $curlops = null;
-	private $orders_table = "hsi_orders";
+	private $orders_table = "";
+	private $dlorderbatchs_tb_live = "";
 	private $idfield = "id";
 	private $appurl = "";
 	private $order_processing_opt = "api/v2/orders.xml?status=Processing";
@@ -31,9 +32,11 @@ class OrderOps
 		$this->appurl	= $config['appurl'];
 		$this->dbops	= new DbOps($config);
 		$this->curlops 	= new CurlOps($config);
+		$this->orders_table = $config['tb_orders'];
+		$this->dlorderbatchs_tb_live = $config['tb_dlorderbatchs'];
 	}
 	
-	private function process_orders_xml($xmldata,$type="string")
+	private function process_orders_xml($xmldata,$auto,$type="string")
 	{
 		$meta = array(); $total = 0; $faillist = "";
 		if( $type == "file" )
@@ -61,6 +64,8 @@ ctime;time;NOT NULL
 orderlines;text;DEFAULT NULL; 
 */
 		$batch_id = 'BDO-'.date('Ymd-His');
+		$xmlrows = ""; $rowcount = 0;
+		
 		foreach ($response->objects->object as $object)
 		{
 			$arr = array(); 
@@ -95,12 +100,48 @@ orderlines;text;DEFAULT NULL;
 			else
 			{
 				$count = $this->dbops->insert_record($this->orders_table, $arr);
-				if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
+				if($count > 0) 
+				{ 
+					$rowcount++;
+$xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact></row>',$arr['id'],$arr['customer_id'],$arr['tax_id'],$arr['name'],$arr['contact'])."\n";
+					$total = $total + $count; 
+				} 
+				else { $faillist .= $arr['id'].",";}
 //print "<b>[DEBUG]---></b> "; print_r($arr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			}
 		}
-		$faillist = substr_replace($faillist, '', -1);
-
+		$faillist = substr_replace($faillist, '', -1);		
+		
+		//create batch record only if valid orders exist
+		if( $rowcount > 0 )
+		{
+			$xmlrows  = "<rows>\n".$xmlrows."</rows>\n";
+			$xmllines = "<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n";
+			$xmllines .= "<header><column>Order Id</column><column>Customer Id</column><column>Tax Id</column><column>Name</column><column>Contact</column></header>\n";
+			$xmllines .= $xmlrows."</formfields>\n";
+			
+			$log['id']		= $this->dbops->create_record_id($this->dlorderbatchs_tb_live);
+			$log['batch_id']	= $batch_id ;
+			$log['batch_date']	= date('Y-m-d'); 
+		
+			if($auto) { $desc = "Automated"; } else { $desc = "Manual"; }
+			$description = sprintf("%s order batch download",$desc);
+			$log['description']	= $description; 
+		
+			$xmllines = str_replace("&","&amp",$xmllines);
+			$log['batch_details'] = $xmllines;
+		
+			$log['summary'] = sprintf("Total Sucessful Orders : %s\nFailist : %s",$total,$faillist);
+		
+			$log['inputter']		= "SYSINPUT";
+			$log['input_date']	= date('Y-m-d H:i:s'); 
+			$log['authorizer']	= "SYSAUTH";
+			$log['auth_date']	= date('Y-m-d H:i:s'); 
+			$log['record_status'] = "LIVE";
+			$log['current_no']	= "1";
+			$count = $this->dbops->insert_record($this->dlorderbatchs_tb_live, $log);
+		}
+		
 		$meta['next']			= sprintf('%s',$response->meta->next);
 		$meta['total_count']	= sprintf('%s',$response->meta->total_count);
 		$meta['total_inserts']	= $total;
@@ -133,7 +174,7 @@ orderlines;text;DEFAULT NULL;
 		return $xmllines;
 	}
 	
-	public function update_orders()
+	public function update_orders($auto=false)
 	{
 		$RESULT = ""; $total_inserts = 0;
 		$url	= $this->appurl.$this->order_processing_opt;
@@ -143,7 +184,7 @@ orderlines;text;DEFAULT NULL;
 			$xml = $this->curlops->get_remote_data($url,$status);
 			if( $status['http_code'] == 200 )
 			{
-				$meta = $this->process_orders_xml($xml);
+				$meta = $this->process_orders_xml($xml,$auto);
 				if( $meta['next'] == "" )
 				{
 					$GET_REMOTE_DATA = FALSE;

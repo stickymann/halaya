@@ -17,6 +17,8 @@
 <archive_export>/shazam/hsi/archive/export</archive_export>
 </folders>
 <tables>
+<tb_orders>hsi_orders</tb_orders>
+<tb_dlorderbatchs>hsi_dlorderbatchs</tb_dlorderbatchs>
 <tb_changelogs>hsi_changelogs</tb_changelogs>
 <tb_inventorys>hsi_inventorys</tb_inventorys>
 <tb_customers>hsi_customers</tb_customers>
@@ -25,5 +27,4 @@
 <extprogs>
 <scheduler>/shazam/www/hndshkif/media/hsi/hndshkifd.php</scheduler>
 </extprogs>
-
 </config>

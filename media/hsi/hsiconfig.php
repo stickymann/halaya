@@ -25,25 +25,35 @@ class HSIConfig
 				//check for required fields in xml file
 				$xml = file_get_contents($configfile);
 				$cfg = new SimpleXMLElement($xml);
+				
+				//database
 				if($cfg->database->server) { $this->hsiconfig['dbserver'] = sprintf('%s',$cfg->database->server); }
 				if($cfg->database->name) { $this->hsiconfig['dbname'] = sprintf('%s',$cfg->database->name); }
 				if($cfg->database->user) { $this->hsiconfig['dbuser'] = sprintf('%s',$cfg->database->user); }
 				if($cfg->database->password) { $this->hsiconfig['dbpasswd'] = sprintf('%s',$cfg->database->password); }
+				$this->hsiconfig['connectstr'] = sprintf('mysql:host=%s;dbname=%s', $this->hsiconfig['dbserver'], $this->hsiconfig['dbname']);
+
+				//hanshake
 				if($cfg->handshake->appurl) { $this->hsiconfig['appurl'] = sprintf('%s',$cfg->handshake->appurl); }
 				if($cfg->handshake->apikey) { $this->hsiconfig['hs_apikey'] = sprintf('%s',$cfg->handshake->apikey); }
+				
+				//folders
 				if($cfg->folders->current_import) { $this->hsiconfig['current_import'] = sprintf('%s',$cfg->folders->current_import); }
 				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = sprintf('%s',$cfg->folders->current_export); }
 				if($cfg->folders->archive_import) { $this->hsiconfig['archive_import'] = sprintf('%s',$cfg->folders->archive_import); }
 				if($cfg->folders->archive_export) { $this->hsiconfig['archive_export'] = sprintf('%s',$cfg->folders->archive_export); }
 				
+				//tables
+				if($cfg->tables->tb_orders) { $this->hsiconfig['tb_orders'] = sprintf('%s',$cfg->tables->tb_orders); }
+				if($cfg->tables->tb_dlorderbatchs) { $this->hsiconfig['tb_dlorderbatchs'] = sprintf('%s',$cfg->tables->tb_dlorderbatchs); }
 				if($cfg->tables->tb_changelogs) { $this->hsiconfig['tb_changelogs'] = sprintf('%s',$cfg->tables->tb_changelogs); }
 				if($cfg->tables->tb_inventorys) { $this->hsiconfig['tb_inventorys'] = sprintf('%s',$cfg->tables->tb_inventorys); }
 				if($cfg->tables->tb_customers) { $this->hsiconfig['tb_customers'] = sprintf('%s',$cfg->tables->tb_customers); }
 				if($cfg->tables->tb_pidregs) { $this->hsiconfig['tb_pidregs'] = sprintf('%s',$cfg->tables->tb_pidregs); }
 				
+				//external programs
 				if($cfg->extprogs->scheduler) { $this->hsiconfig['scheduler'] = sprintf('%s',$cfg->extprogs->scheduler); }
 				
-				$this->hsiconfig['connectstr'] = sprintf('mysql:host=%s;dbname=%s', $this->hsiconfig['dbserver'], $this->hsiconfig['dbname']);
 			}
 		catch (Exception $e) 
 			{

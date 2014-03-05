@@ -2,19 +2,19 @@
 /**
  * <insert controller description>. 
  *
- * $Id: Inventorymapping.php 2013-12-20 20:25:59 dnesbit $
+ * $Id: Dlorderbatch.php 2014-03-04 17:15:13 dnesbit $
  *
  * @package		Halaya Core
  * @module	    core
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
- * @copyright   (c) 2013
+ * @copyright   (c) 2014
  * @license      
  */
-class Controller_Hndshkif_Inventory_Inventorymapping extends Controller_Core_Site
+class Controller_Hndshkif_Orders_Dlorderbatch extends Controller_Core_Site
 {
 	public function __construct()
     {
-		parent::__construct('inventorymapping');
+		parent::__construct('dlorderbatch');
 		// $this->param['htmlhead'] .= $this->insert_head_js();
 	}	
 		
@@ -26,7 +26,7 @@ class Controller_Hndshkif_Inventory_Inventorymapping extends Controller_Core_Sit
 	
 	function insert_head_js()
 	{
-		return HTML::script( $this->randomize('media/js/hndshkif.inventorymapping.js') );
+		return HTML::script( $this->randomize('media/js/hndshkif.dlorderbatch.js') );
 	}
 
 	function input_validation()
@@ -39,13 +39,13 @@ class Controller_Hndshkif_Inventory_Inventorymapping extends Controller_Core_Sit
 			->rule('id','not_empty')
 			->rule('id','numeric');
 		$validation
-			->rule('inventorymapping_id','not_empty')
-			->rule('inventorymapping_id','min_length', array(':value', 16))->rule('inventorymapping_id','max_length', array(':value', 16))
-			->rule('inventorymapping_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['inventorymapping_id']));
+			->rule('dlorderbatch_id','not_empty')
+			->rule('dlorderbatch_id','min_length', array(':value', 16))->rule('dlorderbatch_id','max_length', array(':value', 16))
+			->rule('dlorderbatch_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['dlorderbatch_id']));
 			
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
 
-} //End Controller_Hndshkif_Inventory_Inventorymapping
+} //End Controller_Hndshkif_Orders_Dlorderbatch
