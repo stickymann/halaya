@@ -1,4 +1,4 @@
-var running = false;
+var running = -1;
 var ifpid   = "";
 var timeout = 5000;
 
@@ -24,8 +24,8 @@ var interfacestatus = new function()
 				if( data['id'] == "scheduler" )
 				{
 					pid = parseInt(data['pid']);
-					if( pid > 0 ) { running = true; ifpid = pid; } 
-					else { running = false; ifpid = ""; }
+					if( pid > 0 ) { running = 1; ifpid = pid; } 
+					else { running = 0; ifpid = ""; }
 				}
 			});
 	}
@@ -33,19 +33,28 @@ var interfacestatus = new function()
 			
 	this.displayStatusInfo = function()
 	{
-		if(running)
+		if(running == 1)
 		{
 			$('#ifstatus').html("RUNNING");
 			$('#ifpid').html(ifpid);
 			$('#ifstatus').css({ 'color': 'green' });
 			$('#startstop').attr('value', 'STOP ');
+			$('#startstop').removeAttr('disabled');
 		}
-		else
+		else if (running == 0)
 		{
 			$('#ifstatus').html("STOPPED");
 			$('#ifpid').html(ifpid);
 			$('#ifstatus').css({ 'color': 'red' });
 			$('#startstop').attr('value', 'START');
+			$('#startstop').removeAttr('disabled');
+		}
+		else
+		{
+			$('#ifstatus').html("");
+			$('#ifpid').html("");
+			$('#startstop').attr('value', '       ');
+			$('#startstop').attr('disabled','disabled');
 		}
 	}
 	
