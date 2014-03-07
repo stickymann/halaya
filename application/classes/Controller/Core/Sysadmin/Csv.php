@@ -54,36 +54,35 @@ class Controller_Core_Sysadmin_Csv extends Controller_Core_Site
 		$delarr = $this->param['primarymodel']->execute_select_query($querystr);
 	
 		$querystr = sprintf('delete from %s where inputter = "%s" and authorizer = "%s" and record_status="HLD" and current_no="0"',$this->param['tb_inau'],$idname,$idname);
-		if($result = $this->param['primarymodel']->execute_delete_query($querystr))
+		if($result = $this->param['primarymodel']->execute_delete_query($querystr)) { /* wait for deletion*/ } 
+		
+		//$arr['id']			= $result[0]->id;
+		$arr['csv_id']			= $csv_id;
+		$arr['controller']		= $controller;
+		$arr['type']			= $type;
+		if($type == "default") 
 		{
-			//$arr['id']			= $result[0]->id;
-			$arr['csv_id']			= $csv_id;
-			$arr['controller']		= $controller;
-			$arr['type']			= $type;
-			if($type == "default") 
-			{
-				$arr['csv']	= $csv_tmp_path.$csv_id.".csv";
-			}
-			else
-			{
-				$arr['csv']	= $csv_tmp_path.$csv_id.".".$type;
-			}
-			$arr['inputter']		= $idname;
-			$arr['input_date']		= date('Y-m-d H:i:s'); 
-			$arr['authorizer']		= $idname;
-			$arr['auth_date']		= date('Y-m-d H:i:s'); 
-			$arr['record_status']	= "HLD";
-			$arr['current_no']		= "0";
-			$this->param['primarymodel']->insert_record($this->param['tb_inau'],$arr);
-
-			if ($handle = fopen($arr['csv'], 'w')) 
-			{
-				fwrite($handle, $csv_text);
-				fclose($handle);
-				$res = 1;
-			}
+			$arr['csv']	= $csv_tmp_path.$csv_id.".csv";
 		}
+		else
+		{
+			$arr['csv']	= $csv_tmp_path.$csv_id.".".$type;
+		}
+		$arr['inputter']		= $idname;
+		$arr['input_date']		= date('Y-m-d H:i:s'); 
+		$arr['authorizer']		= $idname;
+		$arr['auth_date']		= date('Y-m-d H:i:s'); 
+		$arr['record_status']	= "HLD";
+		$arr['current_no']		= "0";
+		$this->param['primarymodel']->insert_record($this->param['tb_inau'],$arr);
 
+		if ($handle = fopen($arr['csv'], 'w')) 
+		{
+			fwrite($handle, $csv_text);
+			fclose($handle);
+			$res = 1;
+		}
+		
 		foreach($delarr as $row)
 		{
 			//delete file

@@ -22,7 +22,7 @@ class Controller_Core_Cmdbox extends Controller_Include
 		$this->template->username = HTML::chars(Auth::instance()->get_user()->username);
 		
 		$sysconfig = ORM::factory('Sysconfig')->where('sysconfig_id','=',"SYSTEM")->find();
-		$this->template->app_version = $sysconfig->sysconfig_id;
+		$this->template->app_version = substr($sysconfig->app_version, 0, 10);
 		$this->template->db_version = $sysconfig->db_version;
 		$this->template->environment = $sysconfig->environment;
 	}

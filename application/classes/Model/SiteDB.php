@@ -944,6 +944,19 @@ class Model_SiteDB extends Model
 		$result = $this->execute_non_select_query(Database::UPDATE,$querystr);
 		return $result;
 	}
+	
+	public function update_record_altkey($table,$arr,$altkey,$altval)
+	{
+		$vals = '';
+		foreach($arr as $key => $value)
+		{
+			if(!($key=='id')) {$vals .= "`".$key."`".'="'.$value.'",';}
+		}
+		$vals = substr($vals,0,-1);
+		$querystr = sprintf('UPDATE `%s` set %s WHERE %s = "%s"',$table,$vals,$altkey,$altval);
+		$result = $this->execute_non_select_query(Database::UPDATE,$querystr);
+		return $result;
+	}
 
 	public function update_record_dual_key($table,$arr,$field1,$field2,$value1,$value2)
 	{
