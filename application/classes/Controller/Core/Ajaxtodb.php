@@ -894,8 +894,23 @@ _TEXT_;
 				}
 				else
 				{
-					//$data .= "'".$value."',";
-					$data .= '"'.$value.'",';
+					if(strstr($value, '<?xml', true) === FALSE)
+					{
+						$$value = str_replace(",", "#", $value); 
+						$$value = str_replace('"', "'", $value); 
+						$data .= '"'.$value.'",';
+					}
+					else
+					{
+						$value = str_replace("<?", "<$$?", $value); 
+						$value = str_replace("?>", "?$$>", $value); 
+						$value = str_replace("\n", "", $value); 
+						$value = str_replace("\r", "", $value); 
+						$value = str_replace("\t", "", $value); 
+						$value = str_replace(",", "#", $value); 
+						$value = str_replace('"', "'", $value); 
+						$data .= '"'.$value.'",';
+					}
 				}
 			}
 			if($firstpass)
