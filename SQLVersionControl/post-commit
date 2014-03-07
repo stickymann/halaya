@@ -25,15 +25,15 @@ cd "$APPROOT"
 GIT_COMMIT=$(git log --format='%H' -n 1)
 URL="${APPURLBASE}/index.php/core_ajaxtodb?option=versionupdate&appver=${GIT_COMMIT}&dbver=${NOW}&env=${ENV}"
 if [ "$DEBUG" -eq 1 ]; then
-echo "VERSION UPDATE : ${URL}"
+echo "VERSION UPDATE    : ${URL}"
 fi
 curl ${URL}
 
 #### dump database
 if [ "$DEBUG" -eq 1 ]; then
-echo "DB_FULL_FILE : ${DB_FULL_FILE}"
+echo "DB_FULL_FILE      : ${DB_FULL_FILE}"
 echo "DB_STRUCTURE_FILE : ${DB_STRUCTURE_FILE}"
-echo "DB_DATA_FILE : ${DB_DATA_FILE}"
+echo "DB_DATA_FILE      : ${DB_DATA_FILE}"
 fi
 mysqldump -u ${DBUSER} -p${DBPASS} --routines ${DBNAME} > ${DATADUMPDIR}${DB_FULL_FILE}
 mysqldump -u ${DBUSER} -p${DBPASS} --routines --no-data=true ${DBNAME} > ${DATADUMPDIR}${DB_STRUCTURE_FILE}
