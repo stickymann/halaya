@@ -28,6 +28,15 @@ class Controller_Core_Ajaxtodb extends Controller
 		$option = $_REQUEST['option'];
 		switch($option)
 		{
+			case 'versionupdate':
+				$datestr = date("YmdHis");
+				if(isset($_REQUEST['appver'])) { $appver = $_REQUEST['appver']; } else { $appver = $datestr; }
+				if(isset($_REQUEST['dbver'])) { $dbver = $_REQUEST['dbver']; } else { $dbver = $datestr; }
+				if(isset($_REQUEST['env'])) { $env = $_REQUEST['env']; } else { $env = "DEV"; }
+				$RESULT = $this->set_version_info($appver,$dbver,$env);
+				print $RESULT."\n";
+			break;
+						
 			case 'sideinfo':
 				$fields		= $_REQUEST['fields'];
 				$table		= $_REQUEST['table'];
@@ -885,8 +894,23 @@ _TEXT_;
 				}
 				else
 				{
-					//$data .= "'".$value."',";
-					$data .= '"'.$value.'",';
+					if(strstr($value, '<?xml', true) === FALSE)
+					{
+						$$value = str_replace(",", "#", $value); 
+						$$value = str_replace('"', "'", $value); 
+						$data .= '"'.$value.'",';
+					}
+					else
+					{
+						$value = str_replace("<?", "<$$?", $value); 
+						$value = str_replace("?>", "?$$>", $value); 
+						$value = str_replace("\n", "", $value); 
+						$value = str_replace("\r", "", $value); 
+						$value = str_replace("\t", "", $value); 
+						$value = str_replace(",", "#", $value); 
+						$value = str_replace('"', "'", $value); 
+						$data .= '"'.$value.'",';
+					}
 				}
 			}
 			if($firstpass)
@@ -1544,6 +1568,27 @@ _SCRIPT_;
 
 		$HTML .= $TABLEHEADER.$TABLEROWS."\n".'</table>'."\n";
 		return $HTML;
+	}
+	
+	function set_version_info($appver,$dbver,$env)
+	{	
+		$param = $this->sitedb->get_controller_params("sysconfig");
+		$arr['app_version']	= $appver;
+		$arr['db_version']	= $dbver;
+		$arr['environment']	= $env;
+		$arr['inputter']	= "SYSINPUT";
+		$arr['input_date']	= date('Y-m-d H:i:s'); 
+		$arr['authorizer']	= "SYSAUTH";
+		$arr['auth_date']	= date('Y-m-d H:i:s'); 
+				
+		if( $result = $this->sitedb->update_record_altkey($param['tb_live'],$arr,"sysconfig_id","SYSTEM") )
+		{
+			return "OK";
+		}
+		else
+		{
+			return "FAIL";
+		}
 	}
 
 } // End Core_Ajaxtodb

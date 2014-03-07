@@ -31,8 +31,14 @@ class Controller_Core_Csvexport extends Controller
 	{
 		$csv_id = trim($csv_id);
 		$querystr = sprintf('select csv from csvs_is where csv_id = "%s"',$csv_id);
-		$arr = $this->db->execute_select_query($querystr);
-		$CSV = $arr[0]->csv;
+		if( $arr = $this->db->execute_select_query($querystr) )
+		{
+			$CSV = $arr[0]->csv;
+		}
+		else
+		{
+			$CSV = "No data! Possible error occurred.";
+		}
 		/*
 		//many ways to print file contents, choose one
 		1) file_get_contents()
