@@ -166,7 +166,9 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 			$arr['total'] 		= sprintf('%s',$lineobj->total);
 			$xmlrows .= sprintf('<row><sku>%s</sku><description>%s</description><qty>%s</qty><unitprice>%s</unitprice><total>%s</total></row>',$arr['sku'],$arr['description'],$arr['qty'],$arr['unitprice'],$arr['total'])."\n";
 			
-		} 
+		}
+		 
+		$xmlrows = str_replace("&","&amp;",$xmlrows);
 		$xmlrows  = "<rows>\n".$xmlrows."</rows>\n";
 		$xmllines = "<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n";
 		$xmllines .= "<header><column>Sku</column><column>Description</column><column>Qty</column><column>Unitprice</column><column>Total</column></header>\n";

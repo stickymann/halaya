@@ -217,7 +217,7 @@ class SchedulerDate {
 
 	function dayMatches(){
 
-		if ($this->day["value"] == '*')
+		if ($this->day == '*')
 			return true;
 
 		$currentdaynum = '-'.date('j').'-';
