@@ -1,10 +1,10 @@
 #!/bin/sh
 
-APPNAME=halaya
+APPNAME=soulmap
 ENV=DEV
 SERVER=localhost
 APPURLBASE="http://${SERVER}/${APPNAME}"
-DBNAME=halaya
+DBNAME=soulmap
 DBUSER=dbuser
 DBPASS=dbpass
 APPRO0T="/zipstore/www/${APPNAME}/"
