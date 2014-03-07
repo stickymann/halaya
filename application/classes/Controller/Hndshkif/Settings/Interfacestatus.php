@@ -29,7 +29,7 @@ class Controller_Hndshkif_Settings_Interfacestatus extends Controller_Include
 		else
 		{
 			$this->template->username = 'expired';
-			URL::redirect('autologout');
+			HTTP::redirect('autologout');
 		}
 		
 		$htmlhead = new Controller_Core_Sitehtml( $this->get_htmlhead() );
