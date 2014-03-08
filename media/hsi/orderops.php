@@ -38,7 +38,7 @@ class OrderOps
 	
 	private function process_orders_xml($xmldata,$auto,$type="string")
 	{
-		$meta = array(); $total = 0; $faillist = "";
+		$meta = array(); $total = 0; $failcount=0; $faillist = "";
 		if( $type == "file" )
 		{ 
 			$response = simplexml_load_file($xmldata); 
@@ -106,7 +106,11 @@ orderlines;text;DEFAULT NULL;
 $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact></row>',$arr['id'],$arr['customer_id'],$arr['tax_id'],$arr['name'],$arr['contact'])."\n";
 					$total = $total + $count; 
 				} 
-				else { $faillist .= $arr['id'].",";}
+				else 
+				{ 
+					$faillist .= $arr['id'].",";
+					$failcount++;
+				}
 //print "<b>[DEBUG]---></b> "; print_r($arr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			}
 		}
@@ -131,8 +135,10 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 			$xmllines = str_replace("&","&amp;",$xmllines);
 			$log['batch_details'] = $xmllines;
 		
-			$log['summary'] = sprintf("Total Sucessful Orders : %s\nFailist : %s",$total,$faillist);
-		
+			$log['summary'] = sprintf("Total Sucessful Orders : %s\nFail List : %s",$total,$faillist);
+			$log['success'] = $total;
+			$log['failure'] = $failcount;
+			
 			$log['inputter']		= "SYSINPUT";
 			$log['input_date']	= date('Y-m-d H:i:s'); 
 			$log['authorizer']	= "SYSAUTH";
