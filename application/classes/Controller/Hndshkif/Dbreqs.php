@@ -43,6 +43,11 @@ class Controller_Hndshkif_Dbreqs extends Controller
 				$RESULT	= $this->scheduler_status();
 				print $RESULT;
 			break;
+			
+			case 'uploadfilecount':
+				$RESULT	= $this->upload_filecount();
+				print $RESULT;
+			break;
 		}
 	}
 	
@@ -74,5 +79,21 @@ class Controller_Hndshkif_Dbreqs extends Controller
 			return json_encode($fail_arr);
 		}
 	}
+	
+	function upload_filecount()
+	{
+	    $i = 0; 
+		$dir = '/shazam/hsi/current/export/';
+		if( $handle = opendir($dir) ) 
+		{
+			while( ($file = readdir($handle) ) !== false )
+			{
+				if( !in_array($file, array('.', '..')) && !is_dir($dir.$file) ) 
+                $i++;
+			}
+		}
+		$count_arr = array("count"=>$i);
+		return json_encode($count_arr);
+    }
 
 } // End Hndshkif_Dbreqs
