@@ -35,7 +35,7 @@ class Controller_Core_Cmdbox extends Controller_Include
 		$head .= sprintf('%s',HTML::style($this->css['notify'], array('screen')))."\n";
 		$head .= sprintf('%s',HTML::script($this->js['jquery']))."\n";
 		$head .= sprintf('%s',HTML::script($this->js['siteutils']))."\n";
-		$head .= HTML::script( $this->randomize('media/js/core.cmdbox.js') )."\n";
+		$head .= HTML::script( $this->randomize('media/js/hndshkif.cmdbox.js') )."\n";
 		return $head;	
 	}
    
