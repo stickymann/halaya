@@ -47,5 +47,33 @@ class Controller_Hndshkif_Settings_Interfaceconfiguration extends Controller_Cor
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
+	
+	public function write_configfile()
+	{
+		$filename = $this->OBJPOST['config_file'];
+		$XML 	  = $this->OBJPOST['config_xml'];
+		$XML      = str_replace("&","&amp;",$XML);
+		
+		try
+		{
+			if ($handle = fopen($filename, 'w+')) 
+			{
+				fwrite($handle, $XML);
+				fclose($handle);
+				//chmod($filename, OUTFILE_PERMISSION);
+			}
+		}
+		catch (Exception $e) { }
+	}
+		
+	public function authorize_post_update_existing_record()
+	{
+		$this->write_configfile();
+	}
+
+	public function authorize_post_insert_new_record()
+	{
+		$this->write_configfile();
+	}
 
 } //End Controller_Hndshkif_Settings_Interfaceconfiguration

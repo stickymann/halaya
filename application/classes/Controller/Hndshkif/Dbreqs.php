@@ -82,16 +82,37 @@ class Controller_Hndshkif_Dbreqs extends Controller
 	
 	function upload_filecount()
 	{
+	    $dir = '/shazam/hsi/current/export';  //default export dir
 	    $i = 0; 
-		$dir = '/shazam/hsi/current/export/';
-		if( $handle = opendir($dir) ) 
+		
+		$param = $this->sitedb->get_controller_params("interfaceconfiguration");
+		$querystr	= sprintf('SELECT config_xml FROM %s WHERE config_id ="%s"',$param['tb_live'],"DEFAULT");
+		if( $result	= $this->sitedb->execute_select_query($querystr) )
 		{
-			while( ($file = readdir($handle) ) !== false )
+			try
 			{
-				if( !in_array($file, array('.', '..')) && !is_dir($dir.$file) ) 
-                $i++;
+				$cfg = new SimpleXMLElement( $result[0]->config_xml );
+				if( $cfg->folders->current_export ) 
+				{
+					$dir = sprintf('%s',$cfg->folders->current_export);
+				}
+			}
+			catch (Exception $e) { }
+		}
+		
+		try
+		{
+			if( $handle = opendir($dir) ) 
+			{
+				while( ($file = readdir($handle) ) !== false )
+				{
+					if( !in_array($file, array('.', '..')) && !is_dir($dir.$file) ) 
+					$i++;
+				}
 			}
 		}
+		catch (Exception $e) { $i = -1; }
+		
 		$count_arr = array("count"=>$i);
 		return json_encode($count_arr);
     }
