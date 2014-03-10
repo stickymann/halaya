@@ -45,6 +45,7 @@ abstract class Controller_Include extends Controller
 		'easyui_icon' => 'media/css/easyui/icon.css',
 		'easyui_gray' => 'media/css/easyui/gray/easyui.css',
 		'site' => 'media/css/site.css',
+		'notify' => 'media/css/notify.css',
 		'datepick' => 'media/css/custom.datepick.css',
 		'jqeasy' => 'media/css/jqeasy.css',
 		'treeview' => 'media/css/jquery.treeview.css',
