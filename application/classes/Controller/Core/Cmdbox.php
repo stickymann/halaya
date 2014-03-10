@@ -32,13 +32,10 @@ class Controller_Core_Cmdbox extends Controller_Include
 	function get_htmlhead()
 	{	
 		$head = sprintf('%s',HTML::style($this->css['site'], array('screen')))."\n"; 
-<<<<<<< HEAD
-=======
-		$head .= sprintf('%s',HTML::style($this->css['notify'], array('screen')))."\n";
+>		$head .= sprintf('%s',HTML::style($this->css['notify'], array('screen')))."\n";
 		$head .= sprintf('%s',HTML::script($this->js['jquery']))."\n";
 		$head .= sprintf('%s',HTML::script($this->js['siteutils']))."\n";
 		$head .= HTML::script( $this->randomize('media/js/core.cmdbox.js') )."\n";
->>>>>>> 4532564... Notification css and functions added
 		return $head;	
 	}
    
