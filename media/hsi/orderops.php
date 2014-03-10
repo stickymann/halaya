@@ -148,6 +148,7 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 			$count = $this->dbops->insert_record($this->dlorderbatchs_tb_live, $log);
 		}
 		
+		$meta['batch_id']		= $batch_id;
 		$meta['next']			= sprintf('%s',$response->meta->next);
 		$meta['total_count']	= sprintf('%s',$response->meta->total_count);
 		$meta['total_inserts']	= $total;
@@ -155,6 +156,7 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 		$meta['limit']			= sprintf('%s',$response->meta->limit);
 		$meta['offset']			= sprintf('%s',$response->meta->offset);
 		$meta['faillist']		= $faillist;
+	
 //print "<b>[DEBUG]---></b> "; print_r($meta); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		return $meta;
 	}
@@ -200,25 +202,50 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 				else
 				{
 					$url = $this->appurl.$meta['next'];
-					$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
-					$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
-					$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
+					$RESULT .= sprintf("Processing records up to offset : %s<br>",$meta['offset']);
+					$RESULT .= sprintf("Fail list : %s<br>",$meta['faillist']);
+					$RESULT .= sprintf("Records refreshed : %s<br><hr>",$meta['total_inserts']);
 					$total_inserts = $total_inserts + $meta['total_inserts'];
 				}
 			}
 			usleep(1000000);
 		}
 	
-		$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
-		$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
-		$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
+		$RESULT .= sprintf("Processing records up to offset : %s<br>",$meta['offset']);
+		$RESULT .= sprintf("Fail list : %s<br>",$meta['faillist']);
+		$RESULT .= sprintf("Successful Orders : %s<br><hr>",$meta['total_inserts']);
 		$total_inserts = $total_inserts + $meta['total_inserts'];
 	
 		$total_count = $meta['total_count']; 
 		$total_failed = $total_count - $total_inserts;
 //$RESULT .= sprintf('<b>Summary</b><br>Total Processed : %s, Total Refreshed : %s, Failed : %s<br><hr>',$total_count,$total_failed,$total_inserts);
-		$RESULT .= sprintf('<b>Summary</b><br>Total Download : %s',$total_count);
+		$RESULT .= sprintf("<b>Summary</b><br>Total Download : %s",$total_count);
+		if( $total_inserts > 0 ) { $this->write_logfile($meta['batch_id'],$RESULT); };
 		return $RESULT;
 	}
 
+	public function write_logfile($batch_id,$logtext)
+	{
+		$logtext = str_replace("<br>","\r\n",$logtext);
+		$logtext = str_replace("<b>","[",$logtext);
+		$logtext = str_replace("</b>","]",$logtext);
+		$logtext = str_replace("<hr>","---------- ---------- ---------- ----------\r\n",$logtext);
+		
+		$dir = '/shazam/hsi/current/export';  
+		$filename = sprintf("%s/%s.log.txt",$dir,$batch_id);
+		
+		$oldumask = umask(0);
+		try
+		{
+			if ($handle = fopen($filename, 'w+')) 
+			{
+				fwrite($handle, $logtext);
+				fclose($handle);
+				//chmod($filename, OUTFILE_PERMISSION);
+			}
+		}
+		catch (Exception $e) { }
+		umask($oldumask);
+	}
+	
 } //End OrderOps
