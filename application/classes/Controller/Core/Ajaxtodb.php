@@ -571,6 +571,12 @@ class Controller_Core_Ajaxtodb extends Controller
 				$quantities	= $_REQUEST['quantities'];
 				print( $this->do_stockcheck($order,$icstat,$branch,$products,$quantities) );
 			break;
+		
+			case 'nextmenuchild':
+				$parent_id	= $_REQUEST['parent_id'];
+				$RESULT	= $this->get_next_child_from_parent($parent_id);
+				print $RESULT;
+			break;
 		}
 	}
 	
@@ -1200,6 +1206,17 @@ _SCRIPT_;
 		$result		= $this->sitedb->execute_select_query($querystr);
 		$branch_id	= $result[0]->branch_id;
 		return $branch_id;
+	}
+
+	function get_next_child_from_parent($parent_id)
+	{
+		$menu_id = 0;
+		$querystr = sprintf('SELECT menu_id FROM menudefs WHERE parent_id="%s" ORDER BY menu_id DESC LIMIT 1;',$parent_id);
+		if( $result = $this->sitedb->execute_select_query($querystr) )
+		{
+			$menu_id = $result[0]->menu_id + 1;
+		}
+		return $menu_id;
 	}
 
 	function get_customer_id($id,$firstname,$lastname,$controller)
