@@ -302,7 +302,11 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 		if(!($this->OBJPOST['order_status'] == "NEW") && !($this->OBJPOST['order_status'] == "QUOTATION") && !($this->OBJPOST['order_status'] == "ZERO.CHARGE") && $this->OBJPOST['current_no'] > 0)
 		{
 			$order_id = $this->OBJPOST['order_id'];
-			$querystr = sprintf('SELECT order_total FROM vw_orderbalances WHERE order_id = "%s"',$order_id);
+			$querystr = sprintf('SELECT COALESCE(SUM(`func_OrderDetailOrderTotal`(qty,unit_price,discount_amount,tax_percentage,taxable,discount_type)),0) AS order_total FROM orderdetails WHERE order_id = "%s"',$order_id);
+			/*
+				Getting a "Mysql Commands out of sync" error when attempting to call stored procedure from within Kohana 
+				//$querystr = sprintf('CALL sp_GetOrderTotal("%s");',$order_id);
+			*/
 			$result = $this->param['primarymodel']->execute_select_query($querystr);
 			$order_total = $result[0]->order_total;
 			if($order_total == 0 && !($this->OBJPOST['order_status'] == "ORDER.CANCELLED") )
@@ -335,15 +339,33 @@ $xmlfooter = "</rows>"."\n"."</formfields>"."\n";
 	
 	public function authorize_post_update_existing_record()
 	{
+		//$tot_pre = microtime(true);
 		$this->inventory_checkout();
 		$this->set_zero_charge_order_status();
+		
+		//$time_pre = microtime(true);
+		$this->param['primarymodel']->update_orderbalances_cache($this->OBJPOST['order_id']);
+		//$time_post = microtime(true);
+		//$tot_post = microtime(true);
+		//$exec_time = $time_post - $time_pre;
+		//$total_time = $tot_post - $tot_pre;
+//print "<b>[DEBUG]---></b> "; print "EXEC TIME : ".$exec_time." TOTAL TIME : ".$total_time; print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 	}
 
 	public function authorize_post_insert_new_record()
 	{
+		//$tot_pre = microtime(true);
 		$this->inventory_checkout();
 		$this->set_zero_charge_order_status();
 		$this->expire_quotations();
+		
+		//$time_pre = microtime(true);
+		$this->param['primarymodel']->update_orderbalances_cache($this->OBJPOST['order_id']);
+		//$time_post = microtime(true);
+		//$tot_post = microtime(true);
+		//$exec_time = $time_post - $time_pre;
+		//$total_time = $tot_post - $tot_pre;
+//print "<b>[DEBUG]---></b> "; print "EXEC TIME : ".$exec_time." TOTAL TIME : ".$total_time; print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 	}
 
-}//End Controller_Core_Sales_Order
+} // End Controller_Core_Sales_Order

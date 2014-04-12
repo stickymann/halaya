@@ -577,6 +577,13 @@ class Controller_Core_Ajaxtodb extends Controller
 				$RESULT	= $this->get_next_child_from_parent($parent_id);
 				print $RESULT;
 			break;
+		
+			case 'updateorderbalance':
+				$order_id	= $_REQUEST['order_id'];
+				$RESULT	= $this->sitedb->update_orderbalances_cache($order_id);
+				//print $RESULT;
+				print "done";
+			break;
 		}
 	}
 	
