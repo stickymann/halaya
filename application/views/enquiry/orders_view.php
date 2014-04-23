@@ -325,6 +325,7 @@ function make_pdf_xml($item,$labels)
 	$order_total = $item->order_total;		$payment_total = $item->payment_total; 
 	$balance = $item->balance;				$sub_total = $item->extended_total;
 	$tax_total = $item->tax_total;			$discount_total = $item->discount_total;
+	$order_status = $item->order_status;	$payment_type = $item->payment_type;
 	$invoice_note = $item->invoice_note;
 
 	$label_id = $labels['id'];							$label_order_id = $labels['order_id'];
@@ -339,6 +340,7 @@ function make_pdf_xml($item,$labels)
 	$label_order_total = $labels['order_total'];		$label_payment_total = $labels['payment_total']; 
 	$label_balance = $labels['balance'];				$label_sub_total = $labels['extended_total'];
 	$label_tax_total = $labels['tax_total'];			$label_discount_total = $labels['discount_total'];
+	$label_order_status = $labels['order_status'];		$label_payment_type = $labels['payment_type'];
 	$label_invoice_note = $labels['invoice_note'];
 	
 	$XML=<<<_XML_
@@ -367,6 +369,8 @@ function make_pdf_xml($item,$labels)
 	<order_total><label>$label_order_total</label><value>$order_total</value></order_total>
 	<payment_total><label>$label_payment_total</label><value>$payment_total</value></payment_total>
 	<balance><label>$label_balance</label><value>$balance</value></balance>
+	<order_status><label>$label_order_status</label><value>$order_status</value></order_status>
+	<payment_type><label>$label_payment_type</label><value>$payment_type</value></payment_type>
 	<invoice_note><label>$label_invoice_note</label><value>$invoice_note</value></invoice_note>
 </fields>
 _XML_;
