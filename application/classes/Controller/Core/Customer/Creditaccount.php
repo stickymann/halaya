@@ -1,8 +1,8 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Creates a charge customer account. 
+ * Creates a credit customer account. 
  *
- * $Id: Chargeaccount.php 2013-02-18 06:38:10 dnesbit $
+ * $Id: Creditaccount.php 2013-02-18 06:38:10 dnesbit $
  *
  * @package		Halaya Core
  * @module	    core
@@ -10,11 +10,11 @@
  * @copyright   (c) 2013
  * @license      
  */
-class Controller_Core_Customer_Chargeaccount extends Controller_Core_Site
+class Controller_Core_Customer_Creditaccount extends Controller_Core_Site
 {
 	public function __construct()
     {
-		parent::__construct('chargeaccount');
+		parent::__construct('creditaccount');
 		$this->param['htmlhead'] .= $this->insert_head_js();
 	}	
 		
@@ -26,7 +26,7 @@ class Controller_Core_Customer_Chargeaccount extends Controller_Core_Site
 	
 	function insert_head_js()
 	{
-		return HTML::script( $this->randomize('media/js/core.chargeaccount.js') );
+		return HTML::script( $this->randomize('media/js/core.creditaccount.js') );
 	}
 
 	function input_validation()
@@ -55,4 +55,4 @@ class Controller_Core_Customer_Chargeaccount extends Controller_Core_Site
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
 
-} //End Controller_Core_Customer_Chargeaccount
+} //End Controller_Core_Customer_Creditaccount

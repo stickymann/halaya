@@ -2,7 +2,7 @@ var last_status_change_date;
 
 $(document).ready(function()
 {
-	$('#status_change_date').change(function() {chargeaccount.SetChangeDate();});
+	$('#status_change_date').change(function() {creditaccount.SetChangeDate();});
 
 	if($('#current_no').val() == '0')
 	{
@@ -13,7 +13,7 @@ $(document).ready(function()
 });
 		
 
-var chargeaccount = new function() 
+var creditaccount = new function() 
 {
 	this.SetChangeDate = function()
 	{

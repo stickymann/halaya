@@ -45,9 +45,9 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 					$order_id = $linerec['order_id'];
 					$fields = array
 					(
-						'order_id','branch_id','inputter','is_co','cc_id','first_name','last_name','customer_type','address1','address2','city',
-						'phone_mobile1','phone_home','phone_work','current_no','order_date','invoice_date','quotation_date',
-						'order_total','extended_total','tax_total','payment_total','balance','discount_total','order_details','payment_type'
+						'order_id','branch_id','is_co','cc_id','inputter','first_name','last_name','customer_type','address1','address2','city',
+						'phone_mobile1','phone_home','phone_work','current_no','order_date','invoice_date','order_status','quotation_date',
+						'order_total','extended_total','tax_total','payment_total','balance','discount_total','order_details','payment_type','invoice_note'
 					);
 					$querystr = sprintf('select %s from %s where order_id = "%s"', join(',',$fields),$table,$order_id);
 					$order_res = $this->sitemodel->execute_select_query($querystr);
@@ -132,34 +132,38 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 		$controller = "orders_enq";
 		$enqdb = new Model_EnqDB();
 		$enqdb->get_enq_formfields($controller,$enqparam['fieldnames'],$enqparam['labels'],$enqparam['filterfields']);
-		$label = $enqparam['labels'];
+		$labels = $enqparam['labels'];
 		
-		$item = $data['item'];
-		$id = $item['alt_invoice_id'];				$order_id = $item['order_id'];
-		$branch_id = $item['branch_id'];			$inputter = $item['inputter'];
-		$is_co = $item['is_co'];					$cc_id = $item['cc_id'];
-		$first_name = $item['first_name'];			$last_name = $item['last_name'];
+	$item = $data['item'];
+		$id = $item['alt_invoice_id'];			$order_id = $item['order_id'];
+		$branch_id = $item['branch_id'];		$inputter = $item['inputter'];
+		$is_co = $item['is_co'];				$cc_id = $item['cc_id'];
+		$first_name = $item['first_name'];		$last_name = $item['last_name'];
 		$customer_type = $item['customer_type'];	$city = $item['city'];
-		$address1 = $item['address1'];				$address2 = $item['address2'];
+		$address1 = $item['address1'];			$address2 = $item['address2'];
 		$phone_mobile1 = $item['phone_mobile1'];	$phone_home = $item['phone_home'];		
-		$phone_work = $item['phone_work'];			$current_no = $item['current_no'];
-		$invoice_date = $item['invoice_date'];		$quotation_date = $item['quotation_date'];
+		$phone_work = $item['phone_work'];		$current_no = $item['current_no'];
+		$invoice_date = $item['invoice_date'];	$quotation_date = $item['quotation_date'];
 		$order_total = $item['order_total'];		$payment_total = $item['payment_total']; 
 		$balance = $item['balance'];				$sub_total = $item['extended_total'];
 		$tax_total = $item['tax_total'];			$discount_total = $item['discount_total'];
-
-		$label_id = $label['id'];							$label_order_id = $label['order_id'];
-		$label_branch_id = $label['branch_id'];				$label_inputter = $label['inputter'];
-		$label_is_co = $label['is_co'];						$label_cc_id = $label['cc_id'];
-		$label_first_name = $label['first_name'];			$label_last_name = $label['last_name'];
-		$label_customer_type = $label['customer_type'];		$label_city = $label['city'];
-		$label_address1 = $label['address1'];				$label_address2 = $label['address2'];
-		$label_phone_mobile1 = $label['phone_mobile1'];		$label_phone_home = $label['phone_home'];		
-		$label_phone_work = $label['phone_work'];			$label_current_no = $label['current_no'];
-		$label_invoice_date = $label['invoice_date'];		$label_quotation_date = $label['quotation_date'];
-		$label_order_total = $label['order_total'];			$label_payment_total = $label['payment_total']; 
-		$label_balance = $label['balance'];					$label_sub_total = $label['extended_total'];
-		$label_tax_total = $label['tax_total'];				$label_discount_total = $label['discount_total'];
+		$order_status = $item['order_status'];		$payment_type = $item['payment_type'];
+		$invoice_note = $item['invoice_note'];
+				
+		$label_id = $labels['id'];							$label_order_id = $labels['order_id'];
+		$label_branch_id = $labels['branch_id'];			$label_inputter = $labels['inputter'];
+		$label_is_co = $labels['is_co'];					$label_cc_id = $labels['cc_id'];
+		$label_first_name = $labels['first_name'];			$label_last_name = $labels['last_name'];
+		$label_customer_type = $labels['customer_type'];	$label_city = $labels['city'];
+		$label_address1 = $labels['address1'];				$label_address2 = $labels['address2'];
+		$label_phone_mobile1 = $labels['phone_mobile1'];	$label_phone_home = $labels['phone_home'];		
+		$label_phone_work = $labels['phone_work'];			$label_current_no = $labels['current_no'];
+		$label_invoice_date = $labels['invoice_date'];		$label_quotation_date = $labels['quotation_date'];
+		$label_order_total = $labels['order_total'];		$label_payment_total = $labels['payment_total']; 
+		$label_balance = $labels['balance'];				$label_sub_total = $labels['extended_total'];
+		$label_tax_total = $labels['tax_total'];			$label_discount_total = $labels['discount_total'];
+		$label_order_status = $labels['order_status'];		$label_payment_type = $labels['payment_type'];
+		$label_invoice_note = $labels['invoice_note'];
 	
 	$XML=<<<_XML_
 <fields>
@@ -187,6 +191,9 @@ class Controller_Core_Report_Batchinvoices extends Controller_Core_Sitereport
 	<order_total><label>$label_order_total</label><value>$order_total</value></order_total>
 	<payment_total><label>$label_payment_total</label><value>$payment_total</value></payment_total>
 	<balance><label>$label_balance</label><value>$balance</value></balance>
+	<order_status><label>$label_order_status</label><value>$order_status</value></order_status>
+	<payment_type><label>$label_payment_type</label><value>$payment_type</value></payment_type>
+	<invoice_note><label>$label_invoice_note</label><value>$invoice_note</value></invoice_note>
 </fields>
 _XML_;
 	return $XML;

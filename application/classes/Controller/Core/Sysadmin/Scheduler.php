@@ -1,34 +1,34 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Create menu entry. 
+ * Scheduler settings. 
  *
- * $Id: Menudef.php 2013-01-11 00:00:00 dnesbit $
+ * $Id: Scheduler.php 2014-03-05 11:39:59 dnesbit $
  *
  * @package		Halaya Core
  * @module	    core
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
- * @copyright   (c) 2013
- * @license   
+ * @copyright   (c) 2014
+ * @license      
  */
-class Controller_Core_Developer_Menudef extends Controller_Core_Site
+class Controller_Core_Sysadmin_Scheduler extends Controller_Core_Site
 {
 	public function __construct()
-	{
-		parent::__construct("menudef");
-		$this->param['htmlhead'] .= $this->insert_head_js();
-	}
-
-	public function action_index($opt="")
-	{
+    {
+		parent::__construct('scheduler');
+		// $this->param['htmlhead'] .= $this->insert_head_js();
+	}	
+		
+	public function action_index()
+    {
 		$this->param['indexfieldvalue'] = strtoupper( $this->request->param('opt') );
 		$this->process_index();
 	}
 	
 	function insert_head_js()
 	{
-		return HTML::script( $this->randomize('media/js/core.menudef.js') );
+		return HTML::script( $this->randomize('media/js/core.scheduler.js') );
 	}
-	
+
 	function input_validation()
 	{
 		$post = $this->OBJPOST;	
@@ -39,24 +39,13 @@ class Controller_Core_Developer_Menudef extends Controller_Core_Site
 			->rule('id','not_empty')
 			->rule('id','numeric');
 		$validation
-			->rule('menu_id','not_empty')
-			->rule('menu_id','numeric');
-		$validation
-			->rule('parent_id','not_empty')
-			->rule('parent_id','numeric');
-		$validation
-			->rule('sortpos','not_empty')
-			->rule('sortpos','numeric');
-
+			->rule('schedule_id','not_empty')
+			->rule('schedule_id','min_length', array(':value', 2))->rule('schedule_id','max_length', array(':value', 50))
+			->rule('schedule_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['schedule_id']));
+			
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
-		
-	function authorize_post_insert_new_record()
-	{
-		$menu = new Controller_Core_Menusuper();
-		$menu->updatesupers();
-	}
 
-}//End Controller_Core_Developer_Menudef
+} //End Controller_Core_Sysadmin_Scheduler

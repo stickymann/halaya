@@ -135,15 +135,17 @@ function batchinvoice_GetOrderData()
 				//alert('name :'+attrib.name+' ,value :'+attrib.value);
 				if(name == "value")
 				{
-					//if xml string dont't add to lookupval
-					if(attrib.value.search('<?xml') == -1)
+					if( value.length == 16)
 					{
-						lookupval = lookupval + attrib.value + ",";
+						prefix = value.substring(0,3)
+						if( prefix == 'ORD' ) 
+						{
+							lookupval = value;
+						}
 					}
 				}
 			});
 		});
-		lookupval = lookupval.substr(0,lookupval.length-1);
 
 		url = siteutils.getAjaxURL() + "option=jdatabyid&dbtable=vw_orderbalances&fields=id,order_date,first_name,last_name,order_details,extended_total,tax_total,order_total,payment_total,balance,payment_type&idfield=order_id&idval=" + lookupval;
 		$.getJSON(url, function(data)

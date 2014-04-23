@@ -743,31 +743,49 @@ _HTML_;
 					if($menudef->id) {$val=$menudef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['menu']=0;}
 					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";	
 					$fields=""; $values="";
-					foreach ($menudef->menus->menu as $menu)
-					{			
-						if($menu->menu_id && $menu->parent_id && $menu->sortpos && $menu->node_or_leaf && $menu->module && 
-						$menu->label_input && $menu->label_enquiry && $menu->url_input && $menu->url_enquiry && $menu->controls_input && $menu->controls_enquiry)
-						{$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['menu']=0; break;}
-						if($menu->id) 
-						{
+					
+					if( $result = $this->sitedb->create_blank_record("menudefs","menudefs_is")  )
+					{
+						$id  = $result['id'];
+						$querystr = sprintf('DELETE from %s', "menudefs_is");
+						if( $this->sitedb->execute_delete_query($querystr) ){}
+
+						foreach ($menudef->menus->menu as $menu)
+						{			
+							if($menu->menu_id && $menu->parent_id && $menu->sortpos && $menu->node_or_leaf && $menu->module && 
+							$menu->label_input && $menu->label_enquiry && $menu->url_input && $menu->url_enquiry && $menu->controls_input && $menu->controls_enquiry)
+							{$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['menu']=0; break;}
+							
+							$menu->id  = sprintf('%s',$menu->id);
+							if( !($menu->id > 0) )
+							{
+								$menu->id = str_replace("{ID}",$id,$menu->id);
+								$id++;
+							}
 							$values .= "(\"".$menu->id."\", "."\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
 							$fields = "(`id`, `menu_id`, `parent_id`, `sortpos`, `node_or_leaf`, `module`, `label_input`, `label_enquiry`, `url_input`, `url_enquiry`, `controls_input`, `controls_enquiry`,`inputter`, `input_date`, `record_status`, `current_no`) "; 
+
+							/*
+							if($menu->id) { }
+							else
+							{
+								$values .= "(\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
+								$fields = "(`menu_id`,`parent_id`,`sortpos`,`node_or_leaf`,`module`,`label_input`,`label_enquiry`,`url_input`,`url_enquiry`,`controls_input`,`controls_enquiry`,`inputter`,`input_date`,`record_status`,`current_no`) "; 
+							}
+							*/
+							$values .= sprintf('"%s", "%s", "%s", "0"),',INPUTTER,$current_date,RECORDSTATUS);
+							
 						}
-						else
-						{
-							$values .= "(\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
-							$fields = "(`menu_id`,`parent_id`,`sortpos`,`node_or_leaf`,`module`,`label_input`,`label_enquiry`,`url_input`,`url_enquiry`,`controls_input`,`controls_enquiry`,`inputter`,`input_date`,`record_status`,`current_no`) "; 
-						}
-						$values .= sprintf('"%s", "%s", "%s", "0"),',INPUTTER,$current_date,RECORDSTATUS);
-					}
-					$values = substr_replace($values, '', -1);
-					$SQL_INAU .= sprintf('INSERT INTO `%s` %s VALUES %s;',$table,$fields,$values);
-					$desc='Columns Loaded [<i>menu</i>]'; $val=""; 
-					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+					
+						$values = substr_replace($values, '', -1);
+						$SQL_INAU .= sprintf('INSERT INTO `%s` %s VALUES %s;',$table,$fields,$values);
+						$desc='Columns Loaded [<i>menu</i>]'; $val=""; 
+						$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
 				
-					$menudef_sql['insert_inau'] = array('sql_code'=>$SQL_INAU);
-					$count = $this->query_system_db("setmenudef",$menudef_sql);
-					$HTML .= sprintf('<tr valign=top><td  class="adi_tts">%s</td><td colspan=2 class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
+						$menudef_sql['insert_inau'] = array('sql_code'=>$SQL_INAU);
+						$count = $this->query_system_db("setmenudef",$menudef_sql);
+						$HTML .= sprintf('<tr valign=top><td  class="adi_tts">%s</td><td colspan=2 class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
+					}
 				}
 			catch (Exception $e) 
 				{
@@ -1694,7 +1712,7 @@ $TEXT3 =<<<_TEXT_
 </tabledef>
 _TEXT_;
 		$XML = $XMLHEADER.$TEXT1.$TEXT2.$TEXT3;
-	
+		$XML = str_replace("&","&amp;",$XML);
 		$res = 0;
 		$filename = $dirname.$row['id'].".tabledef.xml";
 		if ($handle = fopen($filename, 'w')) 
@@ -1766,7 +1784,7 @@ $TEXT2.= sprintf("\t<menu><id>%s</id><menu_id>%s</menu_id><parent_id>%s</parent_
 				}
 				else if($f['id_opt'] == 0)
 				{
-$TEXT2.= sprintf("\t<menu><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry></label_enquiry><url_input></url_input><url_enquiry></url_enquiry><controls_input></controls_input><controls_enquiry></controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title']);
+$TEXT2.= sprintf("\t<menu><id>{ID}</id><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry></label_enquiry><url_input></url_input><url_enquiry></url_enquiry><controls_input></controls_input><controls_enquiry></controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title']);
 				}
 			}
 			else
@@ -1777,7 +1795,7 @@ $TEXT2.= sprintf("\t<menu><id>%s</id><menu_id>%s</menu_id><parent_id>%s</parent_
 				}
 				else if($f['id_opt'] == 0)
 				{
-$TEXT2.= sprintf("\t<menu><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry>magicon016.png%s</label_enquiry><url_input>%s</url_input><url_enquiry>%s\\/enquirydefault</url_enquiry><controls_input>%s</controls_input><controls_enquiry>%s</controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title'],"%IMG%",$f['url_input'],$f['url_input'],$f['control_input'],$f['control_enquiry']);
+$TEXT2.= sprintf("\t<menu><id>{ID}</id><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry>magicon016.png%s</label_enquiry><url_input>%s</url_input><url_enquiry>%s\\/enquirydefault</url_enquiry><controls_input>%s</controls_input><controls_enquiry>%s</controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title'],"%IMG%",$f['url_input'],$f['url_input'],$f['control_input'],$f['control_enquiry']);
 				}
 			}
 		}
@@ -1786,15 +1804,18 @@ $TEXT2.= sprintf("\t<menu><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos
 </menudef>
 _TEXT_;
 		$XML = $XMLHEADER.$TEXT1.$TEXT2.$TEXT3;
-	
+		$XML = str_replace("&","&amp;",$XML);
+		
 		$res = 0;
 		$filename = $dirname.$row['id'].".menudef.xml";
-		if ($handle = fopen($filename, 'w')) 
+		$oldmask = umask(0);
+		if ($handle = fopen($filename, 'w+')) 
 		{
 			fwrite($handle, $XML);
 			fclose($handle);
 			$res = 1;
 		}
+		umask($oldmask);
 		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
 		$result_txt = sprintf('[ <span class="%s">%s</span> => File Created ( %s ) ]',$class,$RESTXT,$filename);
 		return $menu_txt."<br>".$result_txt."<br>";
@@ -1858,8 +1879,8 @@ _TEXT_;
 </columns>
 </paramdef>
 _TEXT_;
-	$XML = $XMLHEADER.$TEXT1;
-	
+		$XML = $XMLHEADER.$TEXT1;
+		$XML = str_replace("&","&amp;",$XML);
 		$res = 0;
 		$filename = $dirname.$param_id.".paramdef.xml";
 		if ($handle = fopen($filename, 'w')) 
@@ -1943,6 +1964,7 @@ print "<b>[DEBUG]---></b> "; print htmlspecialchars($tablename); print( sprintf(
 			}
 			$TEXT2 .= "</formfields>\n</formdef>\n";
 			$XML = $XMLHEADER.$TEXT1.$TEXT2;
+			$XML = str_replace("&","&amp;",$XML);
 //print "<b>[DEBUG]---></b> "; print htmlspecialchars($XML); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		
 			$filename = $dirname.$param_id.".formdef.xml";
