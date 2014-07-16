@@ -110,7 +110,6 @@ AND cc_id = "$cc_id"
 AND order_date >= "$startdate" AND order_date <= "$enddate";
 _SQL_;
 		}
-print "<b>[DEBUG]---></b> "; print($querystr); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$rows = "";
 		if ($result = $this->param['primarymodel']->execute_select_query($querystr) )
 		{
