@@ -16,9 +16,14 @@
 		<tr><td><b>Environment :</b></td><td align="left"><?php print $environment; ?></td></tr>
 	</table>
 </div>
-<div id="notify-container">&nbsp
-<div id="notify-label">Order Entry<br>Uploads Pending</div>
+<div id="notify-container">
+&nbsp
+<div id="notify-label">Order Entry
+<br>
+Uploads Pending
+<br>
+<label for="autorefresh" class="notify-label">Auto Refresh </label>
+<input type="checkbox" id="autorefresh" name="autorefresh" class="notify-checkbox"></div>
 <div id="notify-circle"></div>
-</div>
 </body>
 </html>   

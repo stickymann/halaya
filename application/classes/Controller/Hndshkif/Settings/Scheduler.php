@@ -14,7 +14,7 @@ class Controller_Hndshkif_Settings_Scheduler extends Controller_Core_Site
 {
 	public function __construct()
     {
-		parent::__construct('scheduler');
+		parent::__construct('hsischeduler');
 		// $this->param['htmlhead'] .= $this->insert_head_js();
 	}	
 		

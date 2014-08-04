@@ -48,6 +48,12 @@ class Controller_Hndshkif_Dbreqs extends Controller
 				$RESULT	= $this->upload_filecount();
 				print $RESULT;
 			break;
+			
+			case 'dailydlbatches':
+				$date = $_REQUEST['date'];
+				if(isset($_REQUEST['f'])){$f = $_REQUEST['f'];} else {$f = "default";}
+				$RESULT	= $this->get_daily_dl_batches($date,$f);
+			break;
 		}
 	}
 	
@@ -116,5 +122,13 @@ class Controller_Hndshkif_Dbreqs extends Controller
 		$count_arr = array("count"=>$i);
 		return json_encode($count_arr);
     }
+    
+	function get_daily_dl_batches($date,$f="default")
+	{
+		$table = "hsi_dlorderbatchs";
+		$querystr	= sprintf('SELECT batch_id FROM  WHERE product_batch_date="%s"',$table,$date);
+		$result		= $this->sitedb->execute_select_query($querystr);
+		return json_encode($result);
+	}
 
 } // End Hndshkif_Dbreqs

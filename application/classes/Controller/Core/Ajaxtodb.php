@@ -626,6 +626,8 @@ class Controller_Core_Ajaxtodb extends Controller
 			$firstpass = false;
 		}
 		$RESULT .='</tbody>'."\n".'</table>'."\n";
+		/*
+		
 		$RESULT .= <<<_TEXT_
 		<script>
 			$(
@@ -637,6 +639,7 @@ class Controller_Core_Ajaxtodb extends Controller
 			);
 		</script>
 _TEXT_;
+		*/
 		print $RESULT;
 	}
 	

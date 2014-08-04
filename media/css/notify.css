@@ -1,4 +1,4 @@
-#notify-container { border: #000 solid 1px; background: #ebf2f9; margin: 1px 0px 0px 0px; padding: 5px 10px 25px 10px; }
+#notify-container { border: #000 solid 1px; background: #ebf2f9; margin: 1px 0px 0px 0px; padding: 5px 10px 32px 10px; }
 #notify-label { 
 	border: green solid 0px;  font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; 
 	color: #0000ad; font-size: 1em; font-weight: bold; text-align: left;
@@ -11,4 +11,18 @@
     color: transparent; font-size: 2.5em; font-weight: bold; text-align: center;
     font-family: "courier new"; line-height: 1.5em;
 	float: left;
+}
+
+.notify-label {
+    text-indent: -15px;
+}
+.notify-checkbox {
+    width: 13px;
+    height: 13px;
+    padding: 5px 0px 0px 0px;
+    margin:0;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+    *overflow: hidden;
 }

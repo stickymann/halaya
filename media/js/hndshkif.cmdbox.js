@@ -1,6 +1,8 @@
 var bgcolor = ["green","red","black"];
 var filecount = -2;
+var lastfilecount = 0;
 var timeout = 5000;
+
 
 $(document).ready(function()
 {
@@ -47,6 +49,17 @@ var cmdbox = new function()
 			$('#notify-circle').css({ 'background': bgcolor[2] });
 			$('#notify-circle').css({ 'color': "white" });
 		}
+		
+		if( filecount != lastfilecount && filecount > 0 )
+		{
+			if($('#autorefresh').attr('checked')) 
+			{
+				window.open("hndshkif_orders_dlorderlastreport","input");
+				lastfilecount = filecount;
+			}
+		}
+		
+		if( filecount == 0 ) { lastfilecount = 0; }
 	}
 	
 	this.updateReadyForUploadFileCount = function()
