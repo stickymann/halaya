@@ -42,6 +42,7 @@ class HSIConfig
 				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = sprintf('%s',$cfg->folders->current_export); }
 				if($cfg->folders->archive_import) { $this->hsiconfig['archive_import'] = sprintf('%s',$cfg->folders->archive_import); }
 				if($cfg->folders->archive_export) { $this->hsiconfig['archive_export'] = sprintf('%s',$cfg->folders->archive_export); }
+				if($cfg->folders->archive_log) 	  { $this->hsiconfig['archive_log']    = sprintf('%s',$cfg->folders->archive_log); }
 				
 				//tables
 				if($cfg->tables->tb_orders) { $this->hsiconfig['tb_orders'] = sprintf('%s',$cfg->tables->tb_orders); }

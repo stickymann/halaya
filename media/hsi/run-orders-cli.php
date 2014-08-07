@@ -12,9 +12,18 @@
  */
 
 require_once(dirname(__FILE__).'/orderops.php');
+require_once(dirname(__FILE__).'/exportfileops.php');
 
 $auto = true;
 $orderops = new OrderOps();
-$orderops->update_orders($auto);
-
+$meta = $orderops->update_orders($auto);
+if( $meta['total_inserts'] > 0 )
+{
+	$exportfileops = new ExportFileOps();
+	$exportfileops->create_exportfile($meta['batch_id'],$auto);
+	
+	//$printerwrite = new PrinterWriteOps();
+	//$printerwrite->print_batch($meta['batch_id'],$auto);
+	//$printerwrite->print_order($order_id,$auto);
+}
 ?>

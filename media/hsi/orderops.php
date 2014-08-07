@@ -19,6 +19,7 @@ class OrderOps
 	public $cfg 	= null;
 	public $dbops 	= null;
 	public $curlops = null;
+	private $config = null;
 	private $orders_table = "";
 	private $dlorderbatchs_tb_live = "";
 	private $idfield = "id";
@@ -28,12 +29,12 @@ class OrderOps
 	public function __construct()
 	{
 		$this->cfg		= new HSIConfig();
-		$config 		= $this->cfg->get_config();
-		$this->appurl	= $config['appurl'];
-		$this->dbops	= new DbOps($config);
-		$this->curlops 	= new CurlOps($config);
-		$this->orders_table = $config['tb_orders'];
-		$this->dlorderbatchs_tb_live = $config['tb_dlorderbatchs'];
+		$this->config 	= $this->cfg->get_config();
+		$this->appurl	= $this->config['appurl'];
+		$this->dbops	= new DbOps($this->config);
+		$this->curlops 	= new CurlOps($this->config);
+		$this->orders_table = $this->config['tb_orders'];
+		$this->dlorderbatchs_tb_live = $this->config['tb_dlorderbatchs'];
 	}
 	
 	private function process_orders_xml($xmldata,$auto,$type="string")
@@ -215,13 +216,15 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 		$RESULT .= sprintf("Fail list : %s<br>",$meta['faillist']);
 		$RESULT .= sprintf("Successful Orders : %s<br><hr>",$meta['total_inserts']);
 		$total_inserts = $total_inserts + $meta['total_inserts'];
-	
+				
 		$total_count = $meta['total_count']; 
 		$total_failed = $total_count - $total_inserts;
 //$RESULT .= sprintf('<b>Summary</b><br>Total Processed : %s, Total Refreshed : %s, Failed : %s<br><hr>',$total_count,$total_failed,$total_inserts);
 		$RESULT .= sprintf("<b>Summary</b><br>Total Download : %s",$total_count);
 		if( $total_inserts > 0 ) { $this->write_logfile($meta['batch_id'],$RESULT); };
-		return $RESULT;
+		
+		$meta['result'] = $RESULT;
+		return $meta;
 	}
 
 	public function write_logfile($batch_id,$logtext)
@@ -231,7 +234,7 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 		$logtext = str_replace("</b>","]",$logtext);
 		$logtext = str_replace("<hr>","---------- ---------- ---------- ----------\r\n",$logtext);
 		
-		$dir = '/shazam/hsi/current/export';  
+		$dir = $this->config['archive_log'];  
 		$filename = sprintf("%s/%s.log.txt",$dir,$batch_id);
 		
 		$oldumask = umask(0);
