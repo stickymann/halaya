@@ -88,4 +88,9 @@ class FileOps
 		}
 		return $datafixed;
 	}
+	
+	public function delete_file($filepath)
+	{
+		if(file_exists($filepath)){ unlink($filepath); }
+	}
 }

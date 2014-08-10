@@ -27,6 +27,9 @@
 <tb_schedulers>hsi_schedulers</tb_schedulers>
 <tb_pidregs>_hsi_pids</tb_pidregs>
 </tables>
+<printers>
+<picklist>TSP800II</picklist>
+</printers>
 <extprogs>
 <scheduler>/shazam/www/hndshkif/media/hsi/hndshkifd.php</scheduler>
 </extprogs>

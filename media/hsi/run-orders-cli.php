@@ -13,6 +13,7 @@
 
 require_once(dirname(__FILE__).'/orderops.php');
 require_once(dirname(__FILE__).'/exportfileops.php');
+require_once(dirname(__FILE__).'/printerwriteops.php');
 
 $auto = true;
 $orderops = new OrderOps();
@@ -22,8 +23,8 @@ if( $meta['total_inserts'] > 0 )
 	$exportfileops = new ExportFileOps();
 	$exportfileops->create_exportfile($meta['batch_id'],$auto);
 	
-	//$printerwrite = new PrinterWriteOps();
-	//$printerwrite->print_batch($meta['batch_id'],$auto);
-	//$printerwrite->print_order($order_id,$auto);
+	$printerwrite = new PrinterWriteOps();
+	$printerwrite->create_batch_picklists($meta['batch_id'],$auto);
+	$printerwrite->process_pdf_queue();
 }
 ?>

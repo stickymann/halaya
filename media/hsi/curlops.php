@@ -26,7 +26,7 @@ class CurlOps
 	{
 		$curl = curl_init($url);
 //print "<b>[DEBUG]---></b> "; print($url); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
-		curl_setopt($curl, CURLOPT_VERBOSE, 1);
+		curl_setopt($curl, CURLOPT_VERBOSE, 0);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
 		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
