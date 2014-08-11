@@ -60,7 +60,9 @@ class Controller_Hndshkif_Dbreqs extends Controller
 	function scheduler_start()
 	{
 		$scheduler = new ProcOps();
-		$status_arr = $scheduler->runcmd("scheduler",$scheduler->scheduler_cmd);
+		$cmd = $scheduler->scheduler_cmd." -t hsi";
+		$scheduler->set_db_cmdstr($cmd);
+		$status_arr = $scheduler->runcmd("scheduler",$cmd);
 		return json_encode($status_arr);
 	}
 	
