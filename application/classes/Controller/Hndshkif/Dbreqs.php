@@ -54,6 +54,17 @@ class Controller_Hndshkif_Dbreqs extends Controller
 				if(isset($_REQUEST['f'])){$f = $_REQUEST['f'];} else {$f = "default";}
 				$RESULT	= $this->get_daily_dl_batches($date,$f);
 			break;
+			
+			case 'dynacombo':
+				$RESULT	= $this->dynacombo();
+				print $RESULT;
+			break;
+			
+			case 'picklistprint':
+				$order_id = $_REQUEST['order_id'];
+				$RESULT	= $this->picklistprint($order_id);
+				print $RESULT;
+			break;
 		}
 	}
 	
@@ -128,9 +139,52 @@ class Controller_Hndshkif_Dbreqs extends Controller
 	function get_daily_dl_batches($date,$f="default")
 	{
 		$table = "hsi_dlorderbatchs";
-		$querystr	= sprintf('SELECT batch_id FROM  WHERE product_batch_date="%s"',$table,$date);
+		$querystr	= sprintf('SELECT batch_id FROM %s WHERE product_batch_date="%s"',$table,$date);
 		$result		= $this->sitedb->execute_select_query($querystr);
 		return json_encode($result);
+	}
+	
+	function dynacombo()
+	{
+		$sid  	= $_REQUEST['sid'];
+		$chfunc = $_REQUEST['chfunc'];
+		$table  = $_REQUEST['table'];
+		$rfield = $_REQUEST['rfield'];
+		$sfield = $_REQUEST['sfield'];
+		$sval   = $_REQUEST['sval'];
+		$querystr = sprintf('SELECT DISTINCT %s FROM %s WHERE %s="%s"',$rfield,$table,$sfield,$sval);
+		$result	  = $this->sitedb->execute_select_query($querystr);
+		//print_r($result);
+		$count = 0;
+		$HTML = sprintf('<select id="%s" name="%s" size="5" multiple>',$sid,$sid)."\n";
+		foreach($result as $key => $value)
+		{
+			//$row = $value[;
+			$HTML .= sprintf('<option value="%s">%s</option>',$value->$rfield,$value->$rfield)."\n";
+			$count++;
+		}
+		$HTML .= "</select>"."\n";
+		$HTML .= sprintf('<div style="padding: 3px 0px 0px 0px; font-weight: bold;">Total Batches: %s</div>',$count)."\n";
+		$HTML .= sprintf('<script>$("#%s").change(function() { %s(); });</script>',$sid,$chfunc);
+		return $HTML;
+	}
+		
+	function picklistprint($order_id)
+	{
+		require_once('media/hsi/hsiconfig.php');
+		require_once('media/hsi/printerwriteops.php');
+		
+		$this->cfg = new HSIConfig();		
+		$config    = $this->cfg->get_config();
+		$printer = $config['prn_picklist'];
+		
+		$printerwrite = new PrinterWriteOps();
+		$filename = $printerwrite->create_order_picklist($order_id,true);
+				
+		$cmd = sprintf("lpr -r -P %s %s",$printer,$filename);
+		exec($cmd ,$op);
+		$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
+		if( $this->sitedb->execute_delete_query($querystr) ) { /* wait for deletions*/ } 
 	}
 
 } // End Hndshkif_Dbreqs

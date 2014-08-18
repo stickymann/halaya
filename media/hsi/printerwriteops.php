@@ -75,6 +75,10 @@ class PrinterWriteOps
 							$querystr = sprintf('SELECT description,availunits FROM %s WHERE id = "%s"',$table,$sku);
 							$result   = $this->dbops->execute_select_query($querystr);
 							$description = $result[0]['description'];
+							if( strlen($description) > 40 )
+							{
+								$rowcount++;
+							}
 							$availunits	 = $result[0]['availunits'];
 							$HTML_TABLE_ROWS .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
 							$rowcount++;
@@ -91,8 +95,8 @@ class PrinterWriteOps
 				$HTML .= "</table>\n";
 				$data['orderlines_table'] = $HTML;
 				$data['rowcount'] = $rowcount;
-				$this->write_pdf($data);
-			
+				$pdffile = $this->write_pdf($data,$auto);
+				return $pdffile;
 			}
 		catch (Exception $e) 
 			{
@@ -101,7 +105,7 @@ class PrinterWriteOps
 			}
 	}
 	
-	public function write_pdf($data)
+	public function write_pdf($data,$auto=false)
 	{
 		$line_height = 7; //mm
 		$page_width = 110; //mm
@@ -212,11 +216,21 @@ _HTML_;
 			}
 		}
 		usleep(1000000);
-		$pdf->Output($pdffile, 'F');
+	
+		if( $auto )
+		{
+			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$this->config['prn_picklist'],"NEW");
+			$pdf->Output($pdffile, 'F');
+		}
+		else
+		{
+			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$this->config['prn_picklist'],"PRINTED");
+			$pdf->Output($pdffile, 'I');
+		}
 		//add to pdf_queue for printing
-		$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$this->config['prn_picklist'],"NEW");
-//print $querystr."\n";
 		$this->dbops->execute_non_select_query($querystr);
+		
+		return $pdffile;
 	}
 	
 	public function process_pdf_queue()
@@ -259,7 +273,7 @@ _HTML_;
 						break;
 						
 						case "SCREEN":
-							$querystr = sprintf('UPDATE %s SET status="SCREEN" WHERE filename="%s"',"_hsi_printq",$filename);
+							$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
 //print $querystr."\n";
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;
@@ -268,7 +282,7 @@ _HTML_;
 							$cmd = sprintf("lpr -r -P %s %s",$printer,$filename);
 //print $cmd."\n";							
 							exec($cmd ,$op);
-							$querystr = sprintf('UPDATE %s SET status="SCREEN" WHERE filename="%s"',"_hsi_printq",$filename);
+							$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
 //print $querystr."\n";
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;

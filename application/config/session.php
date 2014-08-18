@@ -3,7 +3,7 @@
 return array(
 	'cookie' => array(
 		'name' => 'aX53eT97Yk',
-		'lifetime' => 28800,
+		'lifetime' => 1314000,
 		'encrypted' => FALSE,
 	),
 );
