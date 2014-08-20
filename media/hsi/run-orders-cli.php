@@ -12,19 +12,20 @@
  */
 
 require_once(dirname(__FILE__).'/orderops.php');
-require_once(dirname(__FILE__).'/exportfileops.php');
 require_once(dirname(__FILE__).'/printerwriteops.php');
-
+require_once(dirname(__FILE__).'/orderentryops.php');
+	
 $auto = true;
 $orderops = new OrderOps();
 $meta = $orderops->update_orders($auto);
 if( $meta['total_inserts'] > 0 )
 {
-	$exportfileops = new ExportFileOps();
-	$exportfileops->create_exportfile($meta['batch_id'],$auto);
-	
 	$printerwrite = new PrinterWriteOps();
 	$printerwrite->create_batch_picklists($meta['batch_id'],$auto);
 	$printerwrite->process_pdf_queue();
+	
+	$orderentry = new OrderEntryOps();
+	$orderentry->create_batch_entry($meta['batch_id'],$auto);
+	$orderentry->process_orderentry_files($meta['batch_id'],$auto);
 }
 ?>

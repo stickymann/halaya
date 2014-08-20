@@ -93,4 +93,16 @@ class FileOps
 	{
 		if(file_exists($filepath)){ unlink($filepath); }
 	}
-}
+	
+	public function write_file($filepath,$filedata)
+	{
+		if( $handle = fopen($filepath, 'w') ) 
+		{
+			fwrite($handle, $filedata);
+			fclose($handle);
+			return true;
+		}
+		return false;
+	}
+
+} //End FileOps

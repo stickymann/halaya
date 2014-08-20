@@ -101,9 +101,13 @@ class Controller_Hndshkif_Dbreqs extends Controller
 	
 	function upload_filecount()
 	{
-	    $dir = '/shazam/hsi/current/export';  //default export dir
+	    require_once('media/hsi/hsiconfig.php');
+		$this->cfg = new HSIConfig();		
+		$config    = $this->cfg->get_config();
+	    $dir = $config['current_export'];
 	    $i = 0; 
 		
+		/* //alternative method for getting order entry files
 		$param = $this->sitedb->get_controller_params("interfaceconfiguration");
 		$querystr	= sprintf('SELECT config_xml FROM %s WHERE config_id ="%s"',$param['tb_live'],"DEFAULT");
 		if( $result	= $this->sitedb->execute_select_query($querystr) )
@@ -118,6 +122,7 @@ class Controller_Hndshkif_Dbreqs extends Controller
 			}
 			catch (Exception $e) { }
 		}
+		*/
 		
 		try
 		{

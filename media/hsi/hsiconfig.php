@@ -37,6 +37,9 @@ class HSIConfig
 				if($cfg->handshake->appurl) { $this->hsiconfig['appurl'] = sprintf('%s',$cfg->handshake->appurl); }
 				if($cfg->handshake->apikey) { $this->hsiconfig['hs_apikey'] = sprintf('%s',$cfg->handshake->apikey); }
 				
+				//tax
+				if($cfg->tax->vat) { $this->hsiconfig['vat'] = sprintf('%s',$cfg->tax->vat); } else { $this->hsiconfig['vat'] = 0; }
+								
 				//folders
 				if($cfg->folders->current_import) { $this->hsiconfig['current_import'] = sprintf('%s',$cfg->folders->current_import); }
 				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = sprintf('%s',$cfg->folders->current_export); }

@@ -55,6 +55,7 @@ var cmdbox = new function()
 			if($('#autorefresh').attr('checked')) 
 			{
 				window.open("hndshkif_orders_dlorderlastreport","input");
+				window.open("hndshkif_orders_dlorderlastreport/customfilter","enquiry");
 				lastfilecount = filecount;
 			}
 		}
