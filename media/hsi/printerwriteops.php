@@ -237,9 +237,8 @@ _HTML_;
 	{
 		//delete "PRINTED" from queue
 		$querystr = sprintf('DELETE FROM %s WHERE status="PRINTED"',"_hsi_printq");
-//print $querystr."\n";
-		if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
-		
+		if( $this->dbops->execute_non_select_query($querystr) ) {/* wait for deletions*/ } 
+				
 		//get print_mode
 		$querystr = sprintf('SELECT print_mode FROM %s WHERE config_id="DEFAULT"',"hsi_configs");
 		if( $result = $this->dbops->execute_select_query($querystr) )
@@ -259,31 +258,31 @@ _HTML_;
 						case "NONE":
 							$this->fileops->delete_file($filename);
 							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
-//print $querystr."\n";
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;
 						
 						case "PRINTER":
 							$cmd = sprintf("lpr -r -P %s %s",$printer,$filename);
-//print $cmd."\n";							
 							exec($cmd ,$op);
 							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
-//print $querystr."\n";
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;
 						
 						case "SCREEN":
-							$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
-//print $querystr."\n";
+							//$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
+							//if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for update*/ } 
+							
+							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
+							$this->fileops->delete_file($filename);
 						break;
 						
 						case "BOTH":
 							$cmd = sprintf("lpr -r -P %s %s",$printer,$filename);
-//print $cmd."\n";							
 							exec($cmd ,$op);
-							$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
-//print $querystr."\n";
+							//$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
+							//if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for update*/ } 
+							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;
 					}

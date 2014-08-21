@@ -49,6 +49,8 @@ class OrderEntryOps
 	
 	public function create_batch_entry($batch_id,$auto=false)
 	{
+$debugline = sprintf("%s \t %s \t %s \t %s \t %s \t %s \t %s\n","daceasy_id","sku   ","tax","unitprice","custprice","availunits","description");
+print $debugline;	
 		$querystr = sprintf('SELECT id FROM %s WHERE batch_id = "%s"',"hsi_orders",$batch_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		foreach($result as $key => $value)
@@ -72,6 +74,7 @@ class OrderEntryOps
 		$exist_NTXHDR = false;
 		$count_taxhdr = -1;
 		$count_ntxhdr = -1;
+		$taxable = "";
 		
 		//parse xml orders
 		try
@@ -85,7 +88,8 @@ class OrderEntryOps
 						$qty = sprintf('%s',$row->qty);
 						$table = "hsi_inventorys";
 						$istaxable = 0; $vat = 0; 
-												
+						$taxable = "";
+													
 						//line item exist inventory
 						if( $this->dbops->record_exist($table,"id",$sku) )
 						{
@@ -97,8 +101,7 @@ class OrderEntryOps
 							$availunits = $result[0]['availunits'];
 							$taxable = $result[0]['taxable'];
 							$unitprice = $result[0]['unitprice'];
-$debugline = sprintf("%s \t %s \t %s \t %s\n",$sku,$taxable,$availunits,$description);
-print $debugline;
+							$customer_price = 0;
 							
 							//line item in stock
 							if( $availunits > 0 )
@@ -110,28 +113,22 @@ print $debugline;
 									$count_orderlines = $count_ntxhdr;
 									if( !$exist_NTXHDR )
 									{
-										$this->arr_NTXHDR = $this->addline_hdr($this->arr_NTXHDR,$customer,$auto_order_id);
-										$this->arr_NTXADR = $this->addline_adr($this->arr_NTXADR,$auto_order_id);
 										$exist_NTXHDR = true;
 									}
-									//$customer_price = get_customer_price($sku,$unitprice,0);
 								}
 								else 
 								{ 
 									$this->count_TAXDTL++;
 									$count_taxhdr++;
 									$count_orderlines = $count_taxhdr;
+									$istaxable = 1; $vat = $this->config['vat'];
 									if( !$exist_TAXHDR )
 									{
-										$this->arr_TAXHDR = $this->addline_hdr($this->arr_TAXHDR,$customer,$auto_order_id);
-										$this->arr_TAXADR = $this->addline_adr($this->arr_TAXADR,$auto_order_id);
 										$exist_TAXHDR = true;
-										$vat = $this->config['vat'];
-										$istaxable = 1;
 									}
 								}
 								
-								$customer_price = $this->get_customer_price($sku,$unitprice,$vat);
+								$customer_price = $this->get_customer_price($customer['tax_id'],$sku,$unitprice);
 								
 								$arr[0]  = sprintf('"%s"',$auto_order_id);
 								$arr[1]  = sprintf('%s',$count_orderlines);
@@ -143,7 +140,7 @@ print $debugline;
 								$arr[7]  = sprintf('"%s"',$customer['tax_id']);
 								$arr[8]  = sprintf('"%s"',"EACH"); //default to "EACH", can also be "LENGTH" 
 								$arr[9]  = sprintf('"%s"',$istaxable); 
-								$arr[10] = sprintf('"%s"',number_format($vat*100,3 )); 
+								$arr[10] = sprintf('"%s"',number_format($vat*100,2,'.','')); 
 								$arr[11] = sprintf('%s',"1"); //unknown, use default value 
 								$arr[12] = sprintf('%s',"1"); //unknown, use default value 
 								$arr[13] = sprintf('%s',"Y"); //unknown, use default value 
@@ -156,10 +153,10 @@ print $debugline;
 								$arr[20] = sprintf('%s',"0"); //unknown, use default value 
 								$arr[21] = sprintf('%s',$qty);
 								$arr[22] = sprintf('%s',$customer_price);
-								$arr[23] = sprintf('%s',number_format(0,2)); 
-								$arr[24] = sprintf('%s',number_format(0,2));
-								$arr[25] = sprintf('%s',number_format($customer_price * $qty,2)); //line total
-								$arr[26] = sprintf('%s',number_format($customer_price * $qty * $vat,2)); //line tax total
+								$arr[23] = sprintf('%s',number_format(0,2,'.','')); 
+								$arr[24] = sprintf('%s',number_format(0,2,'.',''));
+								$arr[25] = sprintf('%s',number_format($customer_price * $qty,2,'.','')); //line total
+								$arr[26] = sprintf('%s',number_format($customer_price * $qty * $vat,2,'.','')); //line tax total
 								$arr[27] = sprintf('%s',"0"); //unknown, use default value 
 								$arr[28] = sprintf('%s',"0"); //unknown, use default value 
 								$arr[29] = sprintf('%s',str_replace("-","",$customer['cdate'])); //order date
@@ -168,26 +165,32 @@ print $debugline;
 								$arr[32] = sprintf('%s',""); //unknown, use default value 
 								
 								$line = join(',',$arr);
+								
+								//Add order lines here
 								if( $taxable == "N" ) 
 								{ 
 									array_push($this->arr_NTXDTL, $line);	
-									//$arr_NTXDTL;
 								}
 								else 
 								{ 
 									array_push($this->arr_TAXDTL, $line);	
-									//$arr_TAXDTL;
 								}
-							
-							
-							
-							
-							
-							
-							
 							}
+$debugline = sprintf("%s \t %s \t %s \t %s \t %s \t %s \t %s\n",$customer['tax_id'],$sku,$taxable,str_pad($unitprice,8," ",STR_PAD_LEFT),str_pad(number_format($customer_price,2,'.',''),8," ",STR_PAD_LEFT),str_pad($availunits,8," ",STR_PAD_LEFT),$description);
+print $debugline;						
 						}
 					}
+				}
+				//Add order main info here, summation calculations can only be done after rows/lines are processed
+				if( $taxable == "N" ) 
+				{ 
+					$this->arr_NTXHDR = $this->addline_hdr($this->arr_NTXHDR,$customer,$auto_order_id);
+					$this->arr_NTXADR = $this->addline_adr($this->arr_NTXADR,$auto_order_id);								
+				}
+				else
+				{									
+					$this->arr_TAXHDR = $this->addline_hdr($this->arr_TAXHDR,$customer,$auto_order_id);
+					$this->arr_TAXADR = $this->addline_adr($this->arr_TAXADR,$auto_order_id);
 				}
 			}
 		catch (Exception $e) 
@@ -197,11 +200,44 @@ print $debugline;
 			}
 	}
 	
-	private function get_customer_price($sku,$unitprice,$vat)
+	private function get_customer_price($daceasy_id,$sku,$unitprice)
 	{
 		//IMPLEMENT BUSINESS RULES HERE!
 		
-		return $unitprice;
+		if( $sku >= 100010 && $sku <= 203604)
+		{ 
+			//Apply discounts
+			$PriceDefault 	= $unitprice; 			//Price2 (02)
+			$PriceA			= $PriceDefault * .95; 	//Price1 (01)
+			$PriceB			= $PriceA * .95; 		//PriceBase (05)
+			$PriceC			= $PriceB * .98; 		//PriceALR (07)
+		
+			$len =  strlen($daceasy_id);
+			if( $len == 10 )
+			{
+				//get customer group id, last 2 digits
+				$customer_group = substr($daceasy_id,8,2);
+				switch( $customer_group )
+				{
+						case "01":
+							$unitprice = $PriceA;
+						break;
+					
+						case "02":
+							$unitprice = $PriceDefault;
+						break;
+						
+						case "05":
+							$unitprice = $PriceB;
+						break;
+						
+						case "07":
+							$unitprice = $PriceC;
+						break;
+				}
+			}
+		}
+		return round($unitprice,2);
 	}
 		
 	private function addline_hdr($arr_line,$arr_hdr,$auto_order_id)
