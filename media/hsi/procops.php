@@ -19,14 +19,21 @@ class ProcOps
 	private $command;
 	private $tb_pidregs;
 	public $scheduler_cmd;
+	public $db_cmdstr;
 		
     public function __construct($cl=false)
     {
         $this->cfg		= new HSIConfig();
 		$config 		= $this->cfg->get_config();
 		$this->dbops	= new DbOps($config);
-		$this->scheduler_cmd = "php ".$config['scheduler']." -t hsi";
+		$this->scheduler_cmd = "php ".$config['scheduler'];
 		$this->tb_pidregs = $config['tb_pidregs'];
+		$this->db_cmdstr = "";
+	}
+    
+    public function set_db_cmdstr($cmdstr)
+    {
+		$this->db_cmdstr  = $cmdstr;
 	}
     
     public function runcmd($id,$cmd=false)
@@ -46,7 +53,7 @@ class ProcOps
 		
 		$arr['id'] = $id;
 		$arr['pid'] = $this->pid;
-		$arr['command'] = $this->command;
+		$arr['command'] = $this->db_cmdstr;
 			
 		if( $this->dbops->record_exist($this->tb_pidregs, "id", $arr['id']) )
 		{ 

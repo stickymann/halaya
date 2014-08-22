@@ -26,11 +26,14 @@ class HSIDaemon
 		$this->tb_pidregs = $config['tb_pidregs'];
 	}
     
-    public function register_pid()
+    public function register_pid($type="")
     {
 		$this->procops = new ProcOps();
+		$cmdstr = "php ".__FILE__." -t ".$type;
+		$this->procops->set_db_cmdstr($cmdstr);
 		$this->procops->runcmd("scheduler");
     }
+    
 } // End HSIDaemon
 	
 	$fail_message = sprintf("Run with: \n\t php %s -t %s\n\n",__FILE__,"cli");
@@ -46,9 +49,9 @@ class HSIDaemon
 	else
 	{
 		$daemon = new HSIDaemon();
-		if( $options["t"] == "cli" )
+		if( $options["t"] == "cli" || $options["t"] == "onboot")
 		{
-			$daemon->register_pid();
+			$daemon->register_pid($options["t"]);
 		}
 		elseif($options["t"] == "hsi") { /* do nothing */}
 		else { die($fail_message); }
@@ -69,7 +72,7 @@ class HSIDaemon
 			{
 				$cmd = sprintf('%s %s',$record['fullpath'],$record['args']);
 			}
-print "[DEBUG]---> "; print $cmd." | ".$record['crontab']; print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+//print "[DEBUG]---> "; print $cmd." | ".$record['crontab']; print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 			
 			$scheduler->addTask($cmd, $record['crontab']);
 		}

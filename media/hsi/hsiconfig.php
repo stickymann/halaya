@@ -37,11 +37,15 @@ class HSIConfig
 				if($cfg->handshake->appurl) { $this->hsiconfig['appurl'] = sprintf('%s',$cfg->handshake->appurl); }
 				if($cfg->handshake->apikey) { $this->hsiconfig['hs_apikey'] = sprintf('%s',$cfg->handshake->apikey); }
 				
+				//tax
+				if($cfg->tax->vat) { $this->hsiconfig['vat'] = sprintf('%s',$cfg->tax->vat); } else { $this->hsiconfig['vat'] = 0; }
+								
 				//folders
 				if($cfg->folders->current_import) { $this->hsiconfig['current_import'] = sprintf('%s',$cfg->folders->current_import); }
 				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = sprintf('%s',$cfg->folders->current_export); }
 				if($cfg->folders->archive_import) { $this->hsiconfig['archive_import'] = sprintf('%s',$cfg->folders->archive_import); }
 				if($cfg->folders->archive_export) { $this->hsiconfig['archive_export'] = sprintf('%s',$cfg->folders->archive_export); }
+				if($cfg->folders->archive_log) 	  { $this->hsiconfig['archive_log']    = sprintf('%s',$cfg->folders->archive_log); }
 				
 				//tables
 				if($cfg->tables->tb_orders) { $this->hsiconfig['tb_orders'] = sprintf('%s',$cfg->tables->tb_orders); }
@@ -52,13 +56,16 @@ class HSIConfig
 				if($cfg->tables->tb_schedulers) { $this->hsiconfig['tb_schedulers'] = sprintf('%s',$cfg->tables->tb_schedulers); }
 				if($cfg->tables->tb_pidregs) { $this->hsiconfig['tb_pidregs'] = sprintf('%s',$cfg->tables->tb_pidregs); }
 				
+				//printers
+				if($cfg->printers->picklist) { $this->hsiconfig['prn_picklist'] = sprintf('%s',$cfg->printers->picklist); } else { $this->hsiconfig['prn_picklist'] = "PDF"; }
+				
 				//external programs
 				if($cfg->extprogs->scheduler) { $this->hsiconfig['scheduler'] = sprintf('%s',$cfg->extprogs->scheduler); }
 				
 			}
 		catch (Exception $e) 
 			{
-				$desc='Configuration File Error : '.$e->getMessage();
+				$desc = 'Configuration File Error : '.$e->getMessage();
 				print $desc;
 			}
 	}

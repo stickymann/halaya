@@ -187,7 +187,7 @@ class SchedulerDate {
 
 		$this->parse($raw);
 
-		print_r($this->day);
+		//print_r($this->day);
 	}
 
 	function nowMatches(){

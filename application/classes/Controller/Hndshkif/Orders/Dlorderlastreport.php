@@ -16,6 +16,9 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 	public function __construct()
     {
 		parent::__construct("dlorderlastreport_rpt");
+		$this->rptparam['htmlhead'] .= HTML::script( $this->randomize('media/js/hndshkif.dlorderlastreport.js') );
+		$this->pdfbuilder = "hndshkif_orders_picklistpdfbuilder";
+		$this->pdftoprinter = "hndshkif_orders_picklisttoprinter";
 	}	
 		
 	public function action_index()
@@ -31,12 +34,27 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 
 	public function report_run()
 	{
-		$batch_table = "hsi_dlorderbatchs";
-		$querystr = sprintf('SELECT batch_id FROM %s ORDER BY batch_id DESC LIMIT 1', $batch_table);
-		if( $batchresult = $this->sitemodel->execute_select_query($querystr) )
+		if( isset($_REQUEST['batch_id']) )
+		{ 
+			$batch_id = $_REQUEST['batch_id']; 
+		} 
+		else 
 		{
-			$val = (array) $batchresult[0];
-			$batch_id = $val['batch_id'];
+			$batch_table = "hsi_dlorderbatchs";
+			$querystr = sprintf('SELECT batch_id FROM %s ORDER BY batch_id DESC LIMIT 1', $batch_table);
+			if( $batchresult = $this->sitemodel->execute_select_query($querystr) )
+			{
+				$val = (array) $batchresult[0];
+				$batch_id = $val['batch_id'];
+			}
+			else
+			{
+				$batch_id != "";
+			}
+		}
+	
+		if( $batch_id != "")
+		{
 			$orders_table = 'hsi_orders';
 			$HTML =""; $RESULT="";
 			$order_count = 0;
@@ -50,16 +68,47 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 				$s2 = "border:1px solid silver; font-weight:bold; padding:2px; background:#ebf2f9; color:black; width:120px;";
 				$s3 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9; color:black; width:150px;";
 				$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9; color:black; width:450px;";
-			
+				
+				$picklis_print = false;
+				$querystr = sprintf('SELECT print_mode FROM %s WHERE config_id="DEFAULT"',"hsi_configs");
+				if( $mode = $this->sitemodel->execute_select_query($querystr) )
+				{
+					$picklist_print = true;
+				}
+				
+				
 				foreach($result as $index => $record)
 				{
-					$record = (array) $record;
+					$pl_links = "";
+					$record  = (array) $record;
+					$pl_pdf  = sprintf('<a href=%sindex.php/%s/index/%s target=_blank title="Picklist PDF"><b>pdf</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";							
+					//$pl_prnt = sprintf('<a href=%sindex.php/%s/index/%s target=_blank title="Send Picklist To Printer"><b>print</b></a>',URL::base(),$this->pdftoprinter,$record['id'])."\n";							
+					$pl_prnt = sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s") title="Send Picklist To Printer"><b>print</b></a>',$record['id'])."\n";
 					
+					if($picklist_print)
+					{
+						$printmode = $mode[0]->print_mode;
+						switch($printmode)
+						{
+							case "PRINTER":
+								$pl_links = sprintf('[ %s ]',$pl_prnt);
+							break;
+							
+							case "SCREEN":
+								$pl_links = sprintf('[ %s ]',$pl_pdf); 
+							break;
+						
+							case "BOTH":
+								$pl_links = sprintf('[ %s , %s ]',$pl_pdf,$pl_prnt);
+							break;
+						}
+					}
+										
 					$RESULT .= sprintf('<div>');
 					$RESULT .= sprintf('<table style="%s">',$s1)."\n";
 					$RESULT .= sprintf('<tbody>')."\n";
 					$RESULT .= sprintf('<tr valign="top">')."\n";
-					$RESULT .= sprintf('<td style="%s">Order Id :</td><td style="%s">%s</td><td style="%s">Name :</td><td style="%s">%s</td>',$s2,$s3,$record['id'],$s2,$s4,$record['name'])."\n";
+					$RESULT .= sprintf('<td style="%s">Order Id :</td><td style="%s">%s &nbsp %s</td><td style="%s">Name :</td><td style="%s">%s</td>',$s2,$s3,$record['id'],$pl_links,$s2,$s4,$record['name'])."\n";
 					$RESULT .= sprintf('</tr>')."\n";
 					$RESULT .= sprintf('<tr valign="top">')."\n";
 					$RESULT .= sprintf('<td style="%s">Customer Id :</td><td style="%s">%s</td><td style="%s">Contact :</td><td style="%s">%s</td>',$s2,$s3,$record['customer_id'],$s2,$s4,$record['contact'])."\n";
@@ -98,12 +147,28 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 		$HTML .= '<div id="e" style="padding:5px 5px 5px 5px;">';
 		$HTML .= sprintf('<div id="rptbp" class="rpth2">Batch : %s </div>',$batch_id);
 		$HTML .= sprintf('<div style="font-size:1.2em; font-weight:bold; padding:0px 0px 5px 0px;">Total Orders : %s</div>',$order_count);
+		$PO_HTML =  $this->custom_dialog_window();
 		
-		$REPORT_HTML = $HTML.$RESULT; 
+		$REPORT_HTML = $HTML.$RESULT.$PO_HTML; 
 		$this->content->pagebody .= $REPORT_HTML;
 		$this->content->pagebody .= sprintf('<br><div>Run Date : %s<div>',$rundate);
 		$this->content->pagebody .= sprintf('<div>Run By : %s</div>',Auth::instance()->get_user()->idname);
 		$this->content->pagebody .= "</div>";
+	}
+	
+	public function custom_dialog_window()
+	{
+		$HTML = <<<_HTML_
+		<div id="chklight" class="white_content"  buttons="#chklight-buttons">
+			<div id="chkresult"></div>
+		</div>
+		<div id="chklight-buttons" style="background-color:#ebf2f9; display:none;">
+			<a href="#" class="easyui-linkbutton" onclick="javascript:window.dlorderlastreport.PrintOrder()">Print</a>
+			<a href="#" class="easyui-linkbutton" onclick="javascript:siteutils.closeDialog('chklight',false)">Close</a>
+		</div>
+		<div id="fade" class="black_overlay"></div>
+_HTML_;
+		return $HTML;
 	}
 	
 	public function  view_xml_table($key,$xml)
@@ -145,6 +210,70 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 		}
 		$HTML .= $TABLEHEADER.$TABLEROWS."\n"."</table>"."\n";
 		return $HTML;
+	}
+	
+	public function action_customfilter()
+	{
+		//$this->page_initialize();
+		$this->content	= new View($this->rptparam['view']);
+		$this->content->pageheader = "";
+		$this->content->pagebody = "";
+		$this->set_pageheader();
+				
+		$baseurl = URL::base();
+		$sid	 = "batches";
+		$chfunc	 = "dlorderlastreport.LoadBatchReport";
+		$table 	 = "hsi_dlorderbatchs";
+		$rfield	 = "batch_id";
+		$sfield	 = "batch_date";
+		$current_date = date('Y-m-d');
+				
+		//http://localhost/hndshkif/index.php/hndshkif_dbreqs?option=dynacombo&sid=batches&chfunc=dlorderlastreport.LoadBatchReport&table=hsi_dlorderbatchs&rfield=batch_id&sfield=batch_date&sval=2014-08-14
+		$baseurl = URL::base(TRUE,'http');
+		$url = sprintf('%sindex.php/hndshkif_dbreqs?option=dynacombo&sid=%s&chfunc=%s&table=%s&rfield=%s&sfield=%s&sval=%s',$baseurl,$sid,$chfunc,$table,$rfield,$sfield,$current_date);
+		$dynacombo = Controller_Core_Sitehtml::get_html_from_url($url);
+		
+		$HTML = <<<_HTML_
+<div style="font-size: 1.6em;">
+<div id="ne_ff">
+<form>
+<fieldset>
+<legend>Search Filter</legend>
+<table>
+<tr valign="top">
+	<td>Batch Date</td>
+	<td>Batch Id</td>
+</tr>
+<tr valign="top">
+	<td>
+		<input type="text" id="batch_date" size="12" value="$current_date">
+		<script type="text/javascript">
+			$(function() 
+			{
+				$('#batch_date').datepick(
+				{
+					showOnFocus: false, 
+					showTrigger: '<span class="dateicon">&nbsp&nbsp<img src="/hndshkif/media/css/calendar-blue.gif" align="absbottom">&nbsp</span>',
+					dateFormat: 'yyyy-mm-dd',
+					yearRange: '1900:c+100',
+					showAnim: '',
+					alignment: 'bottomLeft',
+					onSelect: function() { $('#batch_date').focus(); }
+				});
+			});
+		</script>
+	</td>
+	<td id="dynacombo">$dynacombo</td>
+</tr>	
+</table>
+</fieldset>
+<input type="hidden" id="controller" value="core_enquiry_orders">
+</form>
+</div>	
+</div>
+_HTML_;
+		$this->content->pagebody .= $HTML;
+		$this->set_page_content($this->rptparam['htmlhead'],$this->content);
 	}
 
 }//End Controller_Hndshkif_Orders_Dlorderlastreport
