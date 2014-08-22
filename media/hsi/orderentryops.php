@@ -10,6 +10,7 @@
  * @copyright   (c) 2014
  * @license      
  */
+ 
 require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
@@ -49,8 +50,8 @@ class OrderEntryOps
 	
 	public function create_batch_entry($batch_id,$auto=false)
 	{
-$debugline = sprintf("%s \t %s \t %s \t %s \t %s \t %s \t %s\n","daceasy_id","sku   ","tax","unitprice","custprice","availunits","description");
-print $debugline;	
+//$debugline = sprintf("%s \t %s \t %s \t %s \t %s \t %s \t %s\n","daceasy_id","sku   ","tax","unitprice","custprice","availunits","description");
+//print $debugline;	
 		$querystr = sprintf('SELECT id FROM %s WHERE batch_id = "%s"',"hsi_orders",$batch_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		foreach($result as $key => $value)
@@ -62,19 +63,24 @@ print $debugline;
 	
 	public function create_order_entry($order_id,$auto=false)
 	{
-		$querystr = sprintf('SELECT id,tax_id,name,street,city,country,orderlines,cdate FROM %s WHERE id = "%s"',"hsi_orders",$order_id);
-		$result   = $this->dbops->execute_select_query($querystr);
-		$customer = $result[0];
-		$xml = $customer['orderlines'];
+		$querystr = sprintf('SELECT id,tax_id,paymentterms,cdate,ctime,orderlines FROM %s WHERE id = "%s"',"hsi_orders",$order_id);
+		if( $result   = $this->dbops->execute_select_query($querystr) )
+		{
+			$order = $result[0];
+			$xml = $order['orderlines'];
 		
-		$this->order_count++;
-		$auto_order_id = str_pad($this->order_count, 10, "0", STR_PAD_LEFT);
-		$arr = array(); 
-		$exist_TAXHDR = false;
-		$exist_NTXHDR = false;
-		$count_taxhdr = -1;
-		$count_ntxhdr = -1;
-		$taxable = "";
+			$this->order_count++;
+			$auto_order_id = str_pad($this->order_count, 10, "0", STR_PAD_LEFT);
+			$field = array(); 
+			$exist_TAXHDR = false;
+			$exist_NTXHDR = false;
+			$total_TAXHDR = 0;
+			$total_NTXHDR = 0;
+			$total_TAXVAT = 0;
+			$total_NTXVAT = 0;
+			$count_taxhdr = -1;
+			$count_ntxhdr = -1;
+			$taxable = "";
 		
 		//parse xml orders
 		try
@@ -94,7 +100,6 @@ print $debugline;
 						if( $this->dbops->record_exist($table,"id",$sku) )
 						{
 							$querystr = sprintf('SELECT description,availunits,taxable,unitprice FROM %s WHERE id = "%s"',$table,$sku);
-//print $querystr."\n"; 							
 							$result   = $this->dbops->execute_select_query($querystr);
 							
 							$description = $result[0]['description'];
@@ -106,15 +111,20 @@ print $debugline;
 							//line item in stock
 							if( $availunits > 0 )
 							{
+								$customer_price = $this->get_customer_price($order['tax_id'],$sku,$unitprice);
 								if( $taxable == "N" ) 
 								{ 
 									$this->count_NTXDTL++;
 									$count_ntxhdr++;
 									$count_orderlines = $count_ntxhdr;
+									$total_NTXHDR = $total_NTXHDR + ($customer_price * $qty);
+									$total_NTXVAT = $total_NTXVAT + round($customer_price * $qty * $vat,2);
 									if( !$exist_NTXHDR )
 									{
+										$this->arr_NTXHDR = $this->addline_hdr($this->arr_NTXHDR,$order,$auto_order_id);
+										$this->arr_NTXADR = $this->addline_adr($this->arr_NTXADR,$auto_order_id);								
 										$exist_NTXHDR = true;
-									}
+									} 
 								}
 								else 
 								{ 
@@ -122,49 +132,51 @@ print $debugline;
 									$count_taxhdr++;
 									$count_orderlines = $count_taxhdr;
 									$istaxable = 1; $vat = $this->config['vat'];
+									$total_TAXHDR = $total_TAXHDR + ($customer_price * $qty);
+									$total_TAXVAT = $total_TAXVAT + round($customer_price * $qty * $vat,2);
 									if( !$exist_TAXHDR )
 									{
+										$this->arr_TAXHDR = $this->addline_hdr($this->arr_TAXHDR,$order,$auto_order_id);
+										$this->arr_TAXADR = $this->addline_adr($this->arr_TAXADR,$auto_order_id);
 										$exist_TAXHDR = true;
-									}
+									} 
 								}
+															
+								$field[0]  = sprintf('"%s"',$auto_order_id);
+								$field[1]  = sprintf('%s',$count_orderlines);
+								$field[2]  = sprintf('%s',"3");  
+								$field[3]  = sprintf('"%s"',$sku);
+								$field[4]  = sprintf('"%s"',$description);
+								$field[5]  = sprintf('"%s"',""); //unknown 
+								$field[6]  = sprintf('"%s"',substr($order['tax_id'],0,2)); //first two characters
+								$field[7]  = sprintf('"%s"',$order['tax_id']);
+								$field[8]  = sprintf('"%s"',"EACH"); //default to "EACH", can also be "LENGTH" 
+								$field[9]  = sprintf('"%s"',$istaxable); 
+								$field[10] = sprintf('"%s"',number_format($vat*100,2,'.','')); 
+								$field[11] = sprintf('%s',"1"); //unknown, use default value 
+								$field[12] = sprintf('%s',"1"); //unknown, use default value 
+								$field[13] = sprintf('%s',"Y"); //unknown, use default value 
+								$field[14] = sprintf('%s',"N"); //unknown, use default value 
+								$field[15] = sprintf('%s',"Y"); //unknown, use default value 
+								$field[16] = sprintf('%s',"N"); //unknown, use default value 
+								$field[17] = sprintf('%s',"");  //unknown, use default value 
+								$field[18] = sprintf('%s',$qty); 
+								$field[19] = sprintf('%s',"0"); //unknown, use default value 
+								$field[20] = sprintf('%s',"0"); //unknown, use default value 
+								$field[21] = sprintf('%s',$qty);
+								$field[22] = sprintf('%s',$customer_price);
+								$field[23] = sprintf('%s',number_format(0,2,'.','')); 
+								$field[24] = sprintf('%s',number_format(0,2,'.',''));
+								$field[25] = sprintf('%s',number_format($customer_price * $qty,2,'.','')); //line total
+								$field[26] = sprintf('%s',number_format($customer_price * $qty * $vat,2,'.','')); //line tax total
+								$field[27] = sprintf('%s',"0"); //unknown, use default value 
+								$field[28] = sprintf('%s',"0"); //unknown, use default value 
+								$field[29] = sprintf('%s',str_replace("-","",$order['cdate'])); //order date
+								$field[30] = sprintf('%s',"0"); //unknown, use default value 
+								$field[31] = sprintf('%s',"0"); //unknown, use default value 
+								$field[32] = sprintf('%s',"");  //unknown, use default value 
 								
-								$customer_price = $this->get_customer_price($customer['tax_id'],$sku,$unitprice);
-								
-								$arr[0]  = sprintf('"%s"',$auto_order_id);
-								$arr[1]  = sprintf('%s',$count_orderlines);
-								$arr[2]  = sprintf('%s',"3");  
-								$arr[3]  = sprintf('"%s"',$sku);
-								$arr[4]  = sprintf('"%s"',$description);
-								$arr[5]  = sprintf('"%s"',""); //unknown 
-								$arr[6]  = sprintf('"%s"',substr($customer['tax_id'],0,2)); //first two characters
-								$arr[7]  = sprintf('"%s"',$customer['tax_id']);
-								$arr[8]  = sprintf('"%s"',"EACH"); //default to "EACH", can also be "LENGTH" 
-								$arr[9]  = sprintf('"%s"',$istaxable); 
-								$arr[10] = sprintf('"%s"',number_format($vat*100,2,'.','')); 
-								$arr[11] = sprintf('%s',"1"); //unknown, use default value 
-								$arr[12] = sprintf('%s',"1"); //unknown, use default value 
-								$arr[13] = sprintf('%s',"Y"); //unknown, use default value 
-								$arr[14] = sprintf('%s',"N"); //unknown, use default value 
-								$arr[15] = sprintf('%s',"Y"); //unknown, use default value 
-								$arr[16] = sprintf('%s',"N"); //unknown, use default value 
-								$arr[17] = sprintf('%s',""); //unknown, use default value 
-								$arr[18] = sprintf('%s',$qty); 
-								$arr[19] = sprintf('%s',"0"); //unknown, use default value 
-								$arr[20] = sprintf('%s',"0"); //unknown, use default value 
-								$arr[21] = sprintf('%s',$qty);
-								$arr[22] = sprintf('%s',$customer_price);
-								$arr[23] = sprintf('%s',number_format(0,2,'.','')); 
-								$arr[24] = sprintf('%s',number_format(0,2,'.',''));
-								$arr[25] = sprintf('%s',number_format($customer_price * $qty,2,'.','')); //line total
-								$arr[26] = sprintf('%s',number_format($customer_price * $qty * $vat,2,'.','')); //line tax total
-								$arr[27] = sprintf('%s',"0"); //unknown, use default value 
-								$arr[28] = sprintf('%s',"0"); //unknown, use default value 
-								$arr[29] = sprintf('%s',str_replace("-","",$customer['cdate'])); //order date
-								$arr[30] = sprintf('%s',"0"); //unknown, use default value 
-								$arr[31] = sprintf('%s',"0"); //unknown, use default value 
-								$arr[32] = sprintf('%s',""); //unknown, use default value 
-								
-								$line = join(',',$arr);
+								$line = join(',',$field);
 								
 								//Add order lines here
 								if( $taxable == "N" ) 
@@ -176,21 +188,31 @@ print $debugline;
 									array_push($this->arr_TAXDTL, $line);	
 								}
 							}
-$debugline = sprintf("%s \t %s \t %s \t %s \t %s \t %s \t %s\n",$customer['tax_id'],$sku,$taxable,str_pad($unitprice,8," ",STR_PAD_LEFT),str_pad(number_format($customer_price,2,'.',''),8," ",STR_PAD_LEFT),str_pad($availunits,8," ",STR_PAD_LEFT),$description);
-print $debugline;						
+//$debugline = sprintf("%s \t %s \t %s \t %s \t %s \t %s \t %s\n",$order['tax_id'],$sku,$taxable,str_pad($unitprice,8," ",STR_PAD_LEFT),str_pad(number_format($customer_price,2,'.',''),8," ",STR_PAD_LEFT),str_pad($availunits,8," ",STR_PAD_LEFT),$description);
+//print $debugline;						
 						}
 					}
 				}
-				//Add order main info here, summation calculations can only be done after rows/lines are processed
-				if( $taxable == "N" ) 
-				{ 
-					$this->arr_NTXHDR = $this->addline_hdr($this->arr_NTXHDR,$customer,$auto_order_id);
-					$this->arr_NTXADR = $this->addline_adr($this->arr_NTXADR,$auto_order_id);								
+				//Add order totals here, summation calculations can only be inserted after rows/lines are processed
+				$size_arr_TAXHDR = sizeof($this->arr_TAXHDR);
+				$size_arr_NTXHDR = sizeof($this->arr_NTXHDR);
+				$idx_tax = $size_arr_TAXHDR - 1;
+				$idx_ntx = $size_arr_NTXHDR - 1;
+				
+				if( $idx_tax > -1 )
+				{$istaxable = 0; $vat = 0; 
+					$this->arr_TAXHDR[$idx_tax] = str_replace("%SUBTOTAL%",number_format($total_TAXHDR,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
+					$this->arr_TAXHDR[$idx_tax] = str_replace("%SALESTAX%",number_format($total_TAXVAT,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
+					$this->arr_TAXHDR[$idx_tax] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_TAXHDR[$idx_tax]); 
+					$this->arr_TAXHDR[$idx_tax] = str_replace("%VAT%"     ,number_format($vat,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 				}
-				else
-				{									
-					$this->arr_TAXHDR = $this->addline_hdr($this->arr_TAXHDR,$customer,$auto_order_id);
-					$this->arr_TAXADR = $this->addline_adr($this->arr_TAXADR,$auto_order_id);
+				
+				if( $idx_ntx > -1 )
+				{
+					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SUBTOTAL%",number_format($total_NTXHDR,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
+					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SALESTAX%",number_format($total_NTXVAT,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
+					$this->arr_NTXHDR[$idx_ntx] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_NTXHDR[$idx_ntx]); 
+					$this->arr_NTXHDR[$idx_ntx] = str_replace("%VAT%"     ,number_format($vat,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 
 				}
 			}
 		catch (Exception $e) 
@@ -198,6 +220,7 @@ print $debugline;
 				$desc = 'XML Error : '.$e->getMessage();
 				print $desc;
 			}
+		}
 	}
 	
 	private function get_customer_price($daceasy_id,$sku,$unitprice)
@@ -240,13 +263,87 @@ print $debugline;
 		return round($unitprice,2);
 	}
 		
-	private function addline_hdr($arr_line,$arr_hdr,$auto_order_id)
+	private function addline_hdr($arr_line,$order,$auto_order_id)
 	{
-		$arr[0]  = sprintf('"%s"',$auto_order_id);
-		$arr[1]  = sprintf('%s',"");
-		$arr[2]  = sprintf('%s',"");  
-		$arr[3]  = sprintf('"%s"',$arr_hdr['tax_id']);
-		$line 	 = join(',',$arr);
+		$field = array();
+		$table = "hsi_customers";
+		$querystr = sprintf('SELECT id,tax_id,name,contact,street,city,country,phone FROM %s WHERE tax_id = "%s"',$table,$order['tax_id']);
+		$result   = $this->dbops->execute_select_query($querystr);
+		$customer = $result[0];
+		
+		//get payment terms number	
+		$payment_terms = 0;
+		if( preg_match('/NET/i', $order['paymentterms']) )
+		{
+			$payment_terms = trim( str_replace("NET","",$order['paymentterms']) );
+		}
+		else if( preg_match('/P.D./i', $order['paymentterms']) )
+		{
+			$payment_terms = trim( str_replace("P.D.","",$order['paymentterms']) );
+		}
+		
+		//payment due date, add payment terms number to order date 
+		$due_date = strtotime( "+".$payment_terms." days", strtotime($order['cdate']) );
+		$payment_due_by = date("Y-m-d",$due_date);
+		
+		//get salesperson code, first 2 digits
+		$salesperson_code = substr($order['tax_id'],0,2);
+		
+		//change ctime to upload format
+		$ctime = substr( str_replace(":","",$order['ctime']),0,4 );
+			
+		$field[0]  = sprintf('"%s"',$auto_order_id);
+		$field[1]  = sprintf('%s',"");                     //Unknown Field
+		$field[2]  = sprintf('%s',"");                     //Unknown Field
+		$field[3]  = sprintf('"%s"',$order['tax_id']);     //Customer Code 
+		$field[4]  = sprintf('"%s"',$customer['name']);    //Billing Address (Line 1)
+		$field[5]  = sprintf('"%s"',$customer['contact']); //Billing Address (Line 2)
+		$field[6]  = sprintf('"%s"',$customer['street']);  //Billing Address (Line 3)
+		$field[7]  = sprintf('"%s"',$customer['city']);    //Billing Address (Line 4)
+		$field[8]  = sprintf('"%s"',"");                   //Billing Address (Line 5)
+		$field[9]  = sprintf('"%s"',"");                   //Billing Address (Line 6)
+		
+		$field[10] = sprintf('"%s"',"     -");             //Billing Address (Line 7)
+		$field[11] = sprintf('"%s"',$customer['country']); //Billing Address (Line 8)
+		$field[12] = sprintf('"%s"',$customer['phone']);	 //Billing Address (Line 9)
+		$field[13] = sprintf('"%s"',"%TAXABLE%");          //Tax
+		$field[14] = sprintf('%s',"%VAT%");                //Tax Percentage
+		$field[15] = sprintf('"%s"',$payment_terms);       //Terms                   
+		$field[16] = sprintf('%s',str_replace("-","",$order['cdate'])); //Order Date
+		$field[17] = sprintf('%s',str_replace("-","",$order['cdate'])); //Request Date
+		$field[18] = sprintf('%s',"0");                    //Ship Date
+		$field[19] = sprintf('%s',str_replace("-","",$order['cdate'])); //Early Payment Date
+		
+		$field[20] = sprintf('%s',str_replace("-","",$payment_due_by)); //Payment Due By
+		$field[21] = sprintf('%s',"0.00");                 //Early Payment Discount
+		$field[22] = sprintf('"%s"',$salesperson_code);    //Salesperson Code
+		$field[23] = sprintf('"%s"',"HSI");                //Order Entry Person
+		$field[24] = sprintf('"%s"',"");                   //Zone Code
+		$field[25] = sprintf('"%s"',"");                   //FOB
+		$field[26] = sprintf('"%s"',"");                   //Ship Via
+		$field[27] = sprintf('"%s"',"");                   //Media Code
+		$field[28] = sprintf('"%s"',"");                   //Job ID
+		$field[29] = sprintf('"%s"',"CASH");               //Method of Payment
+		
+		$field[30] = sprintf('"%s"',$order['id']);         //Reference
+		$field[31] = sprintf('%s',"%SUBTOTAL%");           //Sub Total
+		$field[32] = sprintf('%s',"%SALESTAX%");           //Sales Tax
+		$field[33] = sprintf('%s',"0.00");                 //Payment
+		$field[34] = sprintf('%s',"0.00");                 //Freight
+		$field[35] = sprintf('%s',"%SUBTOTAL%");           //Sub Total
+		$field[36] = sprintf('%s',"%SUBTOTAL%");           //Sub Total
+		$field[37] = sprintf('%s',"");                     //Unknown Field
+		$field[38] = sprintf('%s',"Y");                    //Allow Back Orders
+		$field[39] = sprintf('%s',"S");                    //Unknown Field
+		
+		$field[40] = sprintf('%s',$ctime);                 //Order Time
+		$field[41] = sprintf('"%s"',"");                   //Unknown Field
+		$field[42] = sprintf('"%s"',"lb");                 //Unknown Field
+		$field[43] = sprintf('%s',"0.000");                //Payment
+		$field[44] = sprintf('%s',"0.000");                //Unknown Field
+		$field[45] = sprintf('%s',"");                     //Unknown Field
+					
+		$line 	 = join(',',$field);
 		array_push($arr_line, $line);	
 		return $arr_line;
 	}
@@ -320,8 +417,7 @@ print $debugline;
 			$archive_filepath = sprintf("%s/%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
-
-print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
+//print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
 		}
 		
 		if( $this->count_NTXDTL > 0 )
@@ -331,8 +427,7 @@ print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);
 			$archive_filepath = sprintf("%s/%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
-			
-print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
+//print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
 		}
 	}
 
