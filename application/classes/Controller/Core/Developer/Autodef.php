@@ -24,6 +24,10 @@ define("FORMDEFS","/formdefs/");
 define("PARAMDEFS","/paramdefs/");
 define("MVCDEFS","/mvcs/");
 define("ERRMSGDIR","/errmsgs/");
+define("OUTFILE_PERMISSION",0664);
+define("OUTDIR_PERMISSION",0777);
+define("OUTFILE_OWNER","www-data");
+define("OUTFILE_GROUP","users");
 
 class Controller_Core_Developer_Autodef extends Controller_Include
 {
@@ -743,49 +747,31 @@ _HTML_;
 					if($menudef->id) {$val=$menudef->id; $class = "pass"; $stat = "PASS";}else{$val = ""; $class = "fail"; $stat = "FAIL"; $this->defs['menu']=0;}
 					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";	
 					$fields=""; $values="";
-					
-					if( $result = $this->sitedb->create_blank_record("menudefs","menudefs_is")  )
-					{
-						$id  = $result['id'];
-						$querystr = sprintf('DELETE from %s', "menudefs_is");
-						if( $this->sitedb->execute_delete_query($querystr) ){}
-
-						foreach ($menudef->menus->menu as $menu)
-						{			
-							if($menu->menu_id && $menu->parent_id && $menu->sortpos && $menu->node_or_leaf && $menu->module && 
-							$menu->label_input && $menu->label_enquiry && $menu->url_input && $menu->url_enquiry && $menu->controls_input && $menu->controls_enquiry)
-							{$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['menu']=0; break;}
-							
-							$menu->id  = sprintf('%s',$menu->id);
-							if( !($menu->id > 0) )
-							{
-								$menu->id = str_replace("{ID}",$id,$menu->id);
-								$id++;
-							}
+					foreach ($menudef->menus->menu as $menu)
+					{			
+						if($menu->menu_id && $menu->parent_id && $menu->sortpos && $menu->node_or_leaf && $menu->module && 
+						$menu->label_input && $menu->label_enquiry && $menu->url_input && $menu->url_enquiry && $menu->controls_input && $menu->controls_enquiry)
+						{$class = "pass"; $stat = "PASS";}else{$class = "fail"; $stat = "FAIL"; $this->defs['menu']=0; break;}
+						if($menu->id) 
+						{
 							$values .= "(\"".$menu->id."\", "."\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
 							$fields = "(`id`, `menu_id`, `parent_id`, `sortpos`, `node_or_leaf`, `module`, `label_input`, `label_enquiry`, `url_input`, `url_enquiry`, `controls_input`, `controls_enquiry`,`inputter`, `input_date`, `record_status`, `current_no`) "; 
-
-							/*
-							if($menu->id) { }
-							else
-							{
-								$values .= "(\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
-								$fields = "(`menu_id`,`parent_id`,`sortpos`,`node_or_leaf`,`module`,`label_input`,`label_enquiry`,`url_input`,`url_enquiry`,`controls_input`,`controls_enquiry`,`inputter`,`input_date`,`record_status`,`current_no`) "; 
-							}
-							*/
-							$values .= sprintf('"%s", "%s", "%s", "0"),',INPUTTER,$current_date,RECORDSTATUS);
-							
 						}
-					
-						$values = substr_replace($values, '', -1);
-						$SQL_INAU .= sprintf('INSERT INTO `%s` %s VALUES %s;',$table,$fields,$values);
-						$desc='Columns Loaded [<i>menu</i>]'; $val=""; 
-						$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
-				
-						$menudef_sql['insert_inau'] = array('sql_code'=>$SQL_INAU);
-						$count = $this->query_system_db("setmenudef",$menudef_sql);
-						$HTML .= sprintf('<tr valign=top><td  class="adi_tts">%s</td><td colspan=2 class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
+						else
+						{
+							$values .= "(\"".$menu->menu_id."\", "."\"".$menu->parent_id."\", "."\"".$menu->sortpos."\", "."\"".$menu->node_or_leaf."\", "."\"".$menu->module."\", "."\"".$menu->label_input."\", "."\"".$menu->label_enquiry."\", "."\"".$menu->url_input."\", "."\"".$menu->url_enquiry."\", "."\"".$menu->controls_input."\", "."\"".$menu->controls_enquiry."\", ";
+							$fields = "(`menu_id`,`parent_id`,`sortpos`,`node_or_leaf`,`module`,`label_input`,`label_enquiry`,`url_input`,`url_enquiry`,`controls_input`,`controls_enquiry`,`inputter`,`input_date`,`record_status`,`current_no`) "; 
+						}
+						$values .= sprintf('"%s", "%s", "%s", "0"),',INPUTTER,$current_date,RECORDSTATUS);
 					}
+					$values = substr_replace($values, '', -1);
+					$SQL_INAU .= sprintf('INSERT INTO `%s` %s VALUES %s;',$table,$fields,$values);
+					$desc='Columns Loaded [<i>menu</i>]'; $val=""; 
+					$HTML .= sprintf('<tr><td  class="adi_tts"><b>%s</b></td><td  class="adi_tts">%s</td><td class="adi_ttr"><span class="%s">%s</span></td></tr>',$desc,$val,$class,$stat)."\n";
+				
+					$menudef_sql['insert_inau'] = array('sql_code'=>$SQL_INAU);
+					$count = $this->query_system_db("setmenudef",$menudef_sql);
+					$HTML .= sprintf('<tr valign=top><td  class="adi_tts">%s</td><td colspan=2 class="adi_tts">%s</td></tr>',$table,$SQL_INAU)."\n";
 				}
 			catch (Exception $e) 
 				{
@@ -1128,9 +1114,25 @@ _HTML_;
 					if(is_file($sysrow['target']))
 					{
 						$backupstr = $sysrow['target'].".".date("YmdHis").".php";
-						if (!copy($sysrow['target'], $backupstr)) {$HTML .= "Backup failed : ".$backupstr."<br>";} else $HTML .= "Backup successful : ".$backupstr."<br>";
+						if (!copy($sysrow['target'], $backupstr)) 
+							{
+								$HTML .= "Backup failed : ".$backupstr."<br>";
+							} 
+						else 
+							{
+								chmod($backupstr, OUTFILE_PERMISSION);
+								$HTML .= "Backup successful : ".$backupstr."<br>";
+							}
 					}
-					if(!copy($sysrow['src'], $sysrow['target'])) {$HTML .= "Copy failed : ".$sysrow['target']."<br>";} else $HTML .= "Copy successful : ".$sysrow['target']."<br>";
+					if(!copy($sysrow['src'], $sysrow['target'])) 
+					{
+						$HTML .= "Copy failed : ".$sysrow['target']."<br>";
+					} 
+					else 
+					{
+						chmod($backupstr, OUTFILE_PERMISSION);
+						$HTML .= "Backup successful : ".$sysrow['target']."<br>";
+					}
 				}
 			}
 		}
@@ -1645,21 +1647,52 @@ _HTML_;
 		$date = date("YmdHis");
 		$dirname = dirname($target); 
 		$backupstr = "new def, no backup";
-		if(!file_exists($dirname)){	mkdir($dirname,0777,true);} 
+		$oldumask = umask(0);
+		
+		if(!file_exists($dirname))
+		{	
+			$cmd = "mkdir(".$dirname.",".OUTDIR_PERMISSION.",true)";
+//print "<b>[DEBUG]---></b> "; print ($cmd); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+			 
+			mkdir($dirname,OUTDIR_PERMISSION,true);
+			//chown($dirname, OUTFILE_OWNER);
+		}
 		
 		if(file_exists($filename))
 		{
 			if(is_file($target))
 			{
 				$backupstr = $target.".".$date.".xml";
-				if(!copy($target, $backupstr)){$res_b = 0;}
+				if(!copy($target, $backupstr)){$res_b = 0;} 
+				else
+				{
+			$cmd1 = sprintf("chmod(%s, %s)",$backupstr,OUTFILE_PERMISSION);
+			$cmd2 = sprintf("chgrp(%s, %s)",$backupstr,OUTFILE_GROUP);
+//print "<b>[DEBUG]---></b> "; print $cmd1."<br>".$cmd2; print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+					chmod($backupstr,OUTFILE_PERMISSION);
+					//chgrp($backupstr,OUTFILE_GROUP);
+				} 
 			}
+			$cmd = sprintf("copy(%s, %s)",$filename, $target);
+//print "<b>[DEBUG]---></b> "; print ($cmd); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			if($res_b == 1) {if(!copy($filename, $target)){$res_c = 0;}}
+			else
+			{
+			$cmd1 = sprintf("chmod(%s, %s)",$target,OUTFILE_PERMISSION);
+			$cmd2 = sprintf("chgrp(%s, %s)",$target,OUTFILE_GROUP);
+//print "<b>[DEBUG]---></b> "; print $cmd1."<br>".$cmd2; print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+				chmod($target,OUTFILE_PERMISSION);
+				chgrp($target,OUTFILE_GROUP);
+			}
 		}
-		else {$res_b = 0; $res_c = 0;}
+		else 
+		{
+			$res_b = 0; $res_c = 0;
+		}
 
 		if($res_b > 0 && $res_c > 0) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
 		$result_txt = sprintf('[ <span class="%s">%s</span> =><br>Backup Copied ( %s , %s )<br>File Copied ( %s , %s )]',$class,$RESTXT,$res_b,$backupstr,$res_c,$target);
+		umask($oldumask);
 		return $result_txt;
 	}
 
@@ -1674,7 +1707,11 @@ _HTML_;
 		$BASE = $sysrow['autogendir'];
 
 		$dirname = $BASE.TABLEDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
+		if(!file_exists($dirname))
+		{
+			mkdir($dirname,OUTDIR_PERMISSION,true);
+			chown($dirname,OUTFILE_OWNER);
+		}  
 		$id = $row['id']; $tablename = $row['tablename']; $tablefields = $row['tablefields']; $uniquefield = $row['uniquefield'];
 	
 		$date = date("YmdHis");
@@ -1712,13 +1749,15 @@ $TEXT3 =<<<_TEXT_
 </tabledef>
 _TEXT_;
 		$XML = $XMLHEADER.$TEXT1.$TEXT2.$TEXT3;
-		$XML = str_replace("&","&amp;",$XML);
+	
 		$res = 0;
 		$filename = $dirname.$row['id'].".tabledef.xml";
 		if ($handle = fopen($filename, 'w')) 
 		{
 			fwrite($handle, $XML);
 			fclose($handle);
+			chmod($filename, OUTFILE_PERMISSION);
+			chown($filename, OUTFILE_OWNER);
 			$res = 1;
 		}
 		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
@@ -1761,7 +1800,11 @@ _TEXT_;
 		$BASE = $sysrow['autogendir'];
 
 		$dirname = $BASE.MENUDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
+		if(!file_exists($dirname))
+		{
+			mkdir($dirname,OUTDIR_PERMISSION,true);
+			chown($dirname,OUTFILE_OWNER);
+		} 
 		$id = $row['id'];
 	
 		$date = date("YmdHis");
@@ -1780,22 +1823,26 @@ _TEXT_;
 			{
 				if($f['id_opt'] > 0)
 				{
+					//create update record
 $TEXT2.= sprintf("\t<menu><id>%s</id><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry></label_enquiry><url_input></url_input><url_enquiry></url_enquiry><controls_input></controls_input><controls_enquiry></controls_enquiry></menu>\n",$f['id_opt'],$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title']);
 				}
 				else if($f['id_opt'] == 0)
 				{
-$TEXT2.= sprintf("\t<menu><id>{ID}</id><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry></label_enquiry><url_input></url_input><url_enquiry></url_enquiry><controls_input></controls_input><controls_enquiry></controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title']);
+					//create new record
+$TEXT2.= sprintf("\t<menu><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry></label_enquiry><url_input></url_input><url_enquiry></url_enquiry><controls_input></controls_input><controls_enquiry></controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title']);
 				}
 			}
 			else
 			{		
 				if($f['id_opt'] > 0)
 				{
+					//create update record
 $TEXT2.= sprintf("\t<menu><id>%s</id><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry>magicon016.png%s</label_enquiry><url_input>%s</url_input><url_enquiry>%s\\/enquirydefault</url_enquiry><controls_input>%s</controls_input><controls_enquiry>%s</controls_enquiry></menu>\n",$f['id_opt'],$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title'],"%IMG%",$f['url_input'],$f['url_input'],$f['control_input'],$f['control_enquiry']);
 				}
 				else if($f['id_opt'] == 0)
 				{
-$TEXT2.= sprintf("\t<menu><id>{ID}</id><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry>magicon016.png%s</label_enquiry><url_input>%s</url_input><url_enquiry>%s\\/enquirydefault</url_enquiry><controls_input>%s</controls_input><controls_enquiry>%s</controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title'],"%IMG%",$f['url_input'],$f['url_input'],$f['control_input'],$f['control_enquiry']);
+					//create new record
+$TEXT2.= sprintf("\t<menu><menu_id>%s</menu_id><parent_id>%s</parent_id><sortpos>%s</sortpos><node_or_leaf>%s</node_or_leaf><module>%s</module><label_input>%s</label_input><label_enquiry>magicon016.png%s</label_enquiry><url_input>%s</url_input><url_enquiry>%s\\/enquirydefault</url_enquiry><controls_input>%s</controls_input><controls_enquiry>%s</controls_enquiry></menu>\n",$f['menu_id'],$f['parent_id'],$f['sortpos'],$f['node_or_leaf'],$f['module'],$f['title'],"%IMG%",$f['url_input'],$f['url_input'],$f['control_input'],$f['control_enquiry']);
 				}
 			}
 		}
@@ -1808,14 +1855,14 @@ _TEXT_;
 		
 		$res = 0;
 		$filename = $dirname.$row['id'].".menudef.xml";
-		$oldmask = umask(0);
-		if ($handle = fopen($filename, 'w+')) 
+		if ($handle = fopen($filename, 'w')) 
 		{
 			fwrite($handle, $XML);
 			fclose($handle);
+			chmod($filename, OUTFILE_PERMISSION);
+			chown($filename, OUTFILE_OWNER);
 			$res = 1;
 		}
-		umask($oldmask);
 		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
 		$result_txt = sprintf('[ <span class="%s">%s</span> => File Created ( %s ) ]',$class,$RESTXT,$filename);
 		return $menu_txt."<br>".$result_txt."<br>";
@@ -1840,8 +1887,12 @@ _TEXT_;
 		$sysrow = (array) $sysrow;
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.PARAMDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
-		
+		if(!file_exists($dirname))
+		{
+			mkdir($dirname,OUTDIR_PERMISSION,true);
+			chown($dirname,OUTFILE_OWNER);
+		} 
+				
 		$indexfield = $controller."_id";
 		$indexlabel = $this->ucfirst_sentence(str_replace("_"," ",sprintf("%s %s",$controller,"Id")));
 		$errormsgfile = $controller."_error";
@@ -1879,14 +1930,16 @@ _TEXT_;
 </columns>
 </paramdef>
 _TEXT_;
-		$XML = $XMLHEADER.$TEXT1;
-		$XML = str_replace("&","&amp;",$XML);
+	$XML = $XMLHEADER.$TEXT1;
+	
 		$res = 0;
 		$filename = $dirname.$param_id.".paramdef.xml";
 		if ($handle = fopen($filename, 'w')) 
 		{
 			fwrite($handle, $XML);
 			fclose($handle);
+			chmod($filename, OUTFILE_PERMISSION);
+			chown($filename, OUTFILE_OWNER);
 			$res = 1;
 		}
 		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
@@ -1912,7 +1965,11 @@ _TEXT_;
 		$sysrow = (array) $sysarr[0];
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.FORMDEFS;
-		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
+		if(!file_exists($dirname))
+		{
+			mkdir($dirname,OUTDIR_PERMISSION,true);
+			chown($dirname,OUTFILE_OWNER);
+		} 
 
 		$indexlabel = $this->ucfirst_sentence(str_replace("_"," ",sprintf("%s %s",$controller,"Id")));
 		$errormsgfile = $controller."_error";
@@ -1972,6 +2029,8 @@ print "<b>[DEBUG]---></b> "; print htmlspecialchars($tablename); print( sprintf(
 			{
 				fwrite($handle, $XML);
 				fclose($handle);
+				chmod($filename, OUTFILE_PERMISSION);
+				chown($filename, OUTFILE_OWNER);
 				$res = 1;
 			}
 		}
@@ -1993,7 +2052,11 @@ print "<b>[DEBUG]---></b> "; print htmlspecialchars($tablename); print( sprintf(
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.MVCDEFS;
 		$ctrldir = $BASE.FORMDIR;
-		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
+		if(!file_exists($dirname))
+		{
+			mkdir($dirname,OUTDIR_PERMISSION,true);
+			chown($dirname,OUTFILE_OWNER);
+		} 
 
 		$ctrl_srcfile= $ctrldir.$param_id.".controller.php";
 		$date = date("YmdHis");
@@ -2023,6 +2086,8 @@ _TEXT_;
 		{
 			fwrite($handle, $XML);
 			fclose($handle);
+			chmod($filename, OUTFILE_PERMISSION);
+			chown($filename, OUTFILE_OWNER);			
 			$res = 1;
 		}
 		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
@@ -2055,7 +2120,11 @@ _TEXT_;
 		$sysrow	= (array) $sysarr[0];
 		$BASE = $sysrow['autogendir'];
 		$dirname = $BASE.FORMDIR;
-		if(!file_exists($dirname)){mkdir($dirname,0777,true);} 
+		if(!file_exists($dirname))
+		{
+			mkdir($dirname,OUTDIR_PERMISSION,true);
+			chown($dirname,OUTFILE_OWNER);
+		} 
 		
 		$TEXT =<<<_TEXT_
 <?php defined('SYSPATH') or die('No direct script access.');
@@ -2117,6 +2186,8 @@ _TEXT_;
 		{
 			fwrite($handle, $TEXT);
 			fclose($handle);
+			chmod($filename, OUTFILE_PERMISSION);
+			chown($filename, OUTFILE_OWNER);			
 			$res = 1;
 		}
 		if($res > 0 ) {$class = 'pass'; $RESTXT='PASS';} else { $class = 'fail'; $RESTXT='FAIL';}
@@ -2250,7 +2321,11 @@ _TEXT_;
 						$value = (array)$value;
 //print "<b>[DEBUG]---></b> "; print( URL::base() ); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 						$pathname = $_SERVER['DOCUMENT_ROOT'].URL::base().'autodefs/defs/'.$value['module'];
-						if( !is_dir($pathname) ) { mkdir($pathname,0777,true); }
+						if( !is_dir($pathname) )
+						{
+							mkdir($pathname,OUTDIR_PERMISSION,true);
+							chown($pathname,OUTFILE_OWNER);
+						} 
 					}
 				}
 				

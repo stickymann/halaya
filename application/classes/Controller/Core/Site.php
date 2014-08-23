@@ -1745,6 +1745,7 @@ _HTML_;
 				$returnfield = sprintf('"%s"',$key);
 				$baseurl = sprintf('<img src="%smedia/img/site/%s" align=absbottom>',url::base(),"lubw020.png");
 				$POPOUT_HTML = sprintf('<a href = "javascript:void(0)" onclick=window.popout.SelectorOpen(%s,%s,%s,%s) class="aimg">&nbsp %s &nbsp</a>',$fields,$table,$idfield,$returnfield,$baseurl);
+				$POPOUT_HTML = sprintf('<span id="%s_popout" name="%s_popout">%s</span>',$key,$key,$POPOUT_HTML);
 			}
 		}
 		return $POPOUT_HTML;
