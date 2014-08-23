@@ -2,7 +2,7 @@
 /**
  *  Scheduler class for automated tasks. 
  *
- * $Id: scheduler.php 2014-03-04 09:15:46 dnesbit $
+ * $Id: core_automation_scheduler.php 2014-03-04 09:15:46 dnesbit $
  *
  * @package		Halaya
  * @module	    core

@@ -2,7 +2,7 @@
 /**
  * Command line process operations for task automation / scheduler. 
  *
- * $Id: procops.php 2013-03-03 16:15:46 dnesbit $
+ * $Id: core_automation_procops.php 2013-03-03 16:15:46 dnesbit $
  *
  * @package		Halaya
  * @module	    core
@@ -10,10 +10,10 @@
  * @copyright   (c) 2013
  * @license      
  */
-require_once(dirname(__FILE__).'/schedconfig.php');
-require_once(dirname(__FILE__).'/dbops.php');
+require_once(dirname(__FILE__).'/core_automation_config.php');
+require_once(dirname(__FILE__).'/core_automation_dbops.php');
 
-class ProcOps 
+class AutomationProcOps 
 {
 	private $pid;
 	private $command;
@@ -22,9 +22,9 @@ class ProcOps
 		
     public function __construct($cl=false)
     {
-        $this->cfg		= new SchedConfig();
+        $this->cfg		= new AutomationConfig();
 		$config 		= $this->cfg->get_config();
-		$this->dbops	= new DbOps($config);
+		$this->dbops	= new AutomationDbOps($config);
 		$this->scheduler_cmd = "php ".$config['scheduler']." -t web";
 		$this->tb_pids = $config['tb_pids'];
 	}
@@ -139,4 +139,4 @@ class ProcOps
         else return false;
     }
 
-} // End ProcOps
+} // End AutomationProcOps
