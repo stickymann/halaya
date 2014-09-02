@@ -57,7 +57,38 @@ class HSIConfig
 				if($cfg->tables->tb_pidregs) { $this->hsiconfig['tb_pidregs'] = sprintf('%s',$cfg->tables->tb_pidregs); }
 				
 				//printers
-				if($cfg->printers->picklist) { $this->hsiconfig['prn_picklist'] = sprintf('%s',$cfg->printers->picklist); } else { $this->hsiconfig['prn_picklist'] = "PDF"; }
+				$this->hsiconfig['prn_picklist'] = array('printer'=>'PDF','copies'=>'1'); 
+				if($cfg->printers->picklist) 
+				{ 
+					$picklist['printer'] = sprintf('%s',$cfg->printers->picklist->printer); 
+					$picklist['copies'] = sprintf('%s',$cfg->printers->picklist->copies); 
+					$this->hsiconfig['prn_picklist'] = $picklist;
+				} 
+				
+				//ranges
+				$this->hsiconfig['fittings'] =  array('lower'=>'0','upper'=>'0'); 
+				$this->hsiconfig['pipes'] 	 =  array('lower'=>'0','upper'=>'0'); 
+				$this->hsiconfig['pumps'] 	 =  array('lower'=>'0','upper'=>'0'); 
+				if($cfg->ranges->fittings) 
+				{ 
+					$fittings['lower'] = sprintf('%s',$cfg->ranges->fittings->lower); 
+					$fittings['upper'] = sprintf('%s',$cfg->ranges->fittings->upper);
+					$this->hsiconfig['fittings'] =  $fittings;
+				}
+				
+				if($cfg->ranges->pipes) 
+				{ 
+					$pipes['lower'] = sprintf('%s',$cfg->ranges->pipes->lower); 
+					$pipes['upper'] = sprintf('%s',$cfg->ranges->pipes->upper);
+					$this->hsiconfig['pipes'] =  $pipes;
+				}
+				
+				if($cfg->ranges->pumps) 
+				{ 
+					$pumps['lower'] = sprintf('%s',$cfg->ranges->pumps->lower); 
+					$pumps['upper'] = sprintf('%s',$cfg->ranges->pumps->upper);
+					$this->hsiconfig['pumps'] =  $pumps;
+				}
 				
 				//external programs
 				if($cfg->extprogs->scheduler) { $this->hsiconfig['scheduler'] = sprintf('%s',$cfg->extprogs->scheduler); }

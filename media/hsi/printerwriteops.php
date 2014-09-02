@@ -33,38 +33,38 @@ class PrinterWriteOps
 		$this->fileops	= new FileOps($this->config);
 	}
 	
-	public function create_batch_picklists($batch_id,$auto=false)
+	public function create_batch_picklists($batch_id,$auto=true)
 	{
 		$querystr = sprintf('SELECT id FROM %s WHERE batch_id = "%s"',"hsi_orders",$batch_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		foreach($result as $key => $value)
 		{
 			$order_id = $value['id'];
-			$this->create_order_picklist($order_id,$auto);
+			$this->create_order_picklist($order_id,"none",$auto);
 		}
 	}
 	
-	public function create_order_picklist($order_id,$auto=false)
+	public function create_order_picklist($order_id,$scrnopt="none",$auto=false)
 	{
-		$desc_width = "305";
-		$td_br_height = "5";
-		$qty_width 	= "40";
-		$th_height = "25"; 
-		$data = array();
-			
+		$desc_width = "305"; $td_br_height = "5"; $qty_width = "40"; $th_height = "25"; 
+		$wrap_width = 40;
+		$data_wh = array(); $data_py = array(); $data_pr = array(); $pdffile = array();
+		$pumps = $this->config['pumps']; 
+		$pipes = $this->config['pipes']; 
+		
 		$querystr = sprintf('SELECT id,name,street,city,country,orderlines FROM %s WHERE id = "%s"',"hsi_orders",$order_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		$xml = $result[0]['orderlines'];
-		$data = $result[0];
-		
+		$data_py = $data_pr = $data_wh = $result[0];
+		$data_py['scrnopt'] = $data_pr['scrnopt'] = $data_wh['scrnopt'] = $scrnopt;
 		//parse xml orders
 		try
 			{
 				$formfields = new SimpleXMLElement($xml);
 				if($formfields->rows) 
 				{
-					$HTML_TABLE_ROWS = "";
-					$rowcount = 0;
+					$HTML_TABLE_ROWS_WH = ""; $HTML_TABLE_ROWS_PY = ""; $HTML_TABLE_ROWS_PR = "";
+					$rowcount_wh = 0; $rowcount_py = 0; $rowcount_pr = 0; 
 					foreach ($formfields->rows->row as $row) 
 					{ 
 						$sku = sprintf('%s',$row->sku);
@@ -75,27 +75,101 @@ class PrinterWriteOps
 							$querystr = sprintf('SELECT description,availunits FROM %s WHERE id = "%s"',$table,$sku);
 							$result   = $this->dbops->execute_select_query($querystr);
 							$description = $result[0]['description'];
-							if( strlen($description) > 40 )
-							{
-								$rowcount++;
-							}
 							$availunits	 = $result[0]['availunits'];
-							$HTML_TABLE_ROWS .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
-							$rowcount++;
-						}
+							
+							// pipe yard items
+							if( $sku >= $pipes['lower'] && $sku <= $pipes['upper'] )
+							{
+								if( strlen($description) > $wrap_width ){ $rowcount_py++; }
+								$HTML_TABLE_ROWS_PY .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
+								$rowcount_py++;
+							}				
+							// pump room items
+							else if ( $sku >= $pumps['lower'] && $sku <= $pumps['upper'] )
+							{
+								if( strlen($description) > $wrap_width ){ $rowcount_pr++; }
+								$HTML_TABLE_ROWS_PR .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
+								$rowcount_pr++;
+							}
+							// warehouse items
+							else
+							{
+								if( strlen($description) > $wrap_width ){ $rowcount_wh++; }
+								$HTML_TABLE_ROWS_WH .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
+								$rowcount_wh++;
+							}
+						} 
 					}
 				}
 				
-				$HTML = "<table>\n<thead>\n";
-				$HTML .= sprintf('<tr valign="top"><th width="%s" height="%s"><b>ITEM</b></th><th align="right" width="%s" ><b>QTY</b></th></tr>',$desc_width,$th_height,$qty_width )."\n";
-				$HTML .= "</thead>\n";
-				$HTML .= "<tdata>\n";
-				$HTML .= sprintf('%s',$HTML_TABLE_ROWS);
-				$HTML .= "</tdata>\n";
-				$HTML .= "</table>\n";
-				$data['orderlines_table'] = $HTML;
-				$data['rowcount'] = $rowcount;
-				$pdffile = $this->write_pdf($data,$auto);
+				$HTML1 = "<table>\n<thead>\n";
+				$HTML1 .= sprintf('<tr valign="top"><th width="%s" height="%s"><b>ITEM</b></th><th align="right" width="%s" ><b>QTY</b></th></tr>',$desc_width,$th_height,$qty_width )."\n";
+				$HTML1 .= "</thead>\n";
+				$HTML1 .= "<tdata>\n";
+				$HTML2 = "</tdata>\n";
+				$HTML2 .= "</table>\n";
+								
+				//write warehouse pdf
+				if( $rowcount_wh > 0 )
+				{
+					$WH = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_WH,$HTML2);
+					$data_wh['orderlines_table'] = $WH;
+					$data_wh['rowcount'] = $rowcount_wh;
+					$data_wh['datopt'] = "warehouse";
+					$data_wh['title'] = "[ WAREHOUSE ]";
+					//$pdffile['warehouse'] = $this->write_pdf($data_wh,$auto);
+				}
+				
+				//write pipeyard pdf
+				if( $rowcount_py > 0 )
+				{
+					$PY = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PY,$HTML2);
+					$data_py['orderlines_table'] = $PY;
+					$data_py['rowcount'] = $rowcount_py;
+					$data_py['datopt'] = "pipeyard";
+					$data_py['title'] = "[ PIPE YARD ]";
+					//$pdffile['pipeyard'] = $this->write_pdf($data_py,$auto);
+				}
+				
+				//write pumproom pdf
+				if( $rowcount_pr > 0 )
+				{
+					$PR = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PR,$HTML2);
+					$data_pr['orderlines_table'] = $PR;
+					$data_pr['rowcount'] = $rowcount_pr;
+					$data_pr['datopt'] = "pumproom";
+					$data_pr['title'] = "[ PUMP ROOM ]";
+					//$pdffile['pumproom'] = $this->write_pdf($data_pr,$auto);
+				}
+				
+				// print the appropiate picklist to screen 
+				if( $scrnopt != "none")
+				{
+					switch($scrnopt)
+					{
+						case "warehouse":
+							if( $rowcount_wh > 0 )
+							{ 
+								$pdffile['pipeyard'] = $this->write_pdf($data_wh,$auto);
+							}
+						break;
+						
+						case "pipeyard":
+							if( $rowcount_py > 0 )
+							{
+								$pdffile['pipeyard'] = $this->write_pdf($data_py,$auto);
+							}
+						break;
+						
+						case "pumproom":
+							if( $rowcount_pr > 0 )
+							{
+								$pdffile['pipeyard'] = $this->write_pdf($data_pr,$auto);
+							}
+						break;
+					}
+				}
+				
 				return $pdffile;
 			}
 		catch (Exception $e) 
@@ -105,7 +179,7 @@ class PrinterWriteOps
 			}
 	}
 	
-	public function write_pdf($data,$auto=false)
+	public function write_pdf($data,$auto=true)
 	{
 		$line_height = 7; //mm
 		$page_width = 110; //mm
@@ -170,13 +244,14 @@ class PrinterWriteOps
 		$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
 
 		// Set some content to print
-		 $order_id 	= $data['id'];
-		 $name = $data['name'];
-		 $address = $data['street'];
-		 $country = $data['country'];
-		 if( $data['city'] != "" ) { $address .= ", ".$data['city']; }
-		 //if( $data['country'] != "" ) { $address .= ", ".$data['country']; }
+		$order_id 	= $data['id'];
+		$name = $data['name'];
+		$address = $data['street'];
+		$country = $data['country'];
+		if( $data['city'] != "" ) { $address .= ", ".$data['city']; }
+		//if( $data['country'] != "" ) { $address .= ", ".$data['country']; }
 		$orderlines_table = $data["orderlines_table"];
+		$title_text = $data['title'];
 		
 		/****** picklist layout ********/
 		$order_header_hr_top = <<<_HTML_
@@ -192,6 +267,9 @@ _HTML_;
 		$order_header_hr_btm = <<<_HTML_
 <hr style="border: black solid 0px;">	
 _HTML_;
+		$title = <<<_HTML_
+<b>$title_text</b>
+_HTML_;
 		$orderlines = <<<_HTML_
 $orderlines_table
 _HTML_;
@@ -199,12 +277,13 @@ _HTML_;
 		$pdf->writeHTMLCell(0, 0, 0, $osy, 	 	$order_header_hr_top, 0, 0, 0, true, 'C', true);
 		$pdf->writeHTMLCell(0, 0, 0, $osy+1, 	$order_header, 0, 1, 0, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+1, $order_header_hr_btm, 0, 1, 0, true, 'C', true);
+		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+3, $title, 0, 1, 0, true, 'C', true);
 		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+3, $orderlines, 0, 1, 0, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, 0, $page_height-15, $order_header_hr_btm, 0, 1, 0, true, 'L', true);
 		
 //print sprintf("Page Width: %s\nPage Height: %s\nOrdLn Height: %s\n",$page_width,$page_height,$olh);
 		/****** end picklist layout ********/
-			
+		
 		//$pdffile = "/tmp/hsi_picklist.pdf";
 		$pdffile ="/tmp/hsi#".$order_id."-".date("YmdHis").".pdf";
 		if( file_exists($pdffile) )
@@ -216,19 +295,25 @@ _HTML_;
 			}
 		}
 		usleep(1000000);
-	
+		
+		$picklist = $this->config['prn_picklist'];
 		if( $auto )
 		{
-			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$this->config['prn_picklist'],"NEW");
+			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$picklist['printer'],"NEW");
 			$pdf->Output($pdffile, 'F');
+			//add to pdf_queue for printing
+			$this->dbops->execute_non_select_query($querystr);
 		}
 		else
 		{
-			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$this->config['prn_picklist'],"PRINTED");
-			$pdf->Output($pdffile, 'I');
+			if( $data['scrnopt'] == $data['datopt'] )
+			{
+				$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$picklist['printer'],"PRINTED");
+				$pdf->Output($pdffile, 'I');		
+				//add to pdf_queue for printing
+				$this->dbops->execute_non_select_query($querystr);
+			}
 		}
-		//add to pdf_queue for printing
-		$this->dbops->execute_non_select_query($querystr);
 		
 		return $pdffile;
 	}
@@ -244,7 +329,7 @@ _HTML_;
 		if( $result = $this->dbops->execute_select_query($querystr) )
 		{
 			$print_mode = $result[0]['print_mode'];
-			$printer = $this->config['prn_picklist'];
+			$printer = $this->config['prn_picklist']['printer'];
 			//get queue items
 			$querystr = sprintf('SELECT filename,printer,status FROM %s WHERE status="NEW"',"_hsi_printq");
 			if( $queue = $this->dbops->execute_select_query($querystr) )

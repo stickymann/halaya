@@ -15,6 +15,8 @@ require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 
+define("NON_TAX_CUSTOMER_GROUP","20");
+
 class OrderEntryOps
 {
 	public $cfg 	= null;
@@ -104,7 +106,8 @@ class OrderEntryOps
 							
 							$description = $result[0]['description'];
 							$availunits = $result[0]['availunits'];
-							$taxable = $result[0]['taxable'];
+							$customer_group = substr($order['tax_id'],8,2);
+							if($customer_group == NON_TAX_CUSTOMER_GROUP) { $taxable = "N"; } else { $taxable = $result[0]['taxable']; }
 							$unitprice = $result[0]['unitprice'];
 							$customer_price = 0;
 							
@@ -141,7 +144,7 @@ class OrderEntryOps
 										$exist_TAXHDR = true;
 									} 
 								}
-															
+								
 								$field[0]  = sprintf('"%s"',$auto_order_id);
 								$field[1]  = sprintf('%s',$count_orderlines);
 								$field[2]  = sprintf('%s',"3");  
@@ -200,15 +203,17 @@ class OrderEntryOps
 				$idx_ntx = $size_arr_NTXHDR - 1;
 				
 				if( $idx_tax > -1 )
-				{$istaxable = 0; $vat = 0; 
+				{ 
+					$istaxable = 1; $vat = 	$this->config['vat']; 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%SUBTOTAL%",number_format($total_TAXHDR,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%SALESTAX%",number_format($total_TAXVAT,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_TAXHDR[$idx_tax]); 
-					$this->arr_TAXHDR[$idx_tax] = str_replace("%VAT%"     ,number_format($vat,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
+					$this->arr_TAXHDR[$idx_tax] = str_replace("%VAT%"     ,number_format($global_vat,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 				}
 				
 				if( $idx_ntx > -1 )
 				{
+					$istaxable = 1; $vat = 0; //order entry requires $istaxable feild to be set to 1
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SUBTOTAL%",number_format($total_NTXHDR,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SALESTAX%",number_format($total_NTXVAT,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_NTXHDR[$idx_ntx]); 
@@ -227,7 +232,8 @@ class OrderEntryOps
 	{
 		//IMPLEMENT BUSINESS RULES HERE!
 		
-		if( $sku >= 100010 && $sku <= 203604)
+		$fittings = $this->config['fittings'];
+		if( $sku >= $fittings['lower'] && $sku <= $fittings['upper'])
 		{ 
 			//Apply discounts
 			$PriceDefault 	= $unitprice; 			//Price2 (02)
@@ -254,6 +260,7 @@ class OrderEntryOps
 							$unitprice = $PriceB;
 						break;
 						
+						case "04":
 						case "07":
 							$unitprice = $PriceC;
 						break;
@@ -305,8 +312,8 @@ class OrderEntryOps
 		
 		$field[10] = sprintf('"%s"',"     -");             //Billing Address (Line 7)
 		$field[11] = sprintf('"%s"',$customer['country']); //Billing Address (Line 8)
-		$field[12] = sprintf('"%s"',$customer['phone']);	 //Billing Address (Line 9)
-		$field[13] = sprintf('"%s"',"%TAXABLE%");          //Tax
+		$field[12] = sprintf('"%s"',$customer['phone']);   //Billing Address (Line 9)
+		$field[13] = sprintf('"%s"',"%TAXABLE%");         //Tax
 		$field[14] = sprintf('%s',"%VAT%");                //Tax Percentage
 		$field[15] = sprintf('"%s"',$payment_terms);       //Terms                   
 		$field[16] = sprintf('%s',str_replace("-","",$order['cdate'])); //Order Date

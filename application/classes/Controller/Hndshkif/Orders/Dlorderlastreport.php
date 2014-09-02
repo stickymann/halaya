@@ -58,7 +58,8 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 			$orders_table = 'hsi_orders';
 			$HTML =""; $RESULT="";
 			$order_count = 0;
-		
+			$pipes = array();  $pumps = array();
+			
 			$querystr = sprintf('SELECT * FROM %s WHERE batch_id = "%s" ORDER BY id', $orders_table,$batch_id);
 			$result = $this->sitemodel->execute_select_query($querystr);
 		
@@ -69,46 +70,46 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 				$s3 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9; color:black; width:150px;";
 				$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9; color:black; width:450px;";
 				
-				$picklis_print = false;
-				$querystr = sprintf('SELECT print_mode FROM %s WHERE config_id="DEFAULT"',"hsi_configs");
-				if( $mode = $this->sitemodel->execute_select_query($querystr) )
+				$picklist_print = false;
+				$querystr = sprintf('SELECT print_mode,config_xml FROM %s WHERE config_id="DEFAULT"',"hsi_configs");
+				if( $config = $this->sitemodel->execute_select_query($querystr) )
 				{
 					$picklist_print = true;
-				}
+					//get ranges
+					try
+					{
+						$cfg = new SimpleXMLElement( $config[0]->config_xml );
+						if($cfg->ranges->pipes) 
+						{ 
+							$pipes['lower'] = sprintf('%s',$cfg->ranges->pipes->lower); 
+							$pipes['upper'] = sprintf('%s',$cfg->ranges->pipes->upper);
+						}
 				
+						if($cfg->ranges->pumps) 
+						{ 
+							$pumps['lower'] = sprintf('%s',$cfg->ranges->pumps->lower); 
+							$pumps['upper'] = sprintf('%s',$cfg->ranges->pumps->upper);
+						}
+					}
+					catch (Exception $e) { }
+				}
 				
 				foreach($result as $index => $record)
 				{
-					$pl_links = "";
 					$record  = (array) $record;
-					$pl_pdf  = sprintf('<a href=%sindex.php/%s/index/%s target=_blank title="Picklist PDF"><b>pdf</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";							
-					//$pl_prnt = sprintf('<a href=%sindex.php/%s/index/%s target=_blank title="Send Picklist To Printer"><b>print</b></a>',URL::base(),$this->pdftoprinter,$record['id'])."\n";							
-					$pl_prnt = sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s") title="Send Picklist To Printer"><b>print</b></a>',$record['id'])."\n";
-					
 					if($picklist_print)
 					{
-						$printmode = $mode[0]->print_mode;
-						switch($printmode)
-						{
-							case "PRINTER":
-								$pl_links = sprintf('[ %s ]',$pl_prnt);
-							break;
-							
-							case "SCREEN":
-								$pl_links = sprintf('[ %s ]',$pl_pdf); 
-							break;
-						
-							case "BOTH":
-								$pl_links = sprintf('[ %s , %s ]',$pl_pdf,$pl_prnt);
-							break;
-						}
+						$record['printmode'] = $config[0]->print_mode;
 					}
-										
+					
+					$record['pumps'] = $pumps;
+					$record['pipes'] = $pipes;
+									
 					$RESULT .= sprintf('<div>');
 					$RESULT .= sprintf('<table style="%s">',$s1)."\n";
 					$RESULT .= sprintf('<tbody>')."\n";
 					$RESULT .= sprintf('<tr valign="top">')."\n";
-					$RESULT .= sprintf('<td style="%s">Order Id :</td><td style="%s">%s &nbsp %s</td><td style="%s">Name :</td><td style="%s">%s</td>',$s2,$s3,$record['id'],$pl_links,$s2,$s4,$record['name'])."\n";
+					$RESULT .= sprintf('<td style="%s">Order Id :</td><td style="%s">%s</td><td style="%s">Name :</td><td style="%s">%s</td>',$s2,$s3,$record['id'],$s2,$s4,$record['name'])."\n";
 					$RESULT .= sprintf('</tr>')."\n";
 					$RESULT .= sprintf('<tr valign="top">')."\n";
 					$RESULT .= sprintf('<td style="%s">Customer Id :</td><td style="%s">%s</td><td style="%s">Contact :</td><td style="%s">%s</td>',$s2,$s3,$record['customer_id'],$s2,$s4,$record['contact'])."\n";
@@ -126,7 +127,7 @@ class Controller_Hndshkif_Orders_Dlorderlastreport extends Controller_Core_Siter
 					$RESULT .= sprintf('<td style="%s">Payment Terms :</td><td style="%s">%s</td><td style="%s">Phone :</td><td style="%s">%s</td>',$s2,$s3,$record['paymentterms'],$s2,$s4,$record['phone'])."\n";
 					$RESULT .= sprintf('</tr>')."\n";
 					$RESULT .= '</tbody>'."\n".'</table>'."\n";
-					$RESULT	.= $this->view_xml_table("orderlines",$record['orderlines']);
+					$RESULT	.= $this->view_xml_table("orderlines",$record);
 					$RESULT .= sprintf('</div><br><br>');
 					$order_count++;
 				}
@@ -171,20 +172,24 @@ _HTML_;
 		return $HTML;
 	}
 	
-	public function  view_xml_table($key,$xml)
+	public function  view_xml_table($key,$record)
 	{
 		$controller = "dlorder";
 		$TABLEHEADER = ""; $TABLEROWS ="";
 		$widths = array(); $totalwidth = 0;
 		$tablewidth = 840;
+		$wh_exist = false; $pr_exist = false; $py_exist = false;
+		$pipes = $record['pipes'];  $pumps = $record['pumps'];
+		$xml = $record['orderlines'];
 		
 		$s1 = "border:1px solid silver; font-family:verdana,arial,helvetica,sans-serif; font-size:1em; text-align:left; border-collapse:collapse; margin:1px 0px 0px 0px; background:#ebf2f9;";
 		$s2 = "border:1px solid silver; font-weight:bold; padding:2px; background:#ebf2f9;; color:black; width:120px;";
 		$s3 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:150px;";
 		$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:450px;";
 		
+
+
 		$HTML = "\n".sprintf('<table style="%s">',$s1)."\n";
-		
 		$subopt  =  $this->sitemodel->get_form_subtable_options($controller,$key);
 		foreach($subopt as $subkey => $row)
 		{
@@ -205,10 +210,73 @@ _HTML_;
 				$val	= sprintf('%s',$row->$subkey);
 				$width  = round( ( $widths[$subkey] / $totalwidth ) * $tablewidth );
 				$TABLEROWS .= sprintf('<td valign="top" style="color:%s; width:%s%s;">%s</td>',"black",$width,"px",$val)."\n";
+				if($subkey = "sku")
+				{
+					$sku = $val;
+					// pipe yard items
+					if( $sku >= $pipes['lower'] && $sku <= $pipes['upper'] )
+					{
+						$py_exist = true;
+					}				
+					// pump room items
+					else if ( $sku >= $pumps['lower'] && $sku <= $pumps['upper'] )
+					{
+						$pr_exist = true; 
+					}
+					// warehouse items
+					else
+					{
+						$wh_exist = true; 
+					}
+				} 
 			}
 			$TABLEROWS .= "</tr>\n";
 		}
+		
+		$s1 = "border:1px solid silver; font-family:verdana,arial,helvetica,sans-serif; font-size:1em; text-align:left; border-collapse:collapse;";
+		$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black;";
+		$PRINT_MATRIX = "\n".sprintf('<table style="%s">',$s1)."\n";
+		$PRINT_MATRIX_HEADER = ""; $PRINT_MATRIX_BODY = "";
+		if($wh_exist) 
+		{ 
+			$PRINT_MATRIX_HEADER .= sprintf('<th style="%s">%s</th>',$s4,"Warehouse")."\n"; 
+			$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><a href=%sindex.php/%s/index/%s?scrnopt=warehouse target=_blank title="Picklist Warehouse PDF"><b>pdf</b></a></td>',$s4,URL::base(),$this->pdfbuilder,$record['id'])."\n";
+		}
+		
+		
+		if($pr_exist) { $PRINT_MATRIX_HEADER .= sprintf('<th style="%s">%s</th>',$s4,"Pump Room")."\n"; }
+		if($py_exist) { $PRINT_MATRIX_HEADER .= sprintf('<th style="%s">%s</th>',$s4,"Pipe Yard")."\n"; }
+		$PRINT_MATRIX_HEADER = '<tr valign="top">'."\n".$PRINT_MATRIX_HEADER.'</tr>'."\n";
+		$PRINT_MATRIX_BODY = '<tr valign="top">'."\n".$PRINT_MATRIX_BODY.'</tr>'."\n";
+		$PRINT_MATRIX = $PRINT_MATRIX.$PRINT_MATRIX_HEADER.$PRINT_MATRIX_BODY."</table>"."\n";
+		
+		/*
+				$pl_links = "";
+					$pl_pdf  = sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=warehouse target=_blank title="Picklist PDF"><b>pdf_wh</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";
+					$pl_pdf  .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pumproom target=_blank title="Picklist PDF"><b>pdf_pr</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";
+					$pl_pdf  .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pipeyard target=_blank title="Picklist PDF"><b>pdf_py</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";
+					
+					//$pl_prnt = sprintf('<a href=%sindex.php/%s/index/%s target=_blank title="Send Picklist To Printer"><b>print</b></a>',URL::base(),$this->pdftoprinter,$record['id'])."\n";							
+					$pl_prnt = sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s") title="Send Picklist To Printer"><b>print</b></a>',$record['id'])."\n";
+						switch($printmode)
+						{
+							case "PRINTER":
+								$pl_links = sprintf('[ %s ]',$pl_prnt);
+							break;
+							
+							case "SCREEN":
+								$pl_links = sprintf('[ %s ]',$pl_pdf); 
+							break;
+						
+							case "BOTH":
+								$pl_links = sprintf('[ %s , %s ]',$pl_pdf,$pl_prnt);
+							break;
+						}
+		*/		
+		
+		
 		$HTML .= $TABLEHEADER.$TABLEROWS."\n"."</table>"."\n";
+		$HTML = $PRINT_MATRIX.$HTML;
 		return $HTML;
 	}
 	

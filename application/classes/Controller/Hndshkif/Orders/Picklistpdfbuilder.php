@@ -27,9 +27,10 @@ class Controller_Hndshkif_Orders_Picklistpdfbuilder extends Controller
 
 	public function action_index()
     {
+		if( isset($_REQUEST['scrnopt']) ){ $scrnopt = $_REQUEST['scrnopt']; } else { $scrnopt = ""; }
 		$order_id = $this->request->param('opt');
 		$printerwrite = new PrinterWriteOps();
-		$printerwrite->create_order_picklist($order_id,false);
+		$printerwrite->create_order_picklist($order_id,$scrnopt,false);
 		exit();
 	}
 
