@@ -21,6 +21,7 @@
 <archive_log>/shazam/hsi/archive/logs</archive_log>
 </folders>
 <tables>
+<tb_configs>hsi_configs</tb_configs>
 <tb_orders>hsi_orders</tb_orders>
 <tb_dlorderbatchs>hsi_dlorderbatchs</tb_dlorderbatchs>
 <tb_changelogs>hsi_changelogs</tb_changelogs>
@@ -28,6 +29,8 @@
 <tb_customers>hsi_customers</tb_customers>
 <tb_schedulers>hsi_schedulers</tb_schedulers>
 <tb_pidregs>_hsi_pids</tb_pidregs>
+<tb_printq>_hsi_printq</tb_printq>
+<tb_autoids>_hsi_autoid</tb_autoids>
 </tables>
 <ranges>
 <fittings>

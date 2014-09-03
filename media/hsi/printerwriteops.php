@@ -297,9 +297,10 @@ _HTML_;
 		usleep(1000000);
 		
 		$picklist = $this->config['prn_picklist'];
+		$tb_printq = $this->config['tb_printq'];
 		if( $auto )
 		{
-			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$picklist['printer'],"NEW");
+			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',$tb_printq,$pdffile,$picklist['printer'],"NEW");
 			$pdf->Output($pdffile, 'F');
 			//add to pdf_queue for printing
 			$this->dbops->execute_non_select_query($querystr);
@@ -308,7 +309,7 @@ _HTML_;
 		{
 			if( $data['scrnopt'] == $data['datopt'] )
 			{
-				$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',"_hsi_printq",$pdffile,$picklist['printer'],"PRINTED");
+				$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',$tb_printq,$pdffile,$picklist['printer'],"PRINTED");
 				$pdf->Output($pdffile, 'I');		
 				//add to pdf_queue for printing
 				$this->dbops->execute_non_select_query($querystr);
@@ -320,18 +321,20 @@ _HTML_;
 	
 	public function process_pdf_queue()
 	{
+		$tb_configs = $this->config['tb_configs'];
+		$tb_printq  = $this->config['tb_printq'];
 		//delete "PRINTED" from queue
-		$querystr = sprintf('DELETE FROM %s WHERE status="PRINTED"',"_hsi_printq");
+		$querystr = sprintf('DELETE FROM %s WHERE status="PRINTED"',$tb_printq);
 		if( $this->dbops->execute_non_select_query($querystr) ) {/* wait for deletions*/ } 
 				
 		//get print_mode
-		$querystr = sprintf('SELECT print_mode FROM %s WHERE config_id="DEFAULT"',"hsi_configs");
+		$querystr = sprintf('SELECT print_mode FROM %s WHERE config_id="DEFAULT"',$tb_configs);
 		if( $result = $this->dbops->execute_select_query($querystr) )
 		{
 			$print_mode = $result[0]['print_mode'];
 			$printer = $this->config['prn_picklist']['printer'];
 			//get queue items
-			$querystr = sprintf('SELECT filename,printer,status FROM %s WHERE status="NEW"',"_hsi_printq");
+			$querystr = sprintf('SELECT filename,printer,status FROM %s WHERE status="NEW"',$tb_printq);
 			if( $queue = $this->dbops->execute_select_query($querystr) )
 			{
 				foreach($queue as $key => $value )
@@ -342,22 +345,22 @@ _HTML_;
 					{
 						case "NONE":
 							$this->fileops->delete_file($filename);
-							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
+							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename);
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;
 						
 						case "PRINTER":
 							$cmd = sprintf("lpr -r -P %s %s",$printer,$filename);
 							exec($cmd ,$op);
-							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
+							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename);
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;
 						
 						case "SCREEN":
-							//$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
+							//$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',$tb_printq,$filename);
 							//if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for update*/ } 
 							
-							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
+							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename);
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 							$this->fileops->delete_file($filename);
 						break;
@@ -365,9 +368,9 @@ _HTML_;
 						case "BOTH":
 							$cmd = sprintf("lpr -r -P %s %s",$printer,$filename);
 							exec($cmd ,$op);
-							//$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',"_hsi_printq",$filename);
+							//$querystr = sprintf('UPDATE %s SET status="PRINTED" WHERE filename="%s"',$tb_printq,$filename);
 							//if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for update*/ } 
-							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
+							$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename);
 							if( $this->dbops->execute_non_select_query($querystr) ) { /* wait for deletions*/ } 
 						break;
 					}

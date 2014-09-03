@@ -48,6 +48,7 @@ class HSIConfig
 				if($cfg->folders->archive_log) 	  { $this->hsiconfig['archive_log']    = sprintf('%s',$cfg->folders->archive_log); }
 				
 				//tables
+				if($cfg->tables->tb_configs) { $this->hsiconfig['tb_configs'] = sprintf('%s',$cfg->tables->tb_configs); }
 				if($cfg->tables->tb_orders) { $this->hsiconfig['tb_orders'] = sprintf('%s',$cfg->tables->tb_orders); }
 				if($cfg->tables->tb_dlorderbatchs) { $this->hsiconfig['tb_dlorderbatchs'] = sprintf('%s',$cfg->tables->tb_dlorderbatchs); }
 				if($cfg->tables->tb_changelogs) { $this->hsiconfig['tb_changelogs'] = sprintf('%s',$cfg->tables->tb_changelogs); }
@@ -55,6 +56,8 @@ class HSIConfig
 				if($cfg->tables->tb_customers) { $this->hsiconfig['tb_customers'] = sprintf('%s',$cfg->tables->tb_customers); }
 				if($cfg->tables->tb_schedulers) { $this->hsiconfig['tb_schedulers'] = sprintf('%s',$cfg->tables->tb_schedulers); }
 				if($cfg->tables->tb_pidregs) { $this->hsiconfig['tb_pidregs'] = sprintf('%s',$cfg->tables->tb_pidregs); }
+				if($cfg->tables->tb_printq) { $this->hsiconfig['tb_printq'] = sprintf('%s',$cfg->tables->tb_printq); }
+				if($cfg->tables->tb_autoids) { $this->hsiconfig['tb_autoids'] = sprintf('%s',$cfg->tables->tb_autoids); }
 				
 				//printers
 				$this->hsiconfig['prn_picklist'] = array('printer'=>'PDF','copies'=>'1'); 

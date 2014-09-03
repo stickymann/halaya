@@ -11,6 +11,7 @@
  * @license     
  */
 
+require_once('media/hsi/hsiconfig.php');
 require_once('media/hsi/procops.php');
 define("DELIMITER","{##}");
 
@@ -18,8 +19,10 @@ class Controller_Hndshkif_Dbreqs extends Controller
 {
 	public function before()
     {
+		$this->cfg	  = new HSIConfig();
+		$this->config = $this->cfg->get_config();
 		$this->sitedb = new Model_SiteDB;
-		$this->enqdb = new Model_EnqDB;
+		$this->enqdb  = new Model_EnqDB;
 		$this->paramkey = $this->sitedb->get_param_keys();
 	}
 
@@ -144,7 +147,7 @@ class Controller_Hndshkif_Dbreqs extends Controller
     
 	function get_daily_dl_batches($date,$f="default")
 	{
-		$table = "hsi_dlorderbatchs";
+		$table = $this->config['tb_dlorderbatchs'];
 		$querystr	= sprintf('SELECT batch_id FROM %s WHERE product_batch_date="%s"',$table,$date);
 		$result		= $this->sitedb->execute_select_query($querystr);
 		return json_encode($result);
@@ -177,19 +180,17 @@ class Controller_Hndshkif_Dbreqs extends Controller
 		
 	function picklistprint($order_id,$location_opt)
 	{
-		require_once('media/hsi/hsiconfig.php');
 		require_once('media/hsi/printerwriteops.php');
-		
-		$this->cfg = new HSIConfig();		
-		$config   = $this->cfg->get_config();
-		$picklist = $config['prn_picklist'];
+	
+		$picklist = $this->config['prn_picklist'];
+		$tb_printq = $this->config['tb_printq'];
 		$printer = $picklist['printer'];
-
+		
 		$printerwrite = new PrinterWriteOps();
 		$filename = $printerwrite->create_order_picklist($order_id,$location_opt,true);
 		$cmd = sprintf("lpr -r -P %s %s",$printer,$filename[$location_opt]);
 		exec($cmd ,$op);
-		$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename[$location_opt]);
+		$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename[$location_opt]);
 		if( $this->sitedb->execute_delete_query($querystr) ) { /* wait for deletions*/ } 
 	}
 
