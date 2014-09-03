@@ -233,47 +233,64 @@ _HTML_;
 			$TABLEROWS .= "</tr>\n";
 		}
 		
-		$s1 = "border:1px solid silver; font-family:verdana,arial,helvetica,sans-serif; font-size:1em; text-align:left; border-collapse:collapse;";
-		$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black;";
-		$PRINT_MATRIX = "\n".sprintf('<table style="%s">',$s1)."\n";
-		$PRINT_MATRIX_HEADER = ""; $PRINT_MATRIX_BODY = "";
+		$s1 = "border:1px solid silver; font-family:verdana,arial,helvetica,sans-serif; font-size:1em; text-align:left; border-collapse:collapse;width:60%;";
+		$s3 = "border:1px solid silver; font-weight:normal; padding:2px 5px 2px 2px; background:#ebf2f9;color:black;width:2%;";
+		$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;color:black; width:25%;";
+		$PRINT_MATRIX = "\n".sprintf('<div style="margin: 2px 0px 0px 0px;"><table style="%s">',$s1)."\n";
+		$PRINT_MATRIX_PDF = ""; $PRINT_MATRIX_PRINT = "";
+		
+		// picklist pdf urls
 		if($wh_exist) 
 		{ 
-			$PRINT_MATRIX_HEADER .= sprintf('<th style="%s">%s</th>',$s4,"Warehouse")."\n"; 
-			$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><a href=%sindex.php/%s/index/%s?scrnopt=warehouse target=_blank title="Picklist Warehouse PDF"><b>pdf</b></a></td>',$s4,URL::base(),$this->pdfbuilder,$record['id'])."\n";
+			$PRINT_MATRIX_PDF .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=warehouse target=_blank title="Warehouse Picklist PDF">Warehouse</a> |',URL::base(),$this->pdfbuilder,$record['id'])."\n";
 		}
 		
+		if($py_exist) 
+		{ 
+			$PRINT_MATRIX_PDF .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pipeyard target=_blank title=" Pipe Yard Picklist PDF">Pipe Yard</a> |',URL::base(),$this->pdfbuilder,$record['id'])."\n";
+		}
 		
-		if($pr_exist) { $PRINT_MATRIX_HEADER .= sprintf('<th style="%s">%s</th>',$s4,"Pump Room")."\n"; }
-		if($py_exist) { $PRINT_MATRIX_HEADER .= sprintf('<th style="%s">%s</th>',$s4,"Pipe Yard")."\n"; }
-		$PRINT_MATRIX_HEADER = '<tr valign="top">'."\n".$PRINT_MATRIX_HEADER.'</tr>'."\n";
-		$PRINT_MATRIX_BODY = '<tr valign="top">'."\n".$PRINT_MATRIX_BODY.'</tr>'."\n";
-		$PRINT_MATRIX = $PRINT_MATRIX.$PRINT_MATRIX_HEADER.$PRINT_MATRIX_BODY."</table>"."\n";
+		if($pr_exist) 
+		{ 
+			$PRINT_MATRIX_PDF .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pumproom target=_blank title="Pump Room Picklist PDF">Pump Room</a> |',URL::base(),$this->pdfbuilder,$record['id'])."\n";
+		}
+		$PRINT_MATRIX_PDF = substr_replace($PRINT_MATRIX_PDF, "", -2);
 		
-		/*
-				$pl_links = "";
-					$pl_pdf  = sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=warehouse target=_blank title="Picklist PDF"><b>pdf_wh</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";
-					$pl_pdf  .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pumproom target=_blank title="Picklist PDF"><b>pdf_pr</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";
-					$pl_pdf  .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pipeyard target=_blank title="Picklist PDF"><b>pdf_py</b></a>',URL::base(),$this->pdfbuilder,$record['id'])."\n";
-					
-					//$pl_prnt = sprintf('<a href=%sindex.php/%s/index/%s target=_blank title="Send Picklist To Printer"><b>print</b></a>',URL::base(),$this->pdftoprinter,$record['id'])."\n";							
-					$pl_prnt = sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s") title="Send Picklist To Printer"><b>print</b></a>',$record['id'])."\n";
-						switch($printmode)
-						{
-							case "PRINTER":
-								$pl_links = sprintf('[ %s ]',$pl_prnt);
-							break;
+		// pick list reprints
+		if($wh_exist) 
+		{ 
+			$PRINT_MATRIX_PRINT .= sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s","%s") title="Send Warehouse Picklist To Printer">Warehouse</a> |',$record['id'],"warehouse")."\n";
+		}
+		
+		if($py_exist) 
+		{ 
+			$PRINT_MATRIX_PRINT .= sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s","%s") title="Send Pipe Yard Picklist To Printer">Pipe Yard</a> |',$record['id'],"pipeyard")."\n";
+		}
+		
+		if($pr_exist) 
+		{ 
+			$PRINT_MATRIX_PRINT .= sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s","%s") title="Send Pump Room Picklist To Printer">Pump Room</a> |',$record['id'],"pumproom")."\n";
+		}
+		$PRINT_MATRIX_PRINT = substr_replace($PRINT_MATRIX_PRINT, "", -2);
+
+		$PRINT_MATRIX_BODY  = '<tr valign="top">';
+		switch($record['printmode'])
+		{
+			case "PRINTER":
+				$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PRINT </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PRINT);
+			break;
 							
-							case "SCREEN":
-								$pl_links = sprintf('[ %s ]',$pl_pdf); 
-							break;
+			case "SCREEN":
+				$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PICKLIST  </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PDF);
+			break;
 						
-							case "BOTH":
-								$pl_links = sprintf('[ %s , %s ]',$pl_pdf,$pl_prnt);
-							break;
-						}
-		*/		
-		
+			case "BOTH":
+				$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PICKLIST  </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PDF);
+				$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PRINT </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PRINT);
+			break;
+		}
+		$PRINT_MATRIX_BODY .= '</tr>';
+		$PRINT_MATRIX = $PRINT_MATRIX.$PRINT_MATRIX_BODY."\n"."</table></div>"."\n";
 		
 		$HTML .= $TABLEHEADER.$TABLEROWS."\n"."</table>"."\n";
 		$HTML = $PRINT_MATRIX.$HTML;

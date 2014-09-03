@@ -44,7 +44,7 @@ class PrinterWriteOps
 		}
 	}
 	
-	public function create_order_picklist($order_id,$scrnopt="none",$auto=false)
+	public function create_order_picklist($order_id,$scrnopt="????",$auto=false)
 	{
 		$desc_width = "305"; $td_br_height = "5"; $qty_width = "40"; $th_height = "25"; 
 		$wrap_width = 40;
@@ -108,8 +108,8 @@ class PrinterWriteOps
 				$HTML1 .= "<tdata>\n";
 				$HTML2 = "</tdata>\n";
 				$HTML2 .= "</table>\n";
-								
-				//write warehouse pdf
+
+				// write warehouse pdf
 				if( $rowcount_wh > 0 )
 				{
 					$WH = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_WH,$HTML2);
@@ -117,10 +117,10 @@ class PrinterWriteOps
 					$data_wh['rowcount'] = $rowcount_wh;
 					$data_wh['datopt'] = "warehouse";
 					$data_wh['title'] = "[ WAREHOUSE ]";
-					//$pdffile['warehouse'] = $this->write_pdf($data_wh,$auto);
+					$pdffile['warehouse'] = $this->write_pdf($data_wh,$auto);
 				}
-				
-				//write pipeyard pdf
+
+				// write pipeyard pdf
 				if( $rowcount_py > 0 )
 				{
 					$PY = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PY,$HTML2);
@@ -128,10 +128,10 @@ class PrinterWriteOps
 					$data_py['rowcount'] = $rowcount_py;
 					$data_py['datopt'] = "pipeyard";
 					$data_py['title'] = "[ PIPE YARD ]";
-					//$pdffile['pipeyard'] = $this->write_pdf($data_py,$auto);
+					$pdffile['pipeyard'] = $this->write_pdf($data_py,$auto);
 				}
-				
-				//write pumproom pdf
+
+				// write pumproom pdf
 				if( $rowcount_pr > 0 )
 				{
 					$PR = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PR,$HTML2);
@@ -139,9 +139,9 @@ class PrinterWriteOps
 					$data_pr['rowcount'] = $rowcount_pr;
 					$data_pr['datopt'] = "pumproom";
 					$data_pr['title'] = "[ PUMP ROOM ]";
-					//$pdffile['pumproom'] = $this->write_pdf($data_pr,$auto);
+					$pdffile['pumproom'] = $this->write_pdf($data_pr,$auto);
 				}
-				
+
 				// print the appropiate picklist to screen 
 				if( $scrnopt != "none")
 				{
@@ -169,7 +169,7 @@ class PrinterWriteOps
 						break;
 					}
 				}
-				
+
 				return $pdffile;
 			}
 		catch (Exception $e) 
@@ -178,8 +178,8 @@ class PrinterWriteOps
 				print $desc;
 			}
 	}
-	
-	public function write_pdf($data,$auto=true)
+
+	public function write_pdf($data,$auto=false)
 	{
 		$line_height = 7; //mm
 		$page_width = 110; //mm
@@ -374,7 +374,6 @@ _HTML_;
 				}
 			
 			}
-		
 		}
 	}
 	
