@@ -1,5 +1,5 @@
 var order_id = "";
-var location_opt = "";
+var prnopt = "";
 
 $(document).ready(function()
 {
@@ -69,15 +69,15 @@ var dlorderlastreport = new function()
 	this.PrintDialogOpen = function (idval,opt)
 	{
 		order_id  = idval;
-		location_opt = opt;
+		prnopt = opt;
 		$('#chkresult').html("");
-		window.siteutils.dialogWindow("chklight",400,150,"Print Picklist ("+ location_opt +") - Order# " + order_id );
+		window.siteutils.dialogWindow("chklight",400,150,"Print Picklist ("+ prnopt +") - Order# " + order_id );
 	}
 	
 	this.PrintOrder = function ()
 	{
-		$('#chkresult').append("Picklist (" + location_opt + ") for order# " + order_id + " sent to printer<br>");
-		params = "option=picklistprint" + "&order_id=" + order_id + "&location=" + location_opt;
+		$('#chkresult').append("Picklist (" + prnopt + ") for order# " + order_id + " sent to printer<br>");
+		params = "option=picklistprint" + "&order_id=" + order_id + "&prnopt=" + prnopt;
 		$.get(this.getDBReqsURL() + params, function(data) {  });
 	}
 

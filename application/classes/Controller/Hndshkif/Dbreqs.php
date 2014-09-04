@@ -65,8 +65,8 @@ class Controller_Hndshkif_Dbreqs extends Controller
 			
 			case 'picklistprint':
 				$order_id = $_REQUEST['order_id'];
-				$location_opt = $_REQUEST['location'];
-				$RESULT	= $this->picklistprint($order_id,$location_opt);
+				$prnopt = $_REQUEST['prnopt'];
+				$RESULT	= $this->picklistprint($order_id,$prnopt);
 				print $RESULT;
 			break;
 		}
@@ -178,20 +178,22 @@ class Controller_Hndshkif_Dbreqs extends Controller
 		return $HTML;
 	}
 		
-	function picklistprint($order_id,$location_opt)
+	function picklistprint($order_id,$prnopt)
 	{
 		require_once('media/hsi/printerwriteops.php');
-	
-		$picklist = $this->config['prn_picklist'];
 		$tb_printq = $this->config['tb_printq'];
+		$picklist = $this->config['prn_picklist'];
 		$printer = $picklist['printer'];
 		
 		$printerwrite = new PrinterWriteOps();
-		$filename = $printerwrite->create_order_picklist($order_id,$location_opt,true);
-		$cmd = sprintf("lpr -r -P %s %s",$printer,$filename[$location_opt]);
+		$filename = $printerwrite->create_order_picklist($order_id,null,$prnopt,false);
+		$cmd = sprintf("lpr -r -P %s %s",$printer,$filename[$prnopt]);
 		exec($cmd ,$op);
-		$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename[$location_opt]);
-		if( $this->sitedb->execute_delete_query($querystr) ) { /* wait for deletions*/ } 
+		$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename[$prnopt]);
+		if( $this->sitedb->execute_delete_query($querystr) ) 
+		{ 
+			/* wait for deletions*/ 
+		} 
 	}
 
 } // End Hndshkif_Dbreqs

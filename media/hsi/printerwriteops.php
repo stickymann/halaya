@@ -35,28 +35,31 @@ class PrinterWriteOps
 	
 	public function create_batch_picklists($batch_id,$auto=true)
 	{
-		$querystr = sprintf('SELECT id FROM %s WHERE batch_id = "%s"',"hsi_orders",$batch_id);
+		$orders_table = $this->config['tb_orders'];
+		$querystr = sprintf('SELECT id FROM %s WHERE batch_id = "%s"',$orders_table,$batch_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		foreach($result as $key => $value)
 		{
 			$order_id = $value['id'];
-			$this->create_order_picklist($order_id,"none",$auto);
+			$this->create_order_picklist($order_id,null,null,$auto);
 		}
 	}
 	
-	public function create_order_picklist($order_id,$scrnopt="????",$auto=false)
+	public function create_order_picklist($order_id,$scrnopt=null,$prnopt=null,$auto=false)
 	{
 		$desc_width = "305"; $td_br_height = "5"; $qty_width = "40"; $th_height = "25"; 
 		$wrap_width = 40;
-		$data_wh = array(); $data_py = array(); $data_pr = array(); $pdffile = array();
+		$data = array(); $pdfobj = array();
 		$pumps = $this->config['pumps']; 
 		$pipes = $this->config['pipes']; 
 		
-		$querystr = sprintf('SELECT id,name,street,city,country,orderlines FROM %s WHERE id = "%s"',"hsi_orders",$order_id);
+		$orders_table = $this->config['tb_orders'];
+		$querystr = sprintf('SELECT id,name,street,city,country,orderlines FROM %s WHERE id = "%s"',$orders_table,$order_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		$xml = $result[0]['orderlines'];
-		$data_py = $data_pr = $data_wh = $result[0];
-		$data_py['scrnopt'] = $data_pr['scrnopt'] = $data_wh['scrnopt'] = $scrnopt;
+		$data['py'] = $data['pr'] = $data['wh'] = $result[0];
+		$dataopt['scrnopt'] = $scrnopt; $dataopt['prnopt']  = $prnopt;
+
 		//parse xml orders
 		try
 			{
@@ -64,12 +67,12 @@ class PrinterWriteOps
 				if($formfields->rows) 
 				{
 					$HTML_TABLE_ROWS_WH = ""; $HTML_TABLE_ROWS_PY = ""; $HTML_TABLE_ROWS_PR = "";
-					$rowcount_wh = 0; $rowcount_py = 0; $rowcount_pr = 0; 
+					$rowcount['wh'] = 0; $rowcount['py'] = 0; $rowcount['pr'] = 0; 
 					foreach ($formfields->rows->row as $row) 
 					{ 
 						$sku = sprintf('%s',$row->sku);
 						$qty = sprintf('%s',$row->qty);
-						$table = "hsi_inventorys";
+						$table = $this->config['tb_inventorys'];
 						if( $this->dbops->record_exist($table,"id",$sku) )
 						{
 							$querystr = sprintf('SELECT description,availunits FROM %s WHERE id = "%s"',$table,$sku);
@@ -80,23 +83,23 @@ class PrinterWriteOps
 							// pipe yard items
 							if( $sku >= $pipes['lower'] && $sku <= $pipes['upper'] )
 							{
-								if( strlen($description) > $wrap_width ){ $rowcount_py++; }
+								if( strlen($description) > $wrap_width ){ $rowcount['py']++; }
 								$HTML_TABLE_ROWS_PY .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
-								$rowcount_py++;
+								$rowcount['py']++;
 							}				
 							// pump room items
 							else if ( $sku >= $pumps['lower'] && $sku <= $pumps['upper'] )
 							{
-								if( strlen($description) > $wrap_width ){ $rowcount_pr++; }
+								if( strlen($description) > $wrap_width ){ $rowcount['pr']++; }
 								$HTML_TABLE_ROWS_PR .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
-								$rowcount_pr++;
+								$rowcount['pr']++;
 							}
 							// warehouse items
 							else
 							{
-								if( strlen($description) > $wrap_width ){ $rowcount_wh++; }
+								if( strlen($description) > $wrap_width ){ $rowcount['wh']++; }
 								$HTML_TABLE_ROWS_WH .= sprintf('<tr valign="top"><td width="%s">%s<br style="font-size:%spt;"></td><td width="%s" align="right">%s</td></tr>',$desc_width,$description,$td_br_height,$qty_width,$qty)."\n";
-								$rowcount_wh++;
+								$rowcount['wh']++;
 							}
 						} 
 					}
@@ -109,67 +112,81 @@ class PrinterWriteOps
 				$HTML2 = "</tdata>\n";
 				$HTML2 .= "</table>\n";
 
-				// write warehouse pdf
-				if( $rowcount_wh > 0 )
+				// create warehouse pdf
+				if( $rowcount['wh'] > 0 )
 				{
 					$WH = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_WH,$HTML2);
-					$data_wh['orderlines_table'] = $WH;
-					$data_wh['rowcount'] = $rowcount_wh;
-					$data_wh['datopt'] = "warehouse";
-					$data_wh['title'] = "[ WAREHOUSE ]";
-					$pdffile['warehouse'] = $this->write_pdf($data_wh,$auto);
+					$data['wh']['orderlines_table'] = $WH;
+					$data['wh']['rowcount'] = $rowcount['wh'];
+					$data['wh']['title'] = "[ WAREHOUSE ]";
+					//$data['wh'] = $arr;
+					$pdfobj['warehouse'] = $this->create_pdf($data['wh']);
 				}
 
-				// write pipeyard pdf
-				if( $rowcount_py > 0 )
+				// create pipeyard pdf
+				if( $rowcount['py'] > 0 )
 				{
 					$PY = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PY,$HTML2);
-					$data_py['orderlines_table'] = $PY;
-					$data_py['rowcount'] = $rowcount_py;
-					$data_py['datopt'] = "pipeyard";
-					$data_py['title'] = "[ PIPE YARD ]";
-					$pdffile['pipeyard'] = $this->write_pdf($data_py,$auto);
+					$data['py']['orderlines_table'] = $PY;
+					$data['py']['rowcount'] = $rowcount['py'];
+					$data['py']['title'] = "[ PIPE YARD ]";
+					//$data['py'] = $arr;
+					$pdfobj['pipeyard'] = $this->create_pdf($data['py']);
 				}
 
-				// write pumproom pdf
-				if( $rowcount_pr > 0 )
+				// create pumproom pdf
+				if( $rowcount['pr'] > 0 )
 				{
 					$PR = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PR,$HTML2);
-					$data_pr['orderlines_table'] = $PR;
-					$data_pr['rowcount'] = $rowcount_pr;
-					$data_pr['datopt'] = "pumproom";
-					$data_pr['title'] = "[ PUMP ROOM ]";
-					$pdffile['pumproom'] = $this->write_pdf($data_pr,$auto);
+					$data['pr']['orderlines_table'] = $PR;
+					$data['pr']['rowcount'] = $rowcount['pr'];
+					$data['pr']['title'] = "[ PUMP ROOM ]";
+					//$data['pr'] = $arr;
+					$pdfobj['pumproom'] = $this->create_pdf($data['pr']);
 				}
 
-				// print the appropiate picklist to screen 
-				if( $scrnopt != "none")
+				$dataopt['location'] = "";
+				if( $auto )
 				{
-					switch($scrnopt)
+					$pdffile['warehouse'] = $this->write_pdf($pdfobj['warehouse'],$dataopt,$auto);
+					$pdffile['pipeyard']  = $this->write_pdf($pdfobj['pipeyard'] ,$dataopt,$auto);
+					$pdffile['pumproom']  = $this->write_pdf($pdfobj['pumproom'] ,$dataopt,$auto);
+				}
+				else
+				{
+					// choose the appropiate picklist to print or display 
+					$opt = ""; $pdffile = "";
+					if( !is_null($scrnopt) || !is_null($prnopt) )
 					{
-						case "warehouse":
-							if( $rowcount_wh > 0 )
+						if( !is_null($scrnopt) ) { $opt = $scrnopt; } else if( !is_null($prnopt) ) { $opt = $prnopt; }
+						switch($opt)
+						{
+							case "warehouse":
+							if( $rowcount['wh'] > 0 )
 							{ 
-								$pdffile['pipeyard'] = $this->write_pdf($data_wh,$auto);
+								$dataopt['location'] = "warehouse";
+								$pdffile['warehouse'] = $this->write_pdf($pdfobj['warehouse'],$dataopt,$auto);
 							}
-						break;
+							break;
 						
-						case "pipeyard":
-							if( $rowcount_py > 0 )
-							{
-								$pdffile['pipeyard'] = $this->write_pdf($data_py,$auto);
-							}
-						break;
+							case "pipeyard":
+								if( $rowcount['py'] > 0 )
+								{
+									$dataopt['location'] = "pipeyard";
+									$pdffile['pipeyard'] = $this->write_pdf($pdfobj['pipeyard'] ,$dataopt,$auto);
+								}
+							break;
 						
-						case "pumproom":
-							if( $rowcount_pr > 0 )
-							{
-								$pdffile['pipeyard'] = $this->write_pdf($data_pr,$auto);
-							}
-						break;
+							case "pumproom":
+								if( $rowcount['pr'] > 0 )
+								{
+									$dataopt['location'] = "pumproom";
+									$pdffile['pumproom'] = $this->write_pdf($pdfobj['pumproom'] ,$dataopt,$auto);
+								}
+							break;
+						}
 					}
 				}
-
 				return $pdffile;
 			}
 		catch (Exception $e) 
@@ -179,7 +196,7 @@ class PrinterWriteOps
 			}
 	}
 
-	public function write_pdf($data,$auto=false)
+	public function create_pdf($data)
 	{
 		$line_height = 7; //mm
 		$page_width = 110; //mm
@@ -284,8 +301,14 @@ _HTML_;
 //print sprintf("Page Width: %s\nPage Height: %s\nOrdLn Height: %s\n",$page_width,$page_height,$olh);
 		/****** end picklist layout ********/
 		
-		//$pdffile = "/tmp/hsi_picklist.pdf";
-		$pdffile ="/tmp/hsi#".$order_id."-".date("YmdHis").".pdf";
+		$pdf->filename ="/tmp/hsi#".$order_id."-".date("YmdHis").".pdf";
+		usleep(1000000);
+		return $pdf;
+	}
+	
+	public function write_pdf($pdf,$dataopt,$auto=false)
+	{
+		$pdffile = $pdf->filename;
 		if( file_exists($pdffile) )
 		{ 
 			//delete file
@@ -294,20 +317,19 @@ _HTML_;
 				/*wait for deletion*/ 
 			}
 		}
-		usleep(1000000);
 		
 		$picklist = $this->config['prn_picklist'];
 		$tb_printq = $this->config['tb_printq'];
-		if( $auto )
+		if( $auto && is_null($dataopt['scrnopt']) && is_null($dataopt['prnopt']) )
 		{
 			$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',$tb_printq,$pdffile,$picklist['printer'],"NEW");
 			$pdf->Output($pdffile, 'F');
 			//add to pdf_queue for printing
 			$this->dbops->execute_non_select_query($querystr);
 		}
-		else
+		else if( !$auto && !is_null($dataopt['scrnopt']) && is_null($dataopt['prnopt']) )
 		{
-			if( $data['scrnopt'] == $data['datopt'] )
+			if( $dataopt['scrnopt'] == $dataopt['location'] )
 			{
 				$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',$tb_printq,$pdffile,$picklist['printer'],"PRINTED");
 				$pdf->Output($pdffile, 'I');		
@@ -315,7 +337,16 @@ _HTML_;
 				$this->dbops->execute_non_select_query($querystr);
 			}
 		}
-		
+		else if( !$auto && is_null($dataopt['scrnopt']) && !is_null($dataopt['prnopt']) )
+		{
+			if( $dataopt['prnopt'] == $dataopt['location'] )
+			{
+				$querystr = sprintf('INSERT INTO %s (filename,printer,status) VALUES("%s","%s","%s")',$tb_printq,$pdffile,$picklist['printer'],"PRINTED");
+				$pdf->Output($pdffile, 'F');		
+				//add to pdf_queue for printing
+				$this->dbops->execute_non_select_query($querystr);
+			}
+		}
 		return $pdffile;
 	}
 	

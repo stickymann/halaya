@@ -54,7 +54,8 @@ class OrderEntryOps
 	{
 //$debugline = sprintf("%s \t %s \t %s \t %s \t %s \t %s \t %s\n","daceasy_id","sku   ","tax","unitprice","custprice","availunits","description");
 //print $debugline;	
-		$querystr = sprintf('SELECT id FROM %s WHERE batch_id = "%s"',"hsi_orders",$batch_id);
+		$orders_table = $this->config['tb_orders'];
+		$querystr = sprintf('SELECT id FROM %s WHERE batch_id = "%s"',$orders_table,$batch_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		foreach($result as $key => $value)
 		{
@@ -65,7 +66,8 @@ class OrderEntryOps
 	
 	public function create_order_entry($order_id,$auto=false)
 	{
-		$querystr = sprintf('SELECT id,tax_id,paymentterms,cdate,ctime,orderlines FROM %s WHERE id = "%s"',"hsi_orders",$order_id);
+		$orders_table = $this->config['tb_orders'];
+		$querystr = sprintf('SELECT id,tax_id,paymentterms,cdate,ctime,orderlines FROM %s WHERE id = "%s"',$orders_table,$order_id);
 		if( $result   = $this->dbops->execute_select_query($querystr) )
 		{
 			$order = $result[0];
@@ -94,7 +96,7 @@ class OrderEntryOps
 					{ 
 						$sku = sprintf('%s',$row->sku);
 						$qty = sprintf('%s',$row->qty);
-						$table = "hsi_inventorys";
+						$table = $this->config['tb_inventorys'];
 						$istaxable = 0; $vat = 0; 
 						$taxable = "";
 													
@@ -273,7 +275,7 @@ class OrderEntryOps
 	private function addline_hdr($arr_line,$order,$auto_order_id)
 	{
 		$field = array();
-		$table = "hsi_customers";
+		$table = $this->config['tb_customers'];
 		$querystr = sprintf('SELECT id,tax_id,name,contact,street,city,country,phone FROM %s WHERE tax_id = "%s"',$table,$order['tax_id']);
 		$result   = $this->dbops->execute_select_query($querystr);
 		$customer = $result[0];
