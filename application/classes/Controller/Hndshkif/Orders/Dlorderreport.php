@@ -191,7 +191,7 @@ _HTML_;
 				$val	= sprintf('%s',$row->$subkey);
 				$width  = round( ( $widths[$subkey] / $totalwidth ) * $tablewidth );
 				$TABLEROWS .= sprintf('<td valign="top" style="color:%s; width:%s%s;">%s</td>',"black",$width,"px",$val)."\n";
-				if($subkey = "sku")
+				if($subkey == "sku")
 				{
 					$sku = $val;
 					// pipe yard items

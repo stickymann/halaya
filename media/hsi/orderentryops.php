@@ -48,6 +48,16 @@ class OrderEntryOps
 		$this->config 	= $this->cfg->get_config();
 		$this->dbops	= new DbOps($this->config);
 		$this->fileops	= new FileOps($this->config);
+		$this->order_count = $this->get_refcount();
+		if( $this->order_count == -1 ) { exit(0); }
+	}
+	
+	public function __destruct()
+	{
+		if( $this->order_count > -1 )
+		{ 
+			$this->set_refcount($this->order_count);
+		}
 	}
 	
 	public function create_batch_entry($batch_id,$auto=false)
@@ -74,7 +84,7 @@ class OrderEntryOps
 			$xml = $order['orderlines'];
 		
 			$this->order_count++;
-			$auto_order_id = str_pad($this->order_count, 10, "0", STR_PAD_LEFT);
+			$auto_order_id = date('ymd').str_pad($this->order_count, 4, "0", STR_PAD_LEFT);
 			$field = array(); 
 			$exist_TAXHDR = false;
 			$exist_NTXHDR = false;
@@ -97,7 +107,8 @@ class OrderEntryOps
 						$sku = sprintf('%s',$row->sku);
 						$qty = sprintf('%s',$row->qty);
 						$table = $this->config['tb_inventorys'];
-						$istaxable = 0; $vat = 0; 
+						$istaxable = 2; //in DacEasy taxcode "1" is vat (15%),  DacEasy taxcode "2" is no vat (0%) 
+						$vat = 0; 
 						$taxable = "";
 													
 						//line item exist inventory
@@ -157,7 +168,7 @@ class OrderEntryOps
 								$field[7]  = sprintf('"%s"',$order['tax_id']);
 								$field[8]  = sprintf('"%s"',"EACH"); //default to "EACH", can also be "LENGTH" 
 								$field[9]  = sprintf('"%s"',$istaxable); 
-								$field[10] = sprintf('"%s"',number_format($vat*100,2,'.','')); 
+								$field[10] = sprintf('%s',number_format($vat*100,3,'.','')); 
 								$field[11] = sprintf('%s',"1"); //unknown, use default value 
 								$field[12] = sprintf('%s',"1"); //unknown, use default value 
 								$field[13] = sprintf('%s',"Y"); //unknown, use default value 
@@ -206,20 +217,20 @@ class OrderEntryOps
 				
 				if( $idx_tax > -1 )
 				{ 
-					$istaxable = 1; $vat = 	$this->config['vat']; 
+					$istaxable = 1; $vat = 	$this->config['vat'] * 100; 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%SUBTOTAL%",number_format($total_TAXHDR,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%SALESTAX%",number_format($total_TAXVAT,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_TAXHDR[$idx_tax]); 
-					$this->arr_TAXHDR[$idx_tax] = str_replace("%VAT%"     ,number_format($global_vat,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
+					$this->arr_TAXHDR[$idx_tax] = str_replace("%VAT%"     ,number_format($vat,3,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 				}
 				
 				if( $idx_ntx > -1 )
 				{
-					$istaxable = 1; $vat = 0; //order entry requires $istaxable feild to be set to 1
+					$istaxable = 2; $vat = 0; //order entry requires $istaxable feild to be set to 1
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SUBTOTAL%",number_format($total_NTXHDR,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SALESTAX%",number_format($total_NTXVAT,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_NTXHDR[$idx_ntx]); 
-					$this->arr_NTXHDR[$idx_ntx] = str_replace("%VAT%"     ,number_format($vat,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 
+					$this->arr_NTXHDR[$idx_ntx] = str_replace("%VAT%"     ,number_format($vat,3,'.',''),$this->arr_NTXHDR[$idx_ntx]); 
 				}
 			}
 		catch (Exception $e) 
@@ -438,6 +449,51 @@ class OrderEntryOps
 			$this->write_orderentry_file($archive_filepath,$taxtype);
 //print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
 		}
+	}
+	
+	public function get_refcount()
+	{
+		$counter = -1;
+		$date = date('Y-m-d');
+		$table = $this->config['tb_autoids'];
+		$querystr = sprintf('SELECT date,counter FROM %s WHERE id = "%s"',$table,"REFCOUNT");
+		if( $result  = $this->dbops->execute_select_query($querystr) )
+		{
+			$data = (array) $result[0];
+			if( $data['date'] == $date )
+			{
+				return $data['counter'];
+			}
+			else
+			{
+				$counter = 0;
+				if( $this->set_refcount($counter) )
+				{
+					return $counter;
+				}
+				$counter = -1;
+			}
+		}
+		return $counter;
+	}
+	
+	public function set_refcount($counter)
+	{
+		$arr['id']   = "REFCOUNT";
+		$arr['date'] = date('Y-m-d');
+		$arr['counter'] = $counter;
+		$table = $this->config['tb_autoids'];
+		if( $this->dbops->record_exist($table,"id",$arr['id']) )
+		{
+			$count = $this->dbops->update_record($table,$arr);
+		}
+		else
+		{
+			$count = $this->dbops->insert_record($table,$arr);
+		}
+		
+		if( $count > 0) { return true; }
+		return false;
 	}
 
 } //End OrderEntryOps

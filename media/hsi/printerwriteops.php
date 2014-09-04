@@ -49,7 +49,7 @@ class PrinterWriteOps
 	{
 		$desc_width = "305"; $td_br_height = "5"; $qty_width = "40"; $th_height = "25"; 
 		$wrap_width = 40;
-		$data = array(); $pdfobj = array();
+		$data = array(); $pdfobj = array(); $pdffile = array();
 		$pumps = $this->config['pumps']; 
 		$pipes = $this->config['pipes']; 
 		
@@ -148,9 +148,10 @@ class PrinterWriteOps
 				$dataopt['location'] = "";
 				if( $auto )
 				{
-					$pdffile['warehouse'] = $this->write_pdf($pdfobj['warehouse'],$dataopt,$auto);
-					$pdffile['pipeyard']  = $this->write_pdf($pdfobj['pipeyard'] ,$dataopt,$auto);
-					$pdffile['pumproom']  = $this->write_pdf($pdfobj['pumproom'] ,$dataopt,$auto);
+					foreach($pdfobj as $key => $pdfdata)
+					{
+						$pdffile[$key] = $this->write_pdf($pdfdata,$dataopt,$auto);
+					}
 				}
 				else
 				{
