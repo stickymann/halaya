@@ -83,8 +83,15 @@ class OrderEntryOps
 			$order = $result[0];
 			$xml = $order['orderlines'];
 		
-			$this->order_count++;
-			$auto_order_id = date('ymd').str_pad($this->order_count, 4, "0", STR_PAD_LEFT);
+			if( $this->config['autoid_type'] == "ORDER")
+			{
+				$auto_order_id = str_pad($order_id, 10, "0", STR_PAD_LEFT);
+			}
+			else
+			{
+				$this->order_count++;
+				$auto_order_id = date('ymd').str_pad($this->order_count, 4, "0", STR_PAD_LEFT);
+			}
 			$field = array(); 
 			$exist_TAXHDR = false;
 			$exist_NTXHDR = false;
@@ -107,7 +114,7 @@ class OrderEntryOps
 						$sku = sprintf('%s',$row->sku);
 						$qty = sprintf('%s',$row->qty);
 						$table = $this->config['tb_inventorys'];
-						$istaxable = 2; //in DacEasy taxcode "1" is vat (15%),  DacEasy taxcode "2" is no vat (0%) 
+						$taxcode = 0; //in DacEasy taxcode "1" is vat (15%),  DacEasy taxcode "2" is no vat (0%) 
 						$vat = 0; 
 						$taxable = "";
 													
@@ -133,6 +140,7 @@ class OrderEntryOps
 									$this->count_NTXDTL++;
 									$count_ntxhdr++;
 									$count_orderlines = $count_ntxhdr;
+									$taxcode = 2; $vat = $this->config['tax'][sprintf('%s',$taxcode)];
 									$total_NTXHDR = $total_NTXHDR + ($customer_price * $qty);
 									$total_NTXVAT = $total_NTXVAT + round($customer_price * $qty * $vat,2);
 									if( !$exist_NTXHDR )
@@ -147,7 +155,7 @@ class OrderEntryOps
 									$this->count_TAXDTL++;
 									$count_taxhdr++;
 									$count_orderlines = $count_taxhdr;
-									$istaxable = 1; $vat = $this->config['vat'];
+									$taxcode = 1; $vat = $this->config['tax'][sprintf('%s',$taxcode)];
 									$total_TAXHDR = $total_TAXHDR + ($customer_price * $qty);
 									$total_TAXVAT = $total_TAXVAT + round($customer_price * $qty * $vat,2);
 									if( !$exist_TAXHDR )
@@ -167,7 +175,7 @@ class OrderEntryOps
 								$field[6]  = sprintf('"%s"',substr($order['tax_id'],0,2)); //first two characters
 								$field[7]  = sprintf('"%s"',$order['tax_id']);
 								$field[8]  = sprintf('"%s"',"EACH"); //default to "EACH", can also be "LENGTH" 
-								$field[9]  = sprintf('"%s"',$istaxable); 
+								$field[9]  = sprintf('"%s"',$taxcode); 
 								$field[10] = sprintf('%s',number_format($vat*100,3,'.','')); 
 								$field[11] = sprintf('%s',"1"); //unknown, use default value 
 								$field[12] = sprintf('%s',"1"); //unknown, use default value 
@@ -217,19 +225,19 @@ class OrderEntryOps
 				
 				if( $idx_tax > -1 )
 				{ 
-					$istaxable = 1; $vat = 	$this->config['vat'] * 100; 
+					$taxcode = 1; $vat = $this->config['tax'][sprintf('%s',$taxcode)] * 100; 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%SUBTOTAL%",number_format($total_TAXHDR,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%SALESTAX%",number_format($total_TAXVAT,2,'.',''),$this->arr_TAXHDR[$idx_tax]); 
-					$this->arr_TAXHDR[$idx_tax] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_TAXHDR[$idx_tax]); 
+					$this->arr_TAXHDR[$idx_tax] = str_replace("%TAXCODE%" ,$taxcode,$this->arr_TAXHDR[$idx_tax]); 
 					$this->arr_TAXHDR[$idx_tax] = str_replace("%VAT%"     ,number_format($vat,3,'.',''),$this->arr_TAXHDR[$idx_tax]); 
 				}
 				
 				if( $idx_ntx > -1 )
 				{
-					$istaxable = 2; $vat = 0; //order entry requires $istaxable feild to be set to 1
+					$taxcode = 2; $vat = $this->config['tax'][sprintf('%s',$taxcode)] * 100;
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SUBTOTAL%",number_format($total_NTXHDR,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%SALESTAX%",number_format($total_NTXVAT,2,'.',''),$this->arr_NTXHDR[$idx_ntx]); 				
-					$this->arr_NTXHDR[$idx_ntx] = str_replace("%TAXABLE%" ,$istaxable,$this->arr_NTXHDR[$idx_ntx]); 
+					$this->arr_NTXHDR[$idx_ntx] = str_replace("%TAXCODE%" ,$taxcode,$this->arr_NTXHDR[$idx_ntx]); 
 					$this->arr_NTXHDR[$idx_ntx] = str_replace("%VAT%"     ,number_format($vat,3,'.',''),$this->arr_NTXHDR[$idx_ntx]); 
 				}
 			}
@@ -326,7 +334,7 @@ class OrderEntryOps
 		$field[10] = sprintf('"%s"',"     -");             //Billing Address (Line 7)
 		$field[11] = sprintf('"%s"',$customer['country']); //Billing Address (Line 8)
 		$field[12] = sprintf('"%s"',$customer['phone']);   //Billing Address (Line 9)
-		$field[13] = sprintf('"%s"',"%TAXABLE%");         //Tax
+		$field[13] = sprintf('"%s"',"%TAXCODE%");          //Taxcode
 		$field[14] = sprintf('%s',"%VAT%");                //Tax Percentage
 		$field[15] = sprintf('"%s"',$payment_terms);       //Terms                   
 		$field[16] = sprintf('%s',str_replace("-","",$order['cdate'])); //Order Date

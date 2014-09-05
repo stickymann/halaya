@@ -10,9 +10,14 @@
 <appurl>https://app.handshake-app.com/</appurl>
 <apikey>dadc68c1ee88efb68f82bd51017645ca6188022d</apikey>
 </handshake>
-<tax>
-<vat>.15</vat>
-</tax>
+<orderentry>
+<!--valid values: ORDER,DATE  -->
+<autoid_type>ORDER</autoid_type>
+</orderentry>
+<taxes>
+<tax><code>1</code><value>.15</value></tax>
+<tax><code>2</code><value>0</value></tax>
+</taxes>	
 <folders>
 <current_import>/shazam/hsi/current/hsi_import</current_import>
 <current_export>/shazam/hsi/current/order_entry_import</current_export>
