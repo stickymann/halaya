@@ -57,8 +57,8 @@ abstract class Controller_Include extends Controller
 
 	//site logos. icons and others images
 	public $img = array(
-		'logo_front' => 'media/img/login/halaya.750w.png',
-		'logo_app' => 'media/img/banner/halaya.logo.small.png',
+		'logo_front' => 'media/img/login/hndshkif.750w.jpg',
+		'logo_app' => 'media/img/banner/shazam.logo.small.jpg',
 		'signout' => 'media/img/banner/logout7525.jpg'
 	);
 

@@ -4,8 +4,8 @@
  *
  * $Id: Dlorder.php 2013-09-14 05:04:45 dnesbit $
  *
- * @package		Halaya Core
- * @module	    core
+ * @package		Handshake to DacEasy Interface
+ * @module	    hndshkif
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
  * @copyright   (c) 2013
  * @license      

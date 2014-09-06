@@ -4,8 +4,8 @@
  *
  * $Id: Dlorderbatch.php 2014-03-04 17:15:13 dnesbit $
  *
- * @package		Halaya Core
- * @module	    core
+ * @package		Handshake to DacEasy Interface
+ * @module	    hndshkif
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
  * @copyright   (c) 2014
  * @license      
