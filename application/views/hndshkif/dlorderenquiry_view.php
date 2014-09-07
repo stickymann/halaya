@@ -1,15 +1,27 @@
 <?php
-$params = array();
-$sitedb = new Model_SiteDB;
+/**
+ * Handshake orders enquiry view. 
+ *
+ * $Id: dlorderenquiry_view.php 2014-09-07 02:00:49 dnesbit $
+ *
+ * @package		Handshake to DacEasy Interface
+ * @module	    hndshkif
+ * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
+ * @copyright   (c) 2014
+ * @license      
+ */
+
+$param = array();
+$param['model'] = new Model_SiteDB;
 
 //$arr = $sitedb->get_controller_params("customermapping");
 //$param['customer_param_id'] = $arr['param_id'];
 
-$arr = $sitedb->get_controller_params("dlorder");
+$arr = $param['model']->get_controller_params("dlorder");
 $param['order_param_id'] = $arr['param_id'];
 
-//$arr = $sitedb->get_controller_params("inventorymapping");
-//$param['inventory_param_id'] = $arr['param_id'];
+$arr = $param['model']->get_controller_params("inventorymapping");
+$param['inventory_param_id'] = $arr['param_id'];
 
 $param['pdfbuilder'] = "hndshkif_order_picklistpdfbuilder";
 $param['dlorderlastreport'] = "hndshkif_orders_dlorderlastreport";
@@ -20,10 +32,8 @@ function get_section1($item,$labels,$param)
 {
 	$baseurl = URL::base()."index.php";
 	$dlorder = $param['order_param_id'];
+	$customer = "hndshkif_customers_customermapping"; //$param['customer_param_id'];
 	$batch_report = $param['dlorderlastreport'];
-	
-	//$customer_param_id = $param['customer_param_id'];
-	//$order_param_id = $param['order_param_id'];
 
 	$label_01 = $labels['id'];				$item_01 = $item->id;
 	$label_02 = $labels['batch_id'];		$item_02 = $item->batch_id;
@@ -42,26 +52,20 @@ function get_section1($item,$labels,$param)
 	$label_13 = $labels['phone'];			$item_13 = $item->phone;
 	$label_14 = $labels['paymentterms'];	$item_14 = $item->paymentterms;
 	 	
-/*
-<tr valign=top><td class="ne_td1" width="30%">Customer Name : </td>
-<td class="ne_td2" ><a href="$baseurl$customer_param_id/index/$item_07" target="enquiry" title="Edit Customer">$fullname</a> [ $item_07 ]</td></tr> 
-<tr valign=top><td class="ne_td1">$label_02 : </td>
-<td class="ne_td2" ><a href='$baseurl$order_param_id/index/$item_02' target='enquiry' title='Edit Order'>$item_02</a></td></tr>	
- */
-//url = siteutils.getBaseURL() + "index.php/hndshkif_orders_dlorderlastreport?batch_id=" + batch_id;
- 
 	$HTML=<<<_HTML_
 	<table  width="100%">
 			<tr valign=top>
 				<td width="40%">
 					<table class="ne_tab" width="100%">
 						<tr valign=top><td class="ne_td1" width="30%">$label_01 : </td>
-						<td class="ne_td2" ><a href="$baseurl/$batch_report/$item_01" target="enquiry" title="View Batch Report">$item_02</a></td></tr>
+						<td class="ne_td2" ><a href="$baseurl/$dlorder/index/$item_01" target="enquiry" title="View Handshake Order">$item_01</a></td></tr>
 												
 						<tr valign=top><td class="ne_td1">$label_02 : </td>
 						<td class="ne_td2" ><a href="$baseurl/$batch_report?batch_id=$item_02" target="enquiry" title="View Batch Report">$item_02</a></td></tr>
 						
-						<tr valign=top><td class="ne_td1">$label_03 : </td><td class="ne_td2" >$item_03</td></tr>
+						<tr valign=top><td class="ne_td1">$label_03 : </td>
+						<td class="ne_td2" ><a href="$baseurl/$customer/index/$item_03" target="enquiry" title="View Customer">$item_03</a></td></tr>
+						
 						<tr valign=top><td class="ne_td1">$label_04 : </td><td class="ne_td2" >$item_04</td></tr>
 						<tr valign=top><td class="ne_td1">$label_05 : </td><td class="ne_td2" >$item_05</td></tr>
 						<tr valign=top><td class="ne_td1">$label_06 : </td><td class="ne_td2" >$item_06</td></tr>	
@@ -85,112 +89,193 @@ _HTML_;
 	return $HTML;
 }
 
-function order_details_subform($item)
+function order_details_subform($item,$param)
 {
-	$order = new Controller_Core_Sales_Order();
-	$subcontroller = $order->subform['order_details']['subformcontroller'];
-	$idfield = $order->param['indexfield'];
-	$idval =  $item->order_id;
-	$current_no = $item->current_no;
-	$results = $order->param['primarymodel']->get_subForm_view_records($subcontroller,$idfield,$idval,$current_no,false,$labels);
-	//$HTML  = subform_html($results,$labels);
-	/*
-	$HTML .= '<table class="viewtext" width="72%">';
-	$HTML .= sprintf('<tr><td style="text-align:left; padding 0px 5px 0px 0px; color:black;"><b>Sub Total :</b> %s </td>',"$ ".number_format($item->extended_total, 2, '.', ','));
-	$HTML .= sprintf('<td style="text-align:left; padding 0px 5px 0px 0px; color:black;"><b>Discount Total :</b> %s </td>',"$ ".number_format($item->discount_total, 2, '.', ','));
-	$HTML .= sprintf('<td style="text-align:left; padding 0px 5px 0px 0px; color:black;"><b>Tax Total :</b> %s </td>',"$ ".number_format($item->tax_total, 2, '.', ''));
-	$HTML .= sprintf('<td  style="text-align:left; padding 0px 5px 0px 0px; color:black;"><b>GRAND TOTAL :</b> %s </b></td></tr>',"$ ".number_format($item->order_total, 2, '.', ','));
-	$HTML .= '</table>';
-	*/
-	return $HTML;
-}
+	require_once('media/hsi/hsiconfig.php');
+	$cfg = new HSIConfig();
+	$hsiconfig = $cfg->get_config();
+	$picklist_print = false;
+	$tb_configs = $hsiconfig['tb_configs'];
 	
-function  subform_html($results,$labels)
-{
-	$HTML = '<table id="ne_tlist" width="100%">'."\n";
-	$TABLEHEADER = ""; $TABLEROWS ="";
-	foreach($labels as $key => $val)
+	$record  = array();
+	$record['printmode'] = "NONE";
+	$querystr = sprintf('SELECT print_mode,config_xml FROM %s WHERE config_id="DEFAULT"',$tb_configs);
+	if( $config = $param['model']->execute_select_query($querystr) )
 	{
-		if(!($key == "id" || $key == "order_id"))
+		$record['printmode'] = $config[0]->print_mode;
+		//get ranges
+		try
 		{
-			$TABLEHEADER .= sprintf("<th>%s</th>",$val);
-		}
-	}
-	$TABLEHEADER = "<tr valign='top'>".$TABLEHEADER."</tr>"."\n";
-
-	foreach($results as $index => $row)
-	{
-		$TABLEROWS .= "<tr>";
-		$obj = (array) $row;
-		foreach($obj as $key => $val)
-		{
-			if(!($key == "id" || $key == "order_id"))
-			{
-				$TABLEROWS .= sprintf('<td valign="top" style="color:black;">%s</td>',$val);
+			$cfg = new SimpleXMLElement( $config[0]->config_xml );
+			if($cfg->ranges->pipes) 
+			{ 
+				$pipes['lower'] = sprintf('%s',$cfg->ranges->pipes->lower); 
+				$pipes['upper'] = sprintf('%s',$cfg->ranges->pipes->upper);
+			}
+		
+			if($cfg->ranges->pumps) 
+			{ 
+				$pumps['lower'] = sprintf('%s',$cfg->ranges->pumps->lower); 
+				$pumps['upper'] = sprintf('%s',$cfg->ranges->pumps->upper);
 			}
 		}
-		$TABLEROWS .= "</tr>";
+		catch (Exception $e) { }
 	}
 
-	$HTML .= $TABLEHEADER.$TABLEROWS."\n"."</table>"."\n";
+	$record['id'] = $item->id;
+	$record['orderlines'] = $item->orderlines;
+	$record['pumps'] = $pumps;
+	$record['pipes'] = $pipes;
+	$record['pdfbuilder'] = "hndshkif_orders_picklistpdfbuilder";
+	$record['pdftoprinter'] = "hndshkif_orders_picklisttoprinter";
+	$HTML  = view_xml_table("orderlines",$record,$param);
 	return $HTML;
 }
 
-
-function view_xml_table($xml,&$subopt)
+function view_xml_table($key,$record,$param)
 {
-	$HTML = '<table id="ne_tlist" width="100%">'."\n";
+	$controller = "dlorder";
 	$TABLEHEADER = ""; $TABLEROWS ="";
+	$baseurl = URL::base()."index.php";
+	$inventory = $param['inventory_param_id'];
+	
+	$widths = array(); $totalwidth = 0;
+	$tablewidth = 840;
+	$wh_exist = false; $pr_exist = false; $py_exist = false;
+	$pipes = $record['pipes'];  $pumps = $record['pumps'];
+	$xml = $record['orderlines'];
+		
+	$s3 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:150px;";
+	$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:450px;";
 
+	$HTML = "\n".'<table id="ne_tlist" width="100%">'."\n";
+	$subopt  =  $param['model']->get_form_subtable_options($controller,$key);
 	foreach($subopt as $subkey => $row)
 	{
 		$sublabel = $row['sublabel'];
-		$TABLEHEADER .= sprintf("<th>%s</th>",$sublabel);
+		$widths[ $row['subname'] ] = $row['width'];
+		$totalwidth = $totalwidth + $row['width'];
+		$TABLEHEADER .= sprintf("<th>%s</th>",$sublabel)."\n";
 	}
-	$TABLEHEADER = "<tr valign='top'>".$TABLEHEADER."</tr>"."\n";
+	$TABLEHEADER = '<tr valign="top">'."\n".$TABLEHEADER.'</tr>'."\n";
 	
 	$formfields = new SimpleXMLElement($xml);
 	foreach($formfields->rows->row as $row)
 	{
-		$TABLEROWS .= "<tr>";
+		$TABLEROWS .= "<tr>\n";
 		foreach ($row->children() as $field)
 		{
 			$subkey = sprintf('%s',$field->getName() );
 			$val	= sprintf('%s',$row->$subkey);
-			$TABLEROWS .= sprintf("<td valign='top' style='color:%s;'>%s</td>","black",$val);
+			$width  = round( ( $widths[$subkey] / $totalwidth ) * $tablewidth );
+			if($subkey == "sku")
+			{
+				$TABLEROWS .= sprintf('<td valign="top" style="color:%s; width:%s%s;">',"black",$width,"px");
+				$TABLEROWS .= sprintf('<a href="%s/%s/index/%s" target="enquiry" title="View Inventory Item">%s</a></td>',$baseurl,$inventory,$val,$val)."\n";
+				$sku = $val;
+				// pipe yard items
+				if( $sku >= $pipes['lower'] && $sku <= $pipes['upper'] )
+				{
+					$py_exist = true;
+				}				
+				// pump room items
+				else if ( $sku >= $pumps['lower'] && $sku <= $pumps['upper'] )
+				{
+					$pr_exist = true; 
+				}
+				// warehouse items
+				else
+				{
+					$wh_exist = true; 
+				}
+			}
+			else
+			{
+				$TABLEROWS .= sprintf('<td valign="top" style="color:%s; width:%s%s;">%s</td>',"black",$width,"px",$val)."\n";
+			}
 		}
-		$TABLEROWS .= "</tr>";
+		$TABLEROWS .= "</tr>\n";
 	}
+	
+	$s1 = "border:1px solid silver; font-family:verdana,arial,helvetica,sans-serif; font-size:1em; text-align:left; border-collapse:collapse;width:60%;";	
+	$s3 = "border:1px solid silver; font-weight:normal; padding:2px 5px 2px 2px; background:#ebf2f9;color:black;width:2%;";
+	$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:white;color:black; width:25%;";
+	$PRINT_MATRIX = "\n".sprintf('<div style="margin: 2px 0px 0px 0px;"><table style="%s">',$s1)."\n";
+	$PRINT_MATRIX_PDF = ""; $PRINT_MATRIX_PRINT = "";
+	
+	// picklist pdf urls
+	if($wh_exist) 
+	{ 
+		$PRINT_MATRIX_PDF .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=warehouse target=_blank title="Warehouse Picklist PDF">Warehouse</a> |',URL::base(),$record['pdfbuilder'],$record['id'])."\n";
+	}
+	
+	if($py_exist) 
+	{ 
+		$PRINT_MATRIX_PDF .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pipeyard target=_blank title=" Pipe Yard Picklist PDF">Pipe Yard</a> |',URL::base(),$record['pdfbuilder'],$record['id'])."\n";
+	}
+	
+	if($pr_exist) 
+	{ 
+		$PRINT_MATRIX_PDF .= sprintf('<a href=%sindex.php/%s/index/%s?scrnopt=pumproom target=_blank title="Pump Room Picklist PDF">Pump Room</a> |',URL::base(),$record['pdfbuilder'],$record['id'])."\n";
+	}
+	$PRINT_MATRIX_PDF = substr_replace($PRINT_MATRIX_PDF, "", -2);
+	
+	// pick list reprints
+	if($wh_exist) 
+	{ 
+		$PRINT_MATRIX_PRINT .= sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s","%s") title="Send Warehouse Picklist To Printer">Warehouse</a> |',$record['id'],"warehouse")."\n";
+	}
+	
+	if($py_exist) 
+	{ 
+		$PRINT_MATRIX_PRINT .= sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s","%s") title="Send Pipe Yard Picklist To Printer">Pipe Yard</a> |',$record['id'],"pipeyard")."\n";
+	}
+	
+	if($pr_exist) 
+	{ 
+		$PRINT_MATRIX_PRINT .= sprintf('<a href="javascript:void(0)" onclick=window.dlorderlastreport.PrintDialogOpen("%s","%s") title="Send Pump Room Picklist To Printer">Pump Room</a> |',$record['id'],"pumproom")."\n";
+	}
+	$PRINT_MATRIX_PRINT = substr_replace($PRINT_MATRIX_PRINT, "", -2);
+	$PRINT_MATRIX_BODY  = '<tr valign="top">';
+	switch($record['printmode'])
+	{
+		case "PRINTER":
+			$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PRINT </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PRINT);
+		break;
 
+		case "SCREEN":
+			$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PICKLIST  </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PDF);
+		break;
+						
+		case "BOTH":
+			$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PICKLIST  </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PDF);
+			$PRINT_MATRIX_BODY .= sprintf('<td style="%s"><b>PRINT </b></td><td style="%s">%s</td>',$s3,$s4,$PRINT_MATRIX_PRINT);
+		break;
+	}
+	$PRINT_MATRIX_BODY .= '</tr>';
+	$PRINT_MATRIX = $PRINT_MATRIX.$PRINT_MATRIX_BODY."\n"."</table></div>"."\n";
+	
 	$HTML .= $TABLEHEADER.$TABLEROWS."\n"."</table>"."\n";
+	$HTML = $PRINT_MATRIX.$HTML;
 	return $HTML;
 }
 
 function print_to_screen($enquiryrecords,$pagination,$labels,$config,$param)
 {
-	$section1 = ""; $section2 = ""; $section3 = ""; 
-	$section4 = ""; $section5 = ""; $section6 = "";
+	$section1 = ""; $section2 = "";
 	foreach ($enquiryrecords as $item )
 	{
 		$section1 = get_section1($item,$labels,$param);
-		//$section3 = order_details_subform($item);
+		$section2 = order_details_subform($item,$param);
 	
 		$refreshurl		= sprintf('<a href="%s" title="Refresh Page"><img src="%s" align="middle";></a>',$config['refresh_url'],$config['refresh_icon']);
 		$totalrecords	= sprintf('<b>Total :</b> %s ',$config['total_items']);
 		$pager			= sprintf('%s',$pagination);
-		$pdfurl			= ""; 
-		/*
-		if($config['printable'])
-		{
-			$pdfurl = sprintf('[ <a href=%sindex.php/%s/index/%s target=_blank><b>Quotation</b></a> ] ',URL::base(),$param['pdfbuilder'],$quotation_id)."\n";
-			$pdfurl .= sprintf(' [ <a href=%sindex.php/%s/index/%s target=_blank><b>Invoice</b></a> ] ',URL::base(),$param['pdfbuilder'],$invoice_id)."\n";
-		}*/
 		
 $ENQNAV = <<<_HTML_
 	<div id="ne_nav">
 		<table width="100%">
 			<td>$refreshurl</td>
-			<td width="30%">$pdfurl</td>
 			<td width="10%">$totalrecords</td>
 			<td>$pager</td>
 		</table>
@@ -201,7 +286,7 @@ $ENQBODY = <<<_HTML_
 	<div id="ne_shd">Order Information</div>
 	<div id="ne_sct">$section1</div><br>
 	<div id="ne_shd">Order Details</div>
-	<div id="ne_sct"></div><p id="ne_spacer3"></p>
+	<div id="ne_sct">$section2</div><br>
 _HTML_;
 		print $ENQNAV.$ENQBODY;
 	}

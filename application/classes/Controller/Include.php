@@ -15,7 +15,7 @@ abstract class Controller_Include extends Controller
 	/**
 	 *  Setup routine.
 	 */
-	public $global_app_title = "Handshake To DacEasy Interface";
+	public $global_app_title = "Handshake to DacEasy Interface";
 	public $auto_render = TRUE;
 
 	//javascript
