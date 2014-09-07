@@ -6,6 +6,7 @@ var init_status_change_date = "";
 var init_invoice_date = "";
 var init_order_status = "";
 var url_products = siteutils.getAjaxURL() + "option=jdata&controller=product&fields=product_id&prefix=&wfields=status&orderby=product_id&wvals=ACTIVE";
+
 		
 $(document).ready(function()	
 {
@@ -58,7 +59,7 @@ function DefaultColumns(tt)
 	var colArr =new Array();
 	colArr = [[
 				{field:'subform_order_details_product_id',title:'<b>Product Id</b>',width:120,align:'left',editor:{type:'combobox',options:{valueField:'product_id',textField:'product_id', url:url_products,onSelect:order_GetProductData, mode:'remote',required:true}}},
-				{field:'subform_order_details_description',title:'<b>Description</b>',width:200,align:'left',editor:{type:'text'}},
+				{field:'subform_order_details_description',title:'<b>Description</b>',width:200,align:'left'},
 				{field:'subform_order_details_qty',title:'<b>Qty</b>',width:30,align:'center',editor:{type:'numberbox',options:{required:true}}},
 				{field:'subform_order_details_unit_price',title:'<b>Unit Price</b>',width:70,align:'right'},
 				{field:'subform_order_details_unit_total',title:'<b>Unit Total</b>',width:70,align:'right'},
@@ -434,19 +435,114 @@ function subform_InitDataGridReadOnly(tt)
 	});
 }
 
+function addItem()
+{
+	grid_ItemsForm_Initialize();
+	$('#item_dlg').dialog('open').dialog('setTitle','Add');
+	$('#item_fm').form('clear');
+	edit_action = "APPEND";
+
+}
+
+function mydialog()
+{
+	alert('mydialog start');
+	$('#item_dlg').dialog({
+		title: 'Add',
+        width: 500,
+        height: 280,
+        modal: true,
+        resizable: true
+     });
+     $('#item_dlg').dialog('open');
+     alert('mydialog end');
+}
+            
+
+function grid_ItemsForm_Initialize()
+{
+	item_form = getProductDialogForm();
+	//$('<div>').html(item_form).appendTo('#pa');
+	$('<div id="item_dlg" class="easyui-dialog" style="width:500px;height:280px;padding:10px 20px" buttons="#item_dlg-buttons">').html(item_form).appendTo('#i');
+//$('#item_dlg').dialog('open');
+
+	//misc_form = getMiscDialogForm();
+	//$('<div id="item_dlg" class="easyui-dialog" style="width:500px;height:280px;padding:10px 20px" closed="true" buttons="#item_dlg-buttons">').text(dlg_txt).appendTo(document.body);
+
+}
+
+function getProductDialogForm()
+{
+	var HTML = (function () {/*
+		<!-- <div id="item_dlg" class="easyui-dialog" style="width:500px;height:280px;padding:10px 20px" closed="true" buttons="#item_dlg-buttons">
+		data-options="iconCls:'icon-save',resizable:true,modal:true"> -->
+		
+		<form id="item_fm" method="post" novalidate>
+			<div class="fitem">
+				<label>Product Id</label>
+				<input id="product_id" name="product_id" required="true">&nbsp 
+				<a href = "javascript:void(0)" onclick=window.popout.SelectorOpen("product_id,product_description,type,taxable,unit_price,category,sub_category","products","product_id","product_id") class="aimg">
+				<img src="/halaya/media/img/site/lubw020.png" align=absbottom></a>
+			</div>
+			<div class="fitem">
+				<label>Last Name:</label>
+				<input name="lastname">
+			</div>
+			<div class="fitem">
+				<label>Phone:</label>
+				<input name="phone">
+			</div>
+			<div class="fitem">
+				<label>Email:</label>
+				<input name="email" validType="email">
+			</div>
+		</form>
+		 <div id="item_dlg-buttons">
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveUser()">Ok</a>
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
+		</div>
+		
+		<style type="text/css">
+#item_fm{
+margin:0;
+padding:10px 30px;
+}
+.ftitle{
+font-size:14px;
+font-weight:bold;
+padding:5px 0;
+margin-bottom:10px;
+border-bottom:1px solid #ccc;
+}
+.fitem{
+margin-bottom:5px;
+}
+.fitem label{
+display:inline-block;
+width:80px;
+}
+</style> 
+		
+	*/}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
+	return HTML;		
+}
+
 function subform_InitDataGridReadWrite(tt)
 {
 	$('#'+tt).datagrid(
 	{
 				toolbar:[{text:'Add',iconCls:'icon-add',handler:function()
 					{
-						DefaultColumns(tt)
-						$('#'+tt).datagrid('endEdit', lastIndex);
+						//DefaultColumns(tt);
+						//mydialog();
+						addItem();
+						 $('#item_dlg').dialog('open');
+						//$('#'+tt).datagrid('endEdit', lastIndex);
 						//abstract function, add to controller
-						DefaultNewRow(tt);
-						var index = $('#'+tt).datagrid('getRows').length-1;
-						$('#'+tt).datagrid('selectRow', index);
-						$('#'+tt).datagrid('beginEdit', index);
+						//DefaultNewRow(tt);
+						//var index = $('#'+tt).datagrid('getRows').length-1;
+						//$('#'+tt).datagrid('selectRow', index);
+						//$('#'+tt).datagrid('beginEdit', index);
 					}
 				},'-',
 						{text:'Misc',iconCls:'icon-add',handler:function()
