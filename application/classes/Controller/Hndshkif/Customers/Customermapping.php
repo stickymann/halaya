@@ -1,20 +1,23 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * Handshake/DacEasy inventory. 
+ * Handshake/DacEasy customer.
  *
- * $Id: Inventorymapping.php 2013-12-20 20:25:59 dnesbit $
+ * $Id: Customermapping.php 2014-09-07 05:10:45 dnesbit $
  *
  * @package		Halaya Core
  * @module	    core
  * @author      Dunstan Nesbit (dunstan.nesbit@gmail.com)
- * @copyright   (c) 2013
+ * @copyright   (c) 2014
  * @license      
  */
-class Controller_Hndshkif_Inventory_Inventorymapping extends Controller_Core_Site
+
+require_once('media/hsi/customerops.php');
+
+class Controller_Hndshkif_Customers_Customermapping extends Controller_Core_Site
 {
 	public function __construct()
     {
-		parent::__construct('inventorymapping');
+		parent::__construct('customermapping');
 		// $this->param['htmlhead'] .= $this->insert_head_js();
 	}	
 		
@@ -26,12 +29,14 @@ class Controller_Hndshkif_Inventory_Inventorymapping extends Controller_Core_Sit
 	
 	function insert_head_js()
 	{
-		return HTML::script( $this->randomize('media/js/hndshkif.inventorymapping.js') );
+		return HTML::script( $this->randomize('media/js/hndshkif.customermapping.js') );
 	}
 
 	function input_validation()
 	{
 		$post = $this->OBJPOST;	
+		//$this->OBJPOST['hash'] = hash('sha256',$this->OBJPOST['tax_id'].$this->OBJPOST['name'].$this->OBJPOST['contact'].$this->OBJPOST['street'].$this->OBJPOST['city'].$this->OBJPOST['phone']);
+
 		//validation rules
 		array_map('trim',$post);
 		$validation = new Validation($post);
@@ -39,13 +44,13 @@ class Controller_Hndshkif_Inventory_Inventorymapping extends Controller_Core_Sit
 			->rule('id','not_empty')
 			->rule('id','numeric');
 		$validation
-			->rule('inventorymapping_id','not_empty')
-			->rule('inventorymapping_id','min_length', array(':value', 16))->rule('inventorymapping_id','max_length', array(':value', 16))
-			->rule('inventorymapping_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['inventorymapping_id']));
+			->rule('tax_id','not_empty')
+			->rule('tax_id','min_length', array(':value', 4))->rule('tax_id','max_length', array(':value', 12))
+			->rule('tax_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['tax_id']));
 			
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
 
-} //End Controller_Hndshkif_Inventory_Inventorymapping
+} //End Controller_Hndshkif_Customers_Customermapping
