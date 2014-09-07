@@ -1,0 +1,18 @@
+<?xml version='1.0' standalone='yes'?>
+<config>
+<database>
+<server>localhost</server>
+<name>halaya</name>
+<user>dbuser</user>
+<password>dbpass</password>
+</database>
+<folders>
+</folders>
+<tables>
+<tb_schedulers>schedulers</tb_schedulers>
+<tb_pids>_sys_pids</tb_pids>
+</tables>
+<extprogs>
+<scheduler>/www/halaya/automation/scheduler/halayad.php</scheduler>
+</extprogs>
+</config>

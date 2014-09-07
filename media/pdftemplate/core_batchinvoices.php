@@ -167,11 +167,14 @@ function invoice_info(&$pdf, $page_config)
 	if($phone_mobile1 != "" && $phone_mobile1 != "0") { $phone .= $phone_mobile1;}
 	if($phone_home != "" && $phone_home != "0") { $phone .= ', '.$phone_home;}	
 	if($phone_work != ""  && $phone_work != "0") { $phone .= ', '.$phone_work;}	
+	$order_status = sprintf('%s',$item->order_status->value); 
+	
 	$HTML_HDR_L=<<<_HTML_
 	<table width="350" border=0 cellspacing=0 cellpadding=2 >
 		<tr valign=top><td width="85"><b>Customer Name :</b> </td><td>$fullname</td></tr>
 		<tr valign=top><td><b>Address :</b> </td><td>$address</td></tr>
 		<tr valign=top><td><b>Phone :</b> </td><td>$phone</td></tr>
+		<tr valign=top><td><b>Status :</b> </td><td>$order_status</td></tr>
 	</table>
 _HTML_;
 	$pdf->writeHTMLCell($page_config['invoice_info_cellwidth'], $page_config['invoice_info_cellheight'], $page_config['invoice_info_posx_l'], $page_config['invoice_info_posy'], $HTML_HDR_L, 0, 0, 0, true, 'L', true);
@@ -179,14 +182,14 @@ _HTML_;
 	$id = $item->id->value;				$invoice_date = $item->invoice_date->value;		
 	$order_id = $item->order_id->value;	$inputter = $item->inputter->value;
 	$cc_id = $item->cc_id->value;		$is_co = $item->is_co->value;
-	$charge_customer_id = "";
-	if( $is_co == "Y"){ $charge_customer_id = sprintf('( %s )',$cc_id); }
+	$credit_customer_id = "";
+	if( $is_co == "Y"){ $credit_customer_id = sprintf('( %s )',$cc_id); }
 	//bgcolor="red"
 	$HTML_HDR_R=<<<_HTML_
 	<table width="400" border=0 cellspacing=0 cellpadding=2 >
 		<tr valign=top><td width="65"><b>Invoice No. :</b> </td><td>$id</td></tr>
 		<tr valign=top><td><b>Order Id :</b> </td><td>$order_id</td></tr>
-		<tr valign=top><td><b>Charge Order :</b> </td><td>$is_co $charge_customer_id</td></tr>
+		<tr valign=top><td><b>Credit Order :</b> </td><td>$is_co $credit_customer_id</td></tr>
 		<tr valign=top><td><b>Invoice Date :</b> </td><td>$invoice_date</td></tr>
 		<tr valign=top><td><b>Agent :</b> </td><td>$inputter</td></tr>
 	</table>
@@ -322,6 +325,7 @@ function invoice_summary(&$pdf, $page_config)
 	$discount_total = "$ ".number_format(sprintf('%s',$item->discount_total->value), 2, '.', ',');
 	$payment_total	= "$ ".number_format(sprintf('%s',$item->payment_total->value), 2, '.', ',');
 	$balance		= "$ ".number_format(sprintf('%s',$item->balance->value), 2, '.', ',');
+	$payment_type	= str_replace(";","",sprintf('%s',$item->payment_type->value));
 	$HTML_HDR_L=<<<_HTML_
 <div>
 <b>SALE OF GOODS AGREEMENT</b><br>
@@ -344,15 +348,16 @@ _HTML_;
 	$HTML_HDR_R=<<<_HTML_
 	<div>
 	<table width="220" border="0" cellspacing="0" cellpadding="1" >
-		<tr valign=bottom><td width="100" style="font-size: 11pt; font-weight: bold;">Sub Total :</td><td style="font-size: 11pt; text-align:right;">$sub_total</td></tr>
-		<tr valign=bottom><td style="font-size: 11pt; font-weight: bold;">Tax Total :</td><td style="font-size: 11pt; text-align:right;">$tax_total</td></tr>
-		<tr valign=bottom><td style="font-size: 12pt; font-weight: bold;">Grand Total :</td><td style="font-size: 11pt; text-align:right; font-weight: bold;">$order_total</td></tr>
+		<tr valign=bottom><td width="100" style="font-size: 10pt; font-weight: bold;">Sub Total :</td><td style="font-size: 10pt; text-align:right;">$sub_total</td></tr>
+		<tr valign=bottom><td style="font-size: 10pt; font-weight: bold;">Tax Total :</td><td style="font-size: 10pt; text-align:right;">$tax_total</td></tr>
+		<tr valign=bottom><td style="font-size: 11pt; font-weight: bold;">Grand Total :</td><td style="font-size: 11pt; text-align:right; font-weight: bold;">$order_total</td></tr>
 	</table>
 	<hr>
 	<table width="220" border="0" cellspacing="0" cellpadding="1" >
-		<tr valign=bottom><td width="100" style="font-size: 10pt;">Discount Total :</td><td style="font-size: 10pt; text-align:right;">$discount_total</td></tr>
-		<tr valign=bottom><td style="font-size: 10pt;">Payment Total :</td><td style="font-size: 10pt; text-align:right;">$payment_total</td></tr>
-		<tr valign=bottom><td style="font-size: 10pt;">Balance : </td><td style="font-size: 10pt; text-align:right;">$balance</td></tr>
+		<tr valign=bottom><td width="28%" style="font-size: 8pt;">Discount Total :</td><td width="68%" style="font-size: 8pt; text-align:right;">$discount_total</td></tr>
+		<tr valign=bottom><td style="font-size: 8pt;">Payment Total :</td><td style="font-size: 8pt; text-align:right;">$payment_total</td></tr>
+		<tr valign=bottom><td style="font-size: 8pt;">Balance : </td><td style="font-size: 8pt; text-align:right;">$balance</td></tr>
+		<tr valign=bottom><td style="font-size: 8pt;">Payments : </td><td style="font-size: 6pt; text-align:right;">$payment_type</td></tr>
 	</table>
 	</div>
 _HTML_;

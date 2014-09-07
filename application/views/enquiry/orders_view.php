@@ -44,13 +44,14 @@ function get_section1($item,$labels,$param)
 
 	if($item->customer_type == 'COMPANY'){$fullname = $item->last_name;}else{$fullname = $item->first_name.' '.$item->last_name;}
 	$address = $item->address1.', '.$item->address2.'<br>'.$item->city;
+	$indexpage = "index.php";
 	$HTML=<<<_HTML_
 	<table  width="100%">
 			<tr valign=top>
 				<td width="50%">
 					<table class="ne_tab" width="100%">
 						<tr valign=top><td class="ne_td1" width="30%">Customer Name : </td>
-						<td class="ne_td2" ><a href="$baseurl$customer_param_id/index/$item_07" target="enquiry" title="Edit Customer">$fullname</a> [ $item_07 ]</td></tr>
+						<td class="ne_td2" ><a href="$baseurl$indexpage/$customer_param_id/index/$item_07" target="enquiry" title="Edit Customer">$fullname</a> [ $item_07 ]</td></tr>
 						<tr valign=top><td class="ne_td1">Address : </td><td class="ne_td2" >$address</td></tr>
 						<tr valign=top><td class="ne_td1">$label_08 : </td><td class="ne_td2" >$item_08</td></tr>
 						<tr valign=top><td class="ne_td1">$label_09 : </td><td class="ne_td2" >$item_09</td></tr>
@@ -63,7 +64,7 @@ function get_section1($item,$labels,$param)
 					<table class="ne_tab" width="100%">
 						<tr valign=top><td class="ne_td1" width='35%'>$label_01 : </td><td class="ne_td2" >$item_01</td></tr>
 						<tr valign=top><td class="ne_td1">$label_02 : </td>
-						<td class="ne_td2" ><a href='$baseurl$order_param_id/index/$item_02' target='enquiry' title='Edit Order'>$item_02</a></td></tr>	
+						<td class="ne_td2" ><a href='$baseurl$indexpage/$order_param_id/index/$item_02' target='enquiry' title='Edit Order'>$item_02</a></td></tr>	
 						<tr valign=top><td class="ne_td1">$label_15 : </td><td class="ne_td2" >$item_15</td></tr>
 						<tr valign=top><td class="ne_td1">$label_16 : </td><td class="ne_td2" >$item_16</td></tr>
 						<tr valign=top><td class="ne_td1">$label_03 : </td><td class="ne_td2" >$item_03</td></tr>
@@ -175,7 +176,7 @@ function payments($item,$param)
 	$TABLEHEADER = ""; $TABLEROWS ="";
 	$querystr = sprintf('select payment_id,branch_id,till_id,amount,payment_type,payment_date,ref_no,order_id,id from %s where order_id = "%s" and payment_status ="VALID"',$payment->param['tb_live'],$order_id);
 	$results = $payment->param['primarymodel']->execute_select_query($querystr);
-	$HTML = sprintf('<a href="%s%s" target="enquiry" title="New Payment">New Payment</a><br><p id="ne_spacer3"></p>',$baseurl,$payment_param_id);
+	$HTML = sprintf('<a href="%sindex.php/%s" target="enquiry" title="New Payment">New Payment</a><br><p id="ne_spacer3"></p>',$baseurl,$payment_param_id);
 	$HTML .= '<table id="ne_tlist" width="100%">'."\n";
 	$TABLEHEADER = '<tr valign="top"><th>Payment Id</th><th>Branch Id</th><th>Till Id</th><th>Amount</th><th>Payment Type</th><th>Payment Date</th><th>Ref No</th><th>Order Id</th><th>Id</th></tr>'."\n";
 	foreach($results as $index => $row)
@@ -186,7 +187,7 @@ function payments($item,$param)
 		{
 			if($key == "payment_id")
 			{
-				$TABLEROWS.= sprintf('<td valign="top"><a href="%s%s/index/%s" target="enquiry" title="Edit Payment">%s</a></td>',$baseurl,$payment_param_id,$val,$val);
+				$TABLEROWS.= sprintf('<td valign="top"><a href="%sindex.php/%s/index/%s" target="enquiry" title="Edit Payment">%s</a></td>',$baseurl,$payment_param_id,$val,$val);
 			}
 			else
 			{
@@ -216,7 +217,7 @@ function inventory_checkout_status($item,$param)
 	$results = $invchk->param['primarymodel']->execute_select_query($querystr);
 		
 	$subopt  = $invchk->param['primarymodel']->get_form_subtable_options("inventchkout","checkout_details");
-	$HTML = sprintf('Inventory Checkout Id : <a href="%s%s/index/%s" target="enquiry" title="Edit Inventory Checkout">%s</a><br><p id="ne_spacer3"></p>',$baseurl,$inventchkout_param_id,$order_id,$order_id);
+	$HTML = sprintf('Inventory Checkout Id : <a href="%sindex.php/%s/index/%s" target="enquiry" title="Edit Inventory Checkout">%s</a><br><p id="ne_spacer3"></p>',$baseurl,$inventchkout_param_id,$order_id,$order_id);
 	if($results)
 	{
 		$HTML .= view_xml_table($results[0]->checkout_details,$subopt);	
@@ -226,7 +227,7 @@ function inventory_checkout_status($item,$param)
 
 function delivery_note($item,$param)
 {
-	$baseurl = URL::base();
+	$baseurl = URL::base(); $indexpage = "index.php";
 	$deliverynote_param_id = $param['deliverynote_param_id'];
 	
 	$dnote = new Controller_Core_Sales_Deliverynote();
@@ -257,7 +258,7 @@ function delivery_note($item,$param)
 				<td width="50%">
 					<table class="ne_tab" width="100%">
 						<tr valign=top><td  class="ne_td1" width="30%">Delivery Note Id: </td>
-						<td class="ne_td2"><a href="$baseurl$deliverynote_param_id/index/$item_02" target="enquiry" title="Edit Delivery Note">$item_02</a> [ $item_01 ]</td></tr>
+						<td class="ne_td2"><a href="$baseurl$indexpage/$deliverynote_param_id/index/$item_02" target="enquiry" title="Edit Delivery Note">$item_02</a> [ $item_01 ]</td></tr>
 						<tr valign=top><td class="ne_td1">Delivery Date: </td><td class="ne_td2">$item_03</td></tr>
 						<tr valign=top><td class="ne_td1">Status : </td><td class="ne_td2">$item_05</td></tr>
 						<tr valign=top><td class="ne_td1">Comments : </td><td class="ne_td2">$item_10</td></tr>
@@ -324,6 +325,7 @@ function make_pdf_xml($item,$labels)
 	$order_total = $item->order_total;		$payment_total = $item->payment_total; 
 	$balance = $item->balance;				$sub_total = $item->extended_total;
 	$tax_total = $item->tax_total;			$discount_total = $item->discount_total;
+	$order_status = $item->order_status;	$payment_type = $item->payment_type;
 	$invoice_note = $item->invoice_note;
 
 	$label_id = $labels['id'];							$label_order_id = $labels['order_id'];
@@ -338,6 +340,7 @@ function make_pdf_xml($item,$labels)
 	$label_order_total = $labels['order_total'];		$label_payment_total = $labels['payment_total']; 
 	$label_balance = $labels['balance'];				$label_sub_total = $labels['extended_total'];
 	$label_tax_total = $labels['tax_total'];			$label_discount_total = $labels['discount_total'];
+	$label_order_status = $labels['order_status'];		$label_payment_type = $labels['payment_type'];
 	$label_invoice_note = $labels['invoice_note'];
 	
 	$XML=<<<_XML_
@@ -366,6 +369,8 @@ function make_pdf_xml($item,$labels)
 	<order_total><label>$label_order_total</label><value>$order_total</value></order_total>
 	<payment_total><label>$label_payment_total</label><value>$payment_total</value></payment_total>
 	<balance><label>$label_balance</label><value>$balance</value></balance>
+	<order_status><label>$label_order_status</label><value>$order_status</value></order_status>
+	<payment_type><label>$label_payment_type</label><value>$payment_type</value></payment_type>
 	<invoice_note><label>$label_invoice_note</label><value>$invoice_note</value></invoice_note>
 </fields>
 _XML_;
@@ -393,10 +398,18 @@ function print_to_screen($enquiryrecords,$pagination,$labels,$config,$param)
 		$totalrecords	= sprintf('<b>Total :</b> %s ',$config['total_items']);
 		$pager			= sprintf('%s',$pagination);
 		$pdfurl			= ""; 
+		
+		$non_credit_status = array('INVOICE.FULL.PAID','ZERO.CHARGE');
+		$credit_status = array('INVOICE.ISSUED','INVOICE.PART.PAID','INVOICE.FULL.PAID','ZERO.CHARGE');
+		
 		if($config['printable'])
 		{
 			$pdfurl = sprintf('[ <a href=%sindex.php/%s/index/%s target=_blank><b>Quotation</b></a> ] ',URL::base(),$param['pdfbuilder'],$quotation_id)."\n";
-			$pdfurl .= sprintf(' [ <a href=%sindex.php/%s/index/%s target=_blank><b>Invoice</b></a> ] ',URL::base(),$param['pdfbuilder'],$invoice_id)."\n";
+			if( ($item->is_co == "N" && in_array($item->order_status, $non_credit_status)) ||
+				($item->is_co == "Y" && in_array($item->order_status, $credit_status)) )
+			{
+				$pdfurl .= sprintf(' [ <a href=%sindex.php/%s/index/%s target=_blank><b>Invoice</b></a> ] ',URL::base(),$param['pdfbuilder'],$invoice_id)."\n";
+			}
 		}
 $ENQNAV = <<<_HTML_
 	<div id="ne_nav">
@@ -436,7 +449,7 @@ _HTML_;
 		$pdf_data = "<?xml version='1.0' standalone='yes'?>"."\n"."<formfields>"."\n";
 		$pdf_data .= $pdf_xml."\n".$pdf_audit;
 		$pdf_data .= "</formfields>"."\n";
-		$pdf_data = str_replace('&','and',$pdf_data); 
+		$pdf_data = str_replace("&","&amp;",$pdf_data); 
 
 		$pdf = new Controller_Core_Sysadmin_Pdf();
 		$arr['pdf_id']			= $invoice_id;
