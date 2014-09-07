@@ -10,24 +10,24 @@
  * @copyright   (c) 2014
  * @license      
  */
-require_once(dirname(__FILE__).'/schedconfig.php');
-require_once(dirname(__FILE__).'/dbops.php');
-require_once(dirname(__FILE__).'/procops.php');
-require_once(dirname(__FILE__).'/scheduler.php');
+require_once(dirname(__FILE__).'/core_automation_config.php');
+require_once(dirname(__FILE__).'/core_automation_dbops.php');
+require_once(dirname(__FILE__).'/core_automation_procops.php');
+require_once(dirname(__FILE__).'/core_automation_scheduler.php');
 
 class SchedDaemon
 {	
 	public function __construct()
     {
-        $this->cfg		= new SchedConfig();
+        $this->cfg		= new AutomationConfig();
 		$config 		= $this->cfg->get_config();
-		$this->dbops	= new DbOps($config);
+		$this->dbops	= new AutomationDbOps($config);
 		$this->tb_schedulers = $config['tb_schedulers'];
 	}
     
     public function register_pid()
     {
-		$this->procops = new ProcOps();
+		$this->procops = new AutomationProcOps();
 		$this->procops->runcmd("scheduler");
     }
 } // End SchedDaemon

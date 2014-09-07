@@ -2,7 +2,7 @@
 /**
  * Database operations for task automation / scheduler. 
  *
- * $Id: dbops.php 2013-09-13 16:15:46 dnesbit $
+ * $Id: core_automation_dbops.php 2013-09-13 16:15:46 dnesbit $
  *
  * @package		Halaya
  * @module	    core
@@ -10,7 +10,7 @@
  * @copyright   (c) 2013
  * @license      
  */
-class DbOps 
+class AutomationDbOps 
 {
 	public $dbh = null;
 	private $dbserver = "";
@@ -182,4 +182,4 @@ class DbOps
 		return FALSE;
 	}
 
-} // End DbOps
+} // End AutomationDbOps

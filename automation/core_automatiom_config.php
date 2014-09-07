@@ -2,7 +2,7 @@
 /**
  * Configuration setup for task automation / scheduler. 
  *
- * $Id: schedconfig.php 2013-12-14 12:57:46 dnesbit $
+ * $Id: core_automation_config.php 2013-12-14 12:57:46 dnesbit $
  *
  * @package		Halaya
  * @module	    core
@@ -11,15 +11,15 @@
  * @license      
  */
 
-define("CONFIG_FILE","schedconfig.xml");
+define('CONFIG_FILE',dirname(__FILE__).'core_automation_config.xml');
 
-class SchedConfig 
+class AutomationConfig 
 {
 	public $config = null;
 	
 	public function __construct()
 	{
-		$configfile = dirname(__FILE__).'/'.CONFIG_FILE;
+		$configfile = CONFIG_FILE;
 		try
 			{
 				//check for required fields in xml file
@@ -52,4 +52,4 @@ class SchedConfig
 	{
 		return $this->config;
 	}
-}
+} //End AutomationConfig 
