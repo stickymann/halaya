@@ -36,6 +36,18 @@ class HSIConfig
 				//hanshake
 				if($cfg->handshake->appurl) { $this->hsiconfig['appurl'] = sprintf('%s',$cfg->handshake->appurl); }
 				if($cfg->handshake->apikey) { $this->hsiconfig['hs_apikey'] = sprintf('%s',$cfg->handshake->apikey); }
+				$this->hsiconfig['push_customer'] = false;
+				$this->hsiconfig['push_inventory'] = false;
+				if($cfg->handshake->push_customer) 
+				{
+					$value = strtoupper( sprintf('%s',$cfg->push_customer) );
+					if($value = "YES" || $value = "1" ) { $this->hsiconfig['push_customer'] = true; }
+				}
+				if($cfg->handshake->push_inventory) 
+				{
+					$value = strtoupper( sprintf('%s',$cfg->push_inventory) );
+					if($value = "YES" || $value = "1" ) { $this->hsiconfig['push_inventory'] = true; }
+				}
 				
 				//orderentry
 				if($cfg->orderentry->autoid_type) { $this->hsiconfig['autoid_type'] = sprintf('%s',$cfg->orderentry->autoid_type); }

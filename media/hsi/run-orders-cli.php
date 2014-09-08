@@ -1,6 +1,6 @@
 <?php
 /**
- * Displays interface status and start/stop options. 
+ * Command line orders processing. 
  *
  * $Id: run-orders-cli.php 2014-03-03 17:00:49 dnesbit $
  *

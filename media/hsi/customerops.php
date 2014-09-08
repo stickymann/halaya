@@ -10,11 +10,11 @@
  * @copyright   (c) 2013
  * @license      
  */
+
 require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/curlops.php');
-
 
 class CustomerOps 
 {

@@ -9,6 +9,9 @@
 <handshake>
 <appurl>https://app.handshake-app.com/</appurl>
 <apikey>dadc68c1ee88efb68f82bd51017645ca6188022d</apikey>
+<!--valid values: YES,NO  -->
+<push_customer>YES</push_customer>
+<push_inventory>YES</push_inventory>
 </handshake>
 <orderentry>
 <!--valid values: ORDER,DATE  -->

@@ -21,6 +21,13 @@ class DbOps
 	
 	public function __construct($config = null)
 	{
+		if( is_null($config) )
+		{
+			require_once(dirname(__FILE__).'/hsiconfig.php');
+			$cfg = new HSIConfig();
+			$config = $cfg->get_config();
+		}
+
 		if($config)
 		{
 			$this->dbserver = $config['dbserver'];
