@@ -173,7 +173,7 @@ class DbOps
 	public function last_changelog_have_new_records($type)
 	{
 		$newrecs = 0;
-		$querystr = sprintf('SELECT id,changelog_details from %s WHERE type = "%s" ORDER BY id DESC LIMIT 1',$this->tb_changelogs,$type);
+		$querystr = sprintf('SELECT id,changelog_details from %s WHERE changelog_type = "%s" ORDER BY id DESC LIMIT 1',$this->tb_changelogs,$type);
 		if( $result = $this->execute_select_query($querystr) )
 		{
 			$record	  = $result[0]; 

@@ -348,7 +348,8 @@ $xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</descr
 		
 		$chglog['id']			= $this->dbops->create_record_id($this->chglog_tb_live);
 		$chglog['changelog_id']	= $changelog_id;
-		$chglog['type']			= "INVENTORY";
+		$chglog['changelog_type'] = "INVENTORY";
+		$chglog['changelog_date'] = date('Y-m-d'); 
 		$chglog['input_file']	= $this->get_inventory_filename();
 		$chglog['archive_file']	= $this->get_inventory_archive_filename();
 		$xmllines = str_replace("&","&amp;",$xmllines);

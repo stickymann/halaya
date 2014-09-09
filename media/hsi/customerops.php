@@ -427,7 +427,10 @@ $xmlrows .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>
 		
 		$chglog['id']			= $this->dbops->create_record_id($this->chglog_tb_live);
 		$chglog['changelog_id']	= $changelog_id;
-		$chglog['type']			= "CUSTOMER";
+		$chglog['changelog_type'] = "CUSTOMER";
+		$chglog['changelog_date'] = date('Y-m-d'); 
+		$chglog['input_file']	= $this->get_customer_filename();
+		$chglog['archive_file']	= $this->get_customer_archive_filename();
 		$xmllines = str_replace("&","&amp;",$xmllines);
 		$chglog['changelog_details'] = $xmllines;
 		$chglog['inputter']		= "SYSINPUT";
@@ -438,6 +441,21 @@ $xmlrows .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>
 		$chglog['current_no']	= "1";
 		$count = $this->dbops->insert_record($this->chglog_tb_live, $chglog);
 
+	}
+	
+		public function push_handshake_customer($changelog_id)
+	{
+print $changelog_id."\n";
+	}
+	
+	public function archive_customer_datafile()
+	{
+		$archive_import_dir = $this->archive_import;
+		$src = $this->get_customer_filepath();
+		$dest = $this->get_customer_archive_filepath();
+		$filename = $this->get_customer_filename();
+		if( !file_exists($archive_import_dir) ){ mkdir($archive_import_dir,0777,true); } 
+		$this->fileops->move_file($src,$dest);
 	}
 
 } //End CustomerOps
