@@ -11,6 +11,7 @@
  * @license     
  */
 
+require_once('media/hsi/hsiconfig.php');
 require_once('media/hsi/procops.php');
 define("DELIMITER","{##}");
 
@@ -18,8 +19,10 @@ class Controller_Hndshkif_Dbreqs extends Controller
 {
 	public function before()
     {
+		$this->cfg	  = new HSIConfig();
+		$this->config = $this->cfg->get_config();
 		$this->sitedb = new Model_SiteDB;
-		$this->enqdb = new Model_EnqDB;
+		$this->enqdb  = new Model_EnqDB;
 		$this->paramkey = $this->sitedb->get_param_keys();
 	}
 
@@ -62,7 +65,8 @@ class Controller_Hndshkif_Dbreqs extends Controller
 			
 			case 'picklistprint':
 				$order_id = $_REQUEST['order_id'];
-				$RESULT	= $this->picklistprint($order_id);
+				$prnopt = $_REQUEST['prnopt'];
+				$RESULT	= $this->picklistprint($order_id,$prnopt);
 				print $RESULT;
 			break;
 		}
@@ -143,7 +147,7 @@ class Controller_Hndshkif_Dbreqs extends Controller
     
 	function get_daily_dl_batches($date,$f="default")
 	{
-		$table = "hsi_dlorderbatchs";
+		$table = $this->config['tb_dlorderbatchs'];
 		$querystr	= sprintf('SELECT batch_id FROM %s WHERE product_batch_date="%s"',$table,$date);
 		$result		= $this->sitedb->execute_select_query($querystr);
 		return json_encode($result);
@@ -174,22 +178,22 @@ class Controller_Hndshkif_Dbreqs extends Controller
 		return $HTML;
 	}
 		
-	function picklistprint($order_id)
+	function picklistprint($order_id,$prnopt)
 	{
-		require_once('media/hsi/hsiconfig.php');
 		require_once('media/hsi/printerwriteops.php');
-		
-		$this->cfg = new HSIConfig();		
-		$config    = $this->cfg->get_config();
-		$printer = $config['prn_picklist'];
+		$tb_printq = $this->config['tb_printq'];
+		$picklist = $this->config['prn_picklist'];
+		$printer = $picklist['printer'];
 		
 		$printerwrite = new PrinterWriteOps();
-		$filename = $printerwrite->create_order_picklist($order_id,true);
-				
-		$cmd = sprintf("lpr -r -P %s %s",$printer,$filename);
+		$filename = $printerwrite->create_order_picklist($order_id,null,$prnopt,false);
+		$cmd = sprintf("lpr -r -P %s %s",$printer,$filename[$prnopt]);
 		exec($cmd ,$op);
-		$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',"_hsi_printq",$filename);
-		if( $this->sitedb->execute_delete_query($querystr) ) { /* wait for deletions*/ } 
+		$querystr = sprintf('DELETE FROM %s WHERE filename="%s"',$tb_printq,$filename[$prnopt]);
+		if( $this->sitedb->execute_delete_query($querystr) ) 
+		{ 
+			/* wait for deletions*/ 
+		} 
 	}
 
 } // End Hndshkif_Dbreqs

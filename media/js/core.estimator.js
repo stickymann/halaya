@@ -1,5 +1,5 @@
 var lastIndex  = 0;
-var es_fields  = "product_id,product_description,TYPE,taxable,unit_price,total_price,category,sub_category";
+var es_fields  = "product_id,product_description,type,taxable,unit_price,total_price,category,sub_category";
 var es_table   = "vw_estimator_products";
 var es_idfield = "product_id";
 var subtable   = "subform_table_order_details";

@@ -61,7 +61,7 @@ class Controller_Hndshkif_Orders_Gethandshakeorders extends Controller_Core_Site
 	{
 		$orderops = new OrderOps();
 		$RESULT = $orderops->update_orders();
-		$this->append_to_status_message($RESULT);
+		$this->append_to_status_message($RESULT['result']);
 		$this->update_run_status($this->param['tb_live'],"N",$this->OBJPOST['request_id']);
 	}
 	

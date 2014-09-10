@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * <insert controller description>. 
+ * Handshake/DacEasy inventory. 
  *
  * $Id: Inventorymapping.php 2013-12-20 20:25:59 dnesbit $
  *

@@ -2,7 +2,7 @@
 /**
  * Auth/ORM User model.
  *
- * $Id: Role.php 2012-12-29 00:00:00 dnesbit $
+ * $Id: User.php 2012-12-29 00:00:00 dnesbit $
  *
  * @package		Halaya Core
  * @module		core

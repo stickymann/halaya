@@ -1039,5 +1039,125 @@ class Model_SiteDB extends Model
 		$row = $result[0];
 		return $row->count;
 	}
+	
+	public function update_orderbalances_cache($order_id)
+	{
+		/*
+		 * The SQL below is long, ulgy and complicated but however necessary for efficiency, speed and scalablity of the application.
+		 * It would be better if it was impletemented in a stored procedure but when attempted a "Mysql Commands out of sync" error is thrown.
+		 * This seems to be a problem with how Kohana deals with stored procedures and should be resolved with version 3.4.x (hopefully)
+		 */
+		
+		$querystr = sprintf('SELECT COUNT(id) AS count FROM %s WHERE order_id = "%s";',"vw_orderbalances",$order_id);
+		$result = $this->execute_select_query($querystr);
+		$row = $result[0];
+		$vw_orderbalances_live = <<<_SQL_
+SELECT 
+  `o`.`id`                        AS `id`,
+  `o`.`order_id`                  AS `order_id`,
+  `o`.`branch_id`                 AS `branch_id`,
+  `o`.`customer_id`               AS `customer_id`,
+  `o`.`is_co`                     AS `is_co`,
+  `o`.`cc_id`                     AS `cc_id`,
+  `o`.`first_name`                AS `first_name`,
+  `o`.`last_name`                 AS `last_name`,
+  `o`.`customer_type`             AS `customer_type`,
+  `o`.`address1`                  AS `address1`,
+  `o`.`address2`                  AS `address2`,
+  `o`.`city`                      AS `city`,
+  `o`.`phone_mobile1`             AS `phone_mobile1`,
+  `o`.`phone_home`                AS `phone_home`,
+  `o`.`phone_work`                AS `phone_work`,
+  `o`.`order_details`             AS `order_details`,
+  `p`.`payment_type`              AS `payment_type`,
+  `o`.`order_date`                AS `order_date`,
+  `o`.`quotation_date`            AS `quotation_date`,
+  `o`.`invoice_date`              AS `invoice_date`,
+  `o`.`order_status`              AS `order_status`,
+  `o`.`inventory_checkout_status` AS `inventory_checkout_status`,
+  `o`.`inventory_update_type`     AS `inventory_update_type`,
+  `o`.`inputter`                  AS `inputter`,
+  `o`.`input_date`                AS `input_date`,
+  `o`.`invoice_note`              AS `invoice_note`,
+  `o`.`comments`                  AS `comments`,
+  `o`.`current_no`                AS `current_no`,
+  `o`.`discount_total`            AS `discount_total`,
+  `o`.`extended_total`            AS `extended_total`,
+  `o`.`tax_total`                 AS `tax_total`,
+  `o`.`order_total`               AS `order_total`,
+  `p`.`payment_total`             AS `payment_total`,
+  (`o`.`order_total` - `p`.`payment_total`) AS `balance`
+FROM
+(SELECT `orders`.`id` AS `id`,`orders`.`order_id` AS `order_id`,`orders`.`branch_id` AS `branch_id`,`orders`.`customer_id` AS `customer_id`,`orders`.`is_co` AS `is_co`,`orders`.`cc_id` AS `cc_id`,
+`customers`.`first_name` AS `first_name`,`customers`.`last_name` AS `last_name`,`customers`.`customer_type` AS `customer_type`,`customers`.`address1` AS `address1`,`customers`.`address2` AS `address2`,`customers`.`city` AS `city`,
+`customers`.`phone_mobile1` AS `phone_mobile1`,`customers`.`phone_home` AS `phone_home`,`customers`.`phone_work` AS `phone_work`,GROUP_CONCAT(`orderdetails`.`product_id`,'(',`orderdetails`.`qty`,')' SEPARATOR '; ') AS `order_details`,
+`orders`.`order_date` AS `order_date`,`orders`.`quotation_date` AS `quotation_date`,`orders`.`invoice_date` AS `invoice_date`,`orders`.`order_status` AS `order_status`,`orders`.`inventory_checkout_status` AS `inventory_checkout_status`,
+`orders`.`inventory_update_type` AS `inventory_update_type`,`orders`.`inputter` AS `inputter`,`orders`.`input_date` AS `input_date`,`orders`.`invoice_note` AS `invoice_note`,`orders`.`comments` AS `comments`,
+`orders`.`current_no` AS `current_no`,COALESCE(SUM(`func_OrderDetailUnitTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`)),0) AS `unit_total`,COALESCE(SUM(`func_OrderDetailDiscountTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,
+`orderdetails`.`discount_amount`,`orderdetails`.`discount_type`)),0) AS `discount_total`,COALESCE(SUM(`func_OrderDetailSubTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,`orderdetails`.`discount_amount`,
+`orderdetails`.`discount_type`)),0) AS `extended_total`,COALESCE(SUM(`func_OrderDetailTaxTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,`orderdetails`.`discount_amount`,`orderdetails`.`tax_percentage`,
+`orderdetails`.`taxable`,`orderdetails`.`discount_type`)),0) AS `tax_total`,COALESCE(SUM(`func_OrderDetailOrderTotal`(`orderdetails`.`qty`,`orderdetails`.`unit_price`,`orderdetails`.`discount_amount`,
+`orderdetails`.`tax_percentage`,`orderdetails`.`taxable`,`orderdetails`.`discount_type`)),0) AS `order_total` FROM ((`orders` JOIN `customers` ON((`orders`.`customer_id` = `customers`.`customer_id`))) 
+LEFT JOIN `orderdetails` ON((`orders`.`order_id` = `orderdetails`.`order_id`)))
+WHERE `orders`.`order_id` = "$order_id") AS o
+JOIN
+(SELECT
+`orders`.`order_id` AS `order_id`,
+COALESCE(GROUP_CONCAT(DISTINCT IF((`payments`.`payment_status` <> 'CANCELLED'),`payments`.`payment_type`,NULL),'(',`payments`.`amount`,')' SEPARATOR '; '),'') AS `payment_type`,
+SUM(IF((`payments`.`payment_status` = 'VALID'),`payments`.`amount`,0)) AS `payment_total`
+FROM (`orders`
+LEFT JOIN `payments`
+ON ((`orders`.`order_id` = `payments`.`order_id`)))
+WHERE `orders`.`order_id` = "$order_id")
+AS p
+ON `o`.`order_id` = `p`.`order_id`
+_SQL_;
+		
+		if( $row->count > 0 )
+		{
+			$setfields = <<<_SQL_
+t1.branch_id = t2.branch_id,
+t1.customer_id = t2.customer_id,
+t1.is_co = t2.is_co,
+t1.cc_id = t2.cc_id,
+t1.first_name = t2.first_name,
+t1.last_name = t2.last_name,
+t1.customer_type = t2.customer_type,
+t1.address1 = t2.address1,
+t1.address2 = t2.address2,
+t1.city = t2.city,
+t1.phone_mobile1 = t2.phone_mobile1,
+t1.phone_home = t2.phone_home,
+t1.phone_work = t2.phone_work,
+t1.order_details = t2.order_details,
+t1.payment_type = t2.payment_type,
+t1.order_date = t2.order_date,
+t1.quotation_date = t2.quotation_date,
+t1.invoice_date = t2.invoice_date,
+t1.order_status = t2.order_status,
+t1.inventory_checkout_status = t2.inventory_checkout_status,
+t1.inventory_update_type = t2.inventory_update_type,
+t1.inputter = t2.inputter,
+t1.input_date = t2.input_date,
+t1.invoice_note = t2.invoice_note,
+t1.comments = t2.comments,
+t1.current_no = t2.current_no,
+t1.discount_total = t2.discount_total,
+t1.extended_total = t2.extended_total,
+t1.tax_total = t2.tax_total,
+t1.order_total = t2.order_total,
+t1.payment_total = t2.payment_total,
+t1.balance = t2.balance 
+_SQL_;
+			$querystr = sprintf('UPDATE vw_orderbalances t1 INNER JOIN ( %s ) t2 ON t1.order_id = t2.order_id SET %s WHERE t2.order_id = "%s";',$vw_orderbalances_live,$setfields,$order_id);
+			$count = $this->execute_update_query($querystr);
+		}
+		else
+		{
+			$querystr = sprintf('INSERT INTO %s SELECT * FROM (%s) AS vw_orderbalances_live WHERE order_id = "%s";',"vw_orderbalances",$vw_orderbalances_live,$order_id);
+			$count = $this->execute_insert_query($querystr);
+		}
+		return $count;
+	}
 
 } // End Site

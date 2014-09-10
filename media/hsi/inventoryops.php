@@ -15,11 +15,11 @@ require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/curlops.php');
 
-define("OUT_OF_STOCK","[OUT OF STOCK] ");
+define("OUT_OF_STOCK"," [OUT OF STOCK]");
 
 class InventoryOps 
 {
-	public $cfg 	= null;
+	public $config =  null;
 	public $dbops 	= null;
 	public $fileops = null;
 	private $inventory_data = null;
@@ -29,32 +29,36 @@ class InventoryOps
 	private $archive_import = "";
 	private $archive_export = "";
 	private $inventory_filename = "";
+	private $inventory_archive_filename = "";
 	private $tb_live = "";
 	private $tb_hist = "";
 	private $invchglog_tb_live = "";
 	private $inventory_processing_opt = "api/v2/items?format=xml";
-	
+		
 	public function __construct()
 	{
-		$this->cfg		= new HSIConfig();
-		$config 		= $this->cfg->get_config();
-		$this->appurl	= $config['appurl'];
-		$this->dbops	= new DbOps($config);
-		$this->fileops 	= new FileOps($config);
-		$this->curlops 	= new CurlOps($config);
+		$cfg		    = new HSIConfig();
+		$this->config 	= $cfg->get_config();
+		$this->appurl	= $this->config['appurl'];
+		$this->dbops	= new DbOps($this->config);
+		$this->fileops 	= new FileOps($this->config);
+		$this->curlops 	= new CurlOps($this->config);
 		
-		$this->current_import = $config['current_import'];
-		$this->current_export = $config['current_export'];
-		$this->archive_import = $config['archive_import'];
-		$this->archive_export = $config['archive_export'];
-		$this->tb_live = $config['tb_inventorys'];
-		$this->tb_hist = $config['tb_inventorys']."_hs";
-		$this->chglog_tb_live = $config['tb_changelogs'];
+		$this->current_import = $this->config['current_import'];
+		$this->current_export = $this->config['current_export'];
+		$this->archive_import = $this->config['archive_import'];
+		$this->archive_export = $this->config['archive_export'];
+		$this->tb_live = $this->config['tb_inventorys'];
+		$this->tb_hist = $this->config['tb_inventorys']."_hs";
+		$this->chglog_tb_live = $this->config['tb_changelogs'];
+		$this->push_inventory = $this->config['push_inventory'];
 	}
 	
 	public function set_inventory_filename($filename)
 	{
 		$this->inventory_filename = $filename;
+		$datestr = date('YmdHis');
+		$this->inventory_archive_filename = sprintf("%s_%s[ %s ].txt",$datestr,"INVENTORY",$filename);
 	}
 	
 	public function get_inventory_filename()
@@ -62,9 +66,19 @@ class InventoryOps
 		return $this->inventory_filename;
 	}
 	
+	public function get_inventory_archive_filename()
+	{
+		return $this->inventory_archive_filename;
+	}
+	
 	public function get_inventory_filepath()
 	{
 		return $this->current_import."/".$this->inventory_filename;
+	}
+	
+	public function get_inventory_archive_filepath()
+	{
+		return $this->archive_import."/".$this->inventory_archive_filename;
 	}
 	
 	public function set_inventory_data()
@@ -204,7 +218,6 @@ class InventoryOps
 	public function process_inventory()
 	{
 		$this->get_handshake_inventory();
-		//exit(0);		
 		$datalist = $this->get_inventory_data();
 /*
    `id` int(11) unsigned NOT NULL,
@@ -225,10 +238,11 @@ class InventoryOps
   `current_no` int(11) NOT NULL,		
 */		
 		$changelog_id = 'ICL-'.date('Ymd-His');
-		$xmlrows = "";
-		
+		$xmlrows_new = ""; $xmlrows_edit = "";
+
 		foreach($datalist as $key => $value)
 		{
+			$arr  = array();
 			$code = $value[0];
 			//codes that start with "9" do not exist in Handshake and should be excluded
 			if($code[0] != "9")
@@ -243,38 +257,63 @@ class InventoryOps
 				if( $this->dbops->record_exist($this->tb_live,"id",$value[0]) )
 				{
 					$UPDATE = FALSE; $PUSH = FALSE;
-					$querystr = sprintf('SELECT id,item_objid,category_objid,category,hash1,hash2,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"id",$value[0]);
+					$querystr = sprintf('SELECT id,item_objid,description,category_objid,category,availunits,taxable,unitprice,hash1,hash2,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"id",$value[0]);
 					$formdata = $this->dbops->execute_select_query($querystr);
 					$record	  = $formdata[0];
-					if( $hash1 != $record['hash1'] )
+					
+					if( $hash1 != $record['hash1'] && $hash2 != $record['hash2'] )
 					{
+						//availunits, taxable, description and unitprice changed
+						$arr['availunits'] 	= $value[2];
+						$arr['taxable'] 	= $value[3];
+						$arr['description'] = $value[1];
+						$arr['unitprice'] 	= $value[4];
+						$arr['hash1'] 		= $hash1;
+						$arr['hash2'] 		= $hash2;
+						$UPDATE = TRUE; $PUSH = TRUE;
+					}
+					else if( $hash1 != $record['hash1'] && $hash2 == $record['hash2'])
+					{
+						//availunits and taxable changed only
 						$arr['availunits'] 	= $value[2];
 						$arr['taxable'] 	= $value[3];
 						$arr['hash1'] 		= $hash1;
 						$UPDATE = TRUE;
 					}
-					
-					if( $hash2 != $record['hash2'] )
+					else if( $hash1 == $record['hash1'] && $hash2 != $record['hash2'] )
 					{
+						//description and unitprice changed only
 						$arr['description'] = $value[1];
 						$arr['unitprice'] 	= $value[4];
 						$arr['hash2'] 		= $hash2;
 						$PUSH = TRUE;
 					}
-					
+
 					if($UPDATE || $PUSH)
 					{
+						//if UPDATE OR PUSH, update database because record changed
 						$arr['id']	= $value[0];
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
 						$arr['auth_date']	= date('Y-m-d H:i:s'); 
 						$arr['current_no']	= $record['current_no'] + 1;
+
 						if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$value[0],$record['current_no']) )
 						{
 							if( $count = $this->dbops->update_record($this->tb_live, $arr) )
 							{
-//$xmlrows .= sprintf('<row><code>%s</code><description>%s</description><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],str_replace('&','&amp;', $arr['description']),$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
-$xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
+								if($UPDATE && $PUSH)
+								{
+$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
+								}
+								else if( $UPDATE && !$PUSH )
+								{
+$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $record['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$record['unitprice'])."\n";
+								} 
+								else if( !$UPDATE && $PUSH )
+								{
+$xmlrows_edit .= sprintf('<row><code>%s0</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$record['availunits'],$record['taxable'],$arr['unitprice'])."\n";
+								}
 							}
 						}
 					}
@@ -296,21 +335,23 @@ $xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</descr
 					$arr['current_no']	= "1";
 					if( $count = $this->dbops->insert_record($this->tb_live, $arr) )
 					{
-$xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>NEW</entry></row>',$arr['id'],"",str_replace('&','&amp;', $arr['description']),"NEWITEM",$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
+$xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>NEW</entry></row>',$arr['id'],"",str_replace('&','&amp;', $arr['description']),"NEWITEM",$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
 					}
 				}
 			}
-		
 		}
 		
-		$xmlrows  = "<rows>\n".$xmlrows."</rows>\n";
+		$xmlrows  = "<rows>\n"."<!-- ########### NEW INVENTORY ITEMS ########### -->\n".$xmlrows_new."<!-- ########### EXISTING INVENTORY ITEMS ########### -->\n".$xmlrows_edit."</rows>\n";
 		$xmllines = "<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n";
 		$xmllines .= "<header><column>Code</column><column>ObjID</column><column>Description</column><column>Category</column><column>Availunits</column><column>Taxable</column><column>Unitprice</column><column>Entry</column></header>\n";
 		$xmllines .= $xmlrows."</formfields>\n";
 		
 		$chglog['id']			= $this->dbops->create_record_id($this->chglog_tb_live);
 		$chglog['changelog_id']	= $changelog_id;
-		$chglog['type']			= "INVENTORY";
+		$chglog['changelog_type'] = "INVENTORY";
+		$chglog['changelog_date'] = date('Y-m-d'); 
+		$chglog['input_file']	= $this->get_inventory_filename();
+		$chglog['archive_file']	= $this->get_inventory_archive_filename();
 		$xmllines = str_replace("&","&amp;",$xmllines);
 		$chglog['changelog_details'] = $xmllines;
 		$chglog['inputter']		= "SYSINPUT";
@@ -320,6 +361,25 @@ $xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</descr
 		$chglog['record_status'] = "LIVE";
 		$chglog['current_no']	= "1";
 		$count = $this->dbops->insert_record($this->chglog_tb_live, $chglog);
+		
+		//necessary to wait a bit to generate unique changelog ids
+		usleep(1000000);
+		return $changelog_id;
+	}
+	
+	public function push_handshake_inventory($changelog_id)
+	{
+print $changelog_id."\n";
+	}
+	
+	public function archive_inventory_datafile()
+	{
+		$archive_import_dir = $this->archive_import;
+		$src = $this->get_inventory_filepath();
+		$dest = $this->get_inventory_archive_filepath();
+		$filename = $this->get_inventory_filename();
+		if( !file_exists($archive_import_dir) ){ mkdir($archive_import_dir,0777,true); } 
+		$this->fileops->move_file($src,$dest);
 	}
 
 } //End InventoryOps

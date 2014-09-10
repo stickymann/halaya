@@ -47,12 +47,38 @@ class Controller_Hndshkif_Inventory_Getdaceasyinventory extends Controller_Core_
 			->rule('request_id','not_empty')
 			->rule('request_id','min_length', array(':value', 2))->rule('request_id','max_length', array(':value', 30))
 			->rule('request_id', array($this,'duplicate_altid'), array(':validation', ':field', $this->OBJPOST['id'], $this->OBJPOST['request_id']));
-			
+		$validation
+			->rule('run','not_empty')
+			->rule('run', array($this,'validate_import_files'), array(':validation', ':field'));
+		
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();
 		$this->param['inputerrors'] = (array) $validation->errors($this->param['errormsgfile']);
 	}
-	
+		
+	public function validate_import_files(Validation $validation,$field)
+	{
+		if( $this->OBJPOST['run'] == "Y" )
+		{
+			$error_count = 0; $file_count = 0;
+			$delete_bad_files = false;
+			$fileops = new FileOps();
+			$filespecs = $fileops->process_import_files();
+			$fileops->write_errorlog_import_files($filespecs,$delete_bad_files);
+			
+			foreach($filespecs as $index => $specs)
+			{
+				if( $specs['filetype'] == "INVENTORY" )
+				{
+					$error_count = $error_count + $specs['errors']['total_min']; 
+					$file_count++;
+				}
+			}
+			if( $error_count > 0 ) { $validation->error($field, 'data_errors_exist');}
+			if( $file_count < 1) { $validation->error($field, 'file_not_exist');}
+		}
+	}
+		
 	public function update_run_status($table,$status,$request_id)
 	{
 		$querystr = sprintf('UPDATE %s SET run = "%s" WHERE request_id = "%s"',$table,$status,$request_id);
@@ -61,22 +87,29 @@ class Controller_Hndshkif_Inventory_Getdaceasyinventory extends Controller_Core_
 	
 	public function update_inventory()
 	{
-		$cfg	  = new HSIConfig();
-		$config   = $cfg->get_config();
-		$fileops  = new FileOps($config);
-		$filelist = $fileops->get_all_filenames_in_directory($config['current_import']);
-		/* foreach file if files is inventory then process file then move file to archive folder
-		 * 
-		 * 
-		 * 
-		 * 
-		 */
+		$delete_bad_files = true;
+		$fileops = new FileOps();
+		$filespecs = $fileops->process_import_files();
+		$fileops->write_errorlog_import_files($filespecs,$delete_bad_files);
 		
-		
-		$inventoryops = new InventoryOps();
-		$inventoryops->set_inventory_filename($filelist[0]);
-		$inventoryops->set_inventory_data();
-		$inventoryops->process_inventory();
+		foreach($filespecs as $index => $specs)
+		{
+			if( $specs['filetype'] == "INVENTORY" )
+			{
+				//file may get delete if data errors exist, check for its existence
+				if( file_exists( $specs['filepath'] ) )
+				{
+					$inventoryops = new InventoryOps();
+					//set filename to process
+					$inventoryops->set_inventory_filename($specs['filename']);
+					//read data in into array for processing
+					$inventoryops->set_inventory_data();
+					//process data
+					$changelog_id = $inventoryops->process_inventory();
+					$inventoryops->archive_inventory_datafile();
+				}
+			}
+		}
 		$this->update_run_status($this->param['tb_live'],"N",$this->OBJPOST['request_id']);
 	}
 	

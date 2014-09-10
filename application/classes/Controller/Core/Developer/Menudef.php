@@ -12,9 +12,10 @@
  */
 class Controller_Core_Developer_Menudef extends Controller_Core_Site
 {
-	public function __construct() 
+	public function __construct()
 	{
 		parent::__construct("menudef");
+		$this->param['htmlhead'] .= $this->insert_head_js();
 	}
 
 	public function action_index($opt="")
@@ -22,7 +23,12 @@ class Controller_Core_Developer_Menudef extends Controller_Core_Site
 		$this->param['indexfieldvalue'] = strtoupper( $this->request->param('opt') );
 		$this->process_index();
 	}
-
+	
+	function insert_head_js()
+	{
+		return HTML::script( $this->randomize('media/js/core.menudef.js') );
+	}
+	
 	function input_validation()
 	{
 		$post = $this->OBJPOST;	
@@ -34,7 +40,13 @@ class Controller_Core_Developer_Menudef extends Controller_Core_Site
 			->rule('id','numeric');
 		$validation
 			->rule('menu_id','not_empty')
-			->rule('menu_id','min_length', array(':value', 1))->rule('menu_id','max_length', array(':value', 50));
+			->rule('menu_id','numeric');
+		$validation
+			->rule('parent_id','not_empty')
+			->rule('parent_id','numeric');
+		$validation
+			->rule('sortpos','not_empty')
+			->rule('sortpos','numeric');
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

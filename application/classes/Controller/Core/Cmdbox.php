@@ -27,7 +27,7 @@ class Controller_Core_Cmdbox extends Controller_Include
 		$this->template->environment = $sysconfig->environment;
 	}
 		
-	public function action_index() {}
+	public function action_index() {}    
 
 	function get_htmlhead()
 	{	

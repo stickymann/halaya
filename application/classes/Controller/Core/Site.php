@@ -2202,6 +2202,8 @@ _text_;
 			{
 				$xml = simplexml_load_string($OBJPOST[$key]);
 				$json = json_encode($xml);
+				//set all empty dsata fields to empty string before converting to array
+				$json = str_replace('{}','""',$json); 
 				$arr = json_decode($json,TRUE);
 				$farr = array();
 				if(isset($arr['row'])) 

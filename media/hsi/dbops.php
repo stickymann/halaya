@@ -21,6 +21,13 @@ class DbOps
 	
 	public function __construct($config = null)
 	{
+		if( is_null($config) )
+		{
+			require_once(dirname(__FILE__).'/hsiconfig.php');
+			$cfg = new HSIConfig();
+			$config = $cfg->get_config();
+		}
+
 		if($config)
 		{
 			$this->dbserver = $config['dbserver'];
@@ -127,6 +134,7 @@ class DbOps
 	public function record_exist($table,$idfield,$idval)
 	{
 		$querystr = sprintf('SELECT COUNT(id) AS counter FROM %s WHERE %s = "%s"',$table,$idfield,$idval);
+//print "[DEBUG]---> "; print($querystr); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 		$result = $this->execute_select_query($querystr);
 		$row = $result[0];
 		if ($row['counter'] > 0 )
@@ -166,7 +174,7 @@ class DbOps
 	public function last_changelog_have_new_records($type)
 	{
 		$newrecs = 0;
-		$querystr = sprintf('SELECT id,changelog_details from %s WHERE type = "%s" ORDER BY id DESC LIMIT 1',$this->tb_changelogs,$type);
+		$querystr = sprintf('SELECT id,changelog_details from %s WHERE changelog_type = "%s" ORDER BY id DESC LIMIT 1',$this->tb_changelogs,$type);
 		if( $result = $this->execute_select_query($querystr) )
 		{
 			$record	  = $result[0]; 
