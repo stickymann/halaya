@@ -28,13 +28,18 @@ foreach($filespecs as $index => $specs)
 		if( file_exists( $specs['filepath'] ) )
 		{
 			$inventoryops = new InventoryOps();
+			
 			//set filename to process
 			$inventoryops->set_inventory_filename($specs['filename']);
+			
 			//read data in into array for processing
 			$inventoryops->set_inventory_data();
+			
 			//process data
 			$changelog_id = $inventoryops->process_inventory();
 			array_push($changelogs, $changelog_id);
+			
+			//data import data file
 			$inventoryops->archive_inventory_datafile();
 		}
 	}

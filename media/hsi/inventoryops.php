@@ -238,7 +238,7 @@ class InventoryOps
   `current_no` int(11) NOT NULL,		
 */		
 		$changelog_id = 'ICL-'.date('Ymd-His');
-		$xmlrows = "";
+		$xmlrows_new = ""; $xmlrows_edit = "";
 
 		foreach($datalist as $key => $value)
 		{
@@ -304,15 +304,15 @@ class InventoryOps
 							{
 								if($UPDATE && $PUSH)
 								{
-$xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
+$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
 								}
 								else if( $UPDATE && !$PUSH )
 								{
-$xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $record['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$record['unitprice'])."\n";
+$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $record['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$record['unitprice'])."\n";
 								} 
 								else if( !$UPDATE && $PUSH )
 								{
-$xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$record['availunits'],$record['taxable'],$arr['unitprice'])."\n";
+$xmlrows_edit .= sprintf('<row><code>%s0</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$record['availunits'],$record['taxable'],$arr['unitprice'])."\n";
 								}
 							}
 						}
@@ -335,13 +335,13 @@ $xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</descr
 					$arr['current_no']	= "1";
 					if( $count = $this->dbops->insert_record($this->tb_live, $arr) )
 					{
-$xmlrows .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>NEW</entry></row>',$arr['id'],"",str_replace('&','&amp;', $arr['description']),"NEWITEM",$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
+$xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>NEW</entry></row>',$arr['id'],"",str_replace('&','&amp;', $arr['description']),"NEWITEM",$arr['availunits'],$arr['taxable'],$arr['unitprice'])."\n";
 					}
 				}
 			}
 		}
 		
-		$xmlrows  = "<rows>\n".$xmlrows."</rows>\n";
+		$xmlrows  = "<rows>\n"."<!-- ########### NEW INVENTORY ITEMS ########### -->\n".$xmlrows_new."<!-- ########### EXISTING INVENTORY ITEMS ########### -->\n".$xmlrows_edit."</rows>\n";
 		$xmllines = "<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n";
 		$xmllines .= "<header><column>Code</column><column>ObjID</column><column>Description</column><column>Category</column><column>Availunits</column><column>Taxable</column><column>Unitprice</column><column>Entry</column></header>\n";
 		$xmllines .= $xmlrows."</formfields>\n";

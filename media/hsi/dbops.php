@@ -134,6 +134,7 @@ class DbOps
 	public function record_exist($table,$idfield,$idval)
 	{
 		$querystr = sprintf('SELECT COUNT(id) AS counter FROM %s WHERE %s = "%s"',$table,$idfield,$idval);
+//print "[DEBUG]---> "; print($querystr); print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 		$result = $this->execute_select_query($querystr);
 		$row = $result[0];
 		if ($row['counter'] > 0 )
