@@ -18,7 +18,7 @@ require_once(dirname(__FILE__).'/curlops.php');
 
 class CustomerOps 
 {
-	public $cfg 	= null;
+	public $config 	= null;
 	public $dbops 	= null;
 	public $fileops = null;
 	private $customer_data = null;
@@ -28,26 +28,29 @@ class CustomerOps
 	private $tb_live = "";
 	private $tb_hist = "";
 	private $chglog_tb_live = "";
-	private $customer_processing_opt = "api/v2/customers?format=xml";
-	private $address_processing_opt = "api/v2/addresses?format=xml";
+	private $customer_processing_opt = "";
+	private $address_processing_opt = "";
 	private $taxids = array();
 	
 	public function __construct()
 	{
-		$this->cfg		= new HSIConfig();
-		$config 		= $this->cfg->get_config();
-		$this->appurl	= $config['appurl'];
-		$this->dbops	= new DbOps($config);
-		$this->fileops 	= new FileOps($config);
-		$this->curlops 	= new CurlOps($config);
+		$cfg		= new HSIConfig();
+		$this->config	= $cfg->get_config();
+		$this->appurl	= $this->config['appurl'];
+		$this->dbops	= new DbOps($this->config);
+		$this->fileops 	= new FileOps($this->config);
+		$this->curlops 	= new CurlOps($this->config);
 		
-		$this->current_import = $config['current_import'];
-		$this->current_export = $config['current_export'];
-		$this->archive_import = $config['archive_import'];
-		$this->archive_export = $config['archive_export'];
-		$this->tb_live = $config['tb_customers'];
-		$this->tb_hist = $config['tb_customers']."_hs";
-		$this->chglog_tb_live = $config['tb_changelogs'];
+		$this->current_import = $this->config['current_import'];
+		$this->current_export = $this->config['current_export'];
+		$this->archive_import = $this->config['archive_import'];
+		$this->archive_export = $this->config['archive_export'];
+		$this->tb_live = $this->config['tb_customers'];
+		$this->tb_hist = $this->config['tb_customers']."_hs";
+		$this->chglog_tb_live = $this->config['tb_changelogs'];
+		
+		$this->customer_processing_opt = $this->config['hs_apiver']."customers?format=xml";
+		$this->address_processing_opt = $this->config['hs_apiver']."addresses?format=xml";
 	}
 	
 	public function set_customer_filename($filename)
@@ -69,12 +72,12 @@ class CustomerOps
 	
 	public function get_customer_filepath()
 	{
-		return $this->current_import."/".$this->customer_filename;
+		return $this->current_import.$this->customer_filename;
 	}
 	
 	public function get_customer_archive_filepath()
 	{
-		return $this->archive_import."/".$this->customer_archive_filename;
+		return $this->archive_import.$this->customer_archive_filename;
 	}
 	
 	public function set_customer_data()

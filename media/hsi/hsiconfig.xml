@@ -8,10 +8,12 @@
 </database>
 <handshake>
 <appurl>https://app.handshake-app.com/</appurl>
+<apiversion>api/v2/</apiversion>
 <apikey>dadc68c1ee88efb68f82bd51017645ca6188022d</apikey>
 <!--valid values: YES,NO  -->
 <push_customer>YES</push_customer>
 <push_inventory>YES</push_inventory>
+<flag_outofstock>NO</flag_outofstock>
 </handshake>
 <orderentry>
 <!--valid values: ORDER,DATE  -->
@@ -35,6 +37,7 @@
 <tb_changelogs>hsi_changelogs</tb_changelogs>
 <tb_inventorys>hsi_inventorys</tb_inventorys>
 <tb_customers>hsi_customers</tb_customers>
+<tb_objects>objects</tb_objects>
 <tb_schedulers>hsi_schedulers</tb_schedulers>
 <tb_pidregs>_hsi_pids</tb_pidregs>
 <tb_printq>_hsi_printq</tb_printq>

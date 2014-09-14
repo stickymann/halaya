@@ -11,8 +11,16 @@
  * @license      
  */
 
+//prevent running more than one instance
+require_once(dirname(__FILE__).'/procops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/inventoryops.php');
+
+$grep_arg = basename(__FILE__);
+if( ProcOps::process_exist($grep_arg) )
+{
+	die("Process already exist, terminating now!\n");
+}
 
 $delete_bad_files=true;
 $fileops = new FileOps();

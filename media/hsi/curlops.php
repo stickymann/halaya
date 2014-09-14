@@ -50,26 +50,52 @@ class CurlOps
 	
 	public function put_remote_data($url,$data_json,&$status)
 	{
-		//NOTES: http://developers.sugarcrm.com/wordpress/2011/11/22/howto-do-put-requests-with-php-curl-without-writing-to-a-file/
+		//PUT USED TO UPDATE EXISTING RECORDS
 		$curl = curl_init($url);
-		//curl_setopt($curl, CURLOPT_URL, $closeOppURL);
-		//curl_setopt($curl, CURLOPT_USERAGENT, 'SugarConnector/1.4');
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_json)));
+		$fp = fopen('php://temp/maxmemory:256000', 'w');
+		if (!$fp) {  die('could not open temp memory data'); }
+		fwrite($fp, $data_json);
+		fseek($fp, 0);
+		curl_setopt($curl, CURLOPT_BINARYTRANSFER, true);
+		curl_setopt($curl, CURLOPT_INFILE, $fp); // file pointer
+		curl_setopt($curl, CURLOPT_INFILESIZE, strlen($data_json)); 
+		
+		curl_setopt($curl, CURLOPT_PUT, true);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json') );
 		curl_setopt($curl, CURLOPT_VERBOSE, 1);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
-		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT"); 
-		curl_setopt($curl, CURLOPT_POSTFIELDS,$data_json);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
+		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
 		
 		$response = curl_exec($curl);
 		$status = curl_getinfo($curl);
-		//$curlapierr = 
-print "[DEBUG]---> "; print ("ERRNO: ".curl_errno($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
-print "[DEBUG]---> "; print ("ERROR: ".curl_error($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+//print "[DEBUG]---> "; print ("ERRNO: ".curl_errno($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+//print "[DEBUG]---> "; print ("ERROR: ".curl_error($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+		curl_close($curl);
+		fclose($fp);
+		return $response;
+	}
+	
+	public function post_remote_data($url,$data_json,&$status)
+	{
+		//POST USED TO CREATE NEW RECORDS
+		$curl = curl_init($url);
+		curl_setopt($curl, CURLOPT_POSTFIELDS,$data_json);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json') );
+		curl_setopt($curl, CURLOPT_VERBOSE, 1);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
+		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
 		
-		//print (curl_errno($curl));
-		//$curlerrmsg = curl_error($curl);
+		$response = curl_exec($curl);
+		$status = curl_getinfo($curl);
+//print "[DEBUG]---> "; print ("ERRNO: ".curl_errno($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
+//print "[DEBUG]---> "; print ("ERROR: ".curl_error($curl));print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 		curl_close($curl);
 		return $response;
 	}

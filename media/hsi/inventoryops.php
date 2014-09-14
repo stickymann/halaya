@@ -73,12 +73,12 @@ class InventoryOps
 	
 	public function get_inventory_filepath()
 	{
-		return $this->current_import."/".$this->inventory_filename;
+		return $this->current_import.$this->inventory_filename;
 	}
 	
 	public function get_inventory_archive_filepath()
 	{
-		return $this->archive_import."/".$this->inventory_archive_filename;
+		return $this->archive_import.$this->inventory_archive_filename;
 	}
 	
 	public function set_inventory_data()
@@ -103,14 +103,16 @@ class InventoryOps
 			$response = simplexml_load_string($xmldata);
 		}
 
-		$batch_id = 'BDO-'.date('Ymd-His');
 		foreach ($response->objects->object as $object)
 		{
 			$arr = array(); 
 			$arr['id']				= sprintf('%s',$object->sku);
 			$arr['item_objid']		= sprintf('%s',$object->objID);
+			$arr['description']		= str_replace('"','\"', sprintf('%s',$object->name) );
 			$arr['category_objid']	= sprintf('%s',$object->category->objID);
 			$arr['category']		= str_replace('"',' _in_ ', sprintf('%s',$object->category->id) );
+			$arr['unitprice']		= sprintf('%s',$object->unitPrice);
+			$arr['hash2']  			= hash('sha256',$arr['description'].$arr['unitprice']);
 			$arr['inputter']		= "SYSINPUT";
 			$arr['input_date']		= date('Y-m-d H:i:s'); 
 			$arr['authorizer']		= "SYSAUTH";
@@ -247,7 +249,7 @@ class InventoryOps
 			//codes that start with "9" do not exist in Handshake and should be excluded
 			if($code[0] != "9")
 			{
-				if( $value[2] < 1 )
+				if( $value[2] < 1 && $this->config['flag_outofstock'] )
 				{
 					$value[1] = $value[1].OUT_OF_STOCK;
 				}

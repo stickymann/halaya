@@ -19,11 +19,11 @@ class HSIDaemon
 {	
 	public function __construct()
     {
-        $this->cfg		= new HSIConfig();
-		$config 		= $this->cfg->get_config();
-		$this->dbops	= new DbOps($config);
-		$this->tb_schedulers = $config['tb_schedulers'];
-		$this->tb_pidregs = $config['tb_pidregs'];
+        $cfg		= new HSIConfig();
+		$this->config 	= $cfg->get_config();
+		$this->dbops	= new DbOps($this->config );
+		$this->tb_schedulers = $this->config ['tb_schedulers'];
+		$this->tb_pidregs = $this->config ['tb_pidregs'];
 	}
     
     public function register_pid($type="")
@@ -35,6 +35,13 @@ class HSIDaemon
     }
     
 } // End HSIDaemon
+	
+	//prevent running more than one instance
+	$grep_arg = basename(__FILE__);
+	if( ProcOps::process_exist($grep_arg) )
+	{
+		die("Process already exist, terminating now!\n");
+	}
 	
 	$fail_message = sprintf("Run with: \n\t php %s -t %s\n\n",__FILE__,"cli");
 	$opts  = "";
@@ -61,6 +68,7 @@ class HSIDaemon
 	if( $result = $daemon->dbops->execute_select_query($querystr) )
 	{ 
 		$scheduler = new Scheduler();
+		$scheduler->setLogFile($daemon->config['archive_log']."scheduler.log.txt"); 
 		foreach( $result as $index => $record )
 		{
 			$cmd = "";

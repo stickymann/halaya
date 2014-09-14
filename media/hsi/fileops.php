@@ -147,7 +147,7 @@ class FileOps
 			if( !($errorlog_prefix == ERRORLOG_PREFIX) )
 			{
 				$specs = array();
-				$filepath = $this->config['current_import']."/".$filename;
+				$filepath = $this->config['current_import'].$filename;
 				$specs['filename'] = $filename;
 				$specs['filepath'] = $filepath;
 				$specs = array_merge( $specs, $this->set_filetype($filepath) );
@@ -269,14 +269,14 @@ class FileOps
 			{			
 				if( $specs['filetype'] == "CUSTOMER" )
 				{
-					$filepath = sprintf("%s/%s_%s.MAX.%s[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
+					$filepath = sprintf("%s%s_%s.MAX.%s[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
 					if( $specs['errors']['total_max'] > 0 )
 					{
 						$this->write_file($filepath,$specs['errors']['errorlines_max']);
 						if( $delete_bad_files ) { $this->delete_file( $specs['filepath'] ); }
 					}
 				}
-				$filepath = sprintf("%s/%s_%s.MIN.%s[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
+				$filepath = sprintf("%s%s_%s.MIN.%s[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
 				if( $specs['errors']['total_min'] > 0 )
 				{
 					$this->write_file($filepath,$specs['errors']['errorlines_min']);
@@ -289,7 +289,7 @@ class FileOps
 	public function write_out_good_customers($good_customers)
 	{
 		$current_import_dir = $this->config['current_import'];
-		$filepath = sprintf("%s/customers_with_valid_data.txt",$current_import_dir);
+		$filepath = sprintf("%scustomers_with_valid_data.txt",$current_import_dir);
 		$this->write_file($filepath,$good_customers);
 	}
 

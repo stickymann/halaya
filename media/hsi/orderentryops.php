@@ -184,10 +184,10 @@ class OrderEntryOps
 								$field[15] = sprintf('%s',"Y"); //unknown, use default value 
 								$field[16] = sprintf('%s',"N"); //unknown, use default value 
 								$field[17] = sprintf('%s',"");  //unknown, use default value 
-								$field[18] = sprintf('%s',$qty); 
-								$field[19] = sprintf('%s',"0"); //unknown, use default value 
-								$field[20] = sprintf('%s',"0"); //unknown, use default value 
-								$field[21] = sprintf('%s',$qty);
+								$field[18] = sprintf('%s',$qty); // ORDERED
+								$field[19] = sprintf('%s',"0");  // SHIPPED
+								$field[20] = sprintf('%s',$qty); // THIS SHIPMENT 
+								$field[21] = sprintf('%s',"0");  // BACKORDER
 								$field[22] = sprintf('%s',$customer_price);
 								$field[23] = sprintf('%s',number_format(0,2,'.','')); 
 								$field[24] = sprintf('%s',number_format(0,2,'.',''));
@@ -437,12 +437,12 @@ class OrderEntryOps
 		$datestr = date('YmdHis');
 		$current_export_dir = $this->config['current_export'];
 		$archive_export_dir = $this->config['archive_export'];	
-		
+
 		if( $this->count_TAXDTL > 0 )
 		{	
 			$taxtype = "TAX";
-			$current_filepath = sprintf("%s/%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
-			$archive_filepath = sprintf("%s/%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$current_filepath = sprintf("%s%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$archive_filepath = sprintf("%s%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
 //print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
@@ -451,8 +451,8 @@ class OrderEntryOps
 		if( $this->count_NTXDTL > 0 )
 		{
 			$taxtype = "NTX";
-			$current_filepath = sprintf("%s/%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
-			$archive_filepath = sprintf("%s/%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$current_filepath = sprintf("%s%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$archive_filepath = sprintf("%s%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
 //print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		

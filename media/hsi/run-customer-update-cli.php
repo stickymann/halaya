@@ -11,8 +11,16 @@
  * @license      
  */
 
+require_once(dirname(__FILE__).'/procops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/customerops.php');
+
+//prevent running more than one instance
+$grep_arg = basename(__FILE__);
+if( ProcOps::process_exist($grep_arg) )
+{
+	die("Process already exist, terminating now!\n");
+}
 
 $fileops = new FileOps();
 $filespecs = $fileops->process_import_files();
