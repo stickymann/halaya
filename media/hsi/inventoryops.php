@@ -177,17 +177,24 @@ class InventoryOps
 					$total_inserts = $total_inserts + $meta['total_inserts'];
 				}
 			}
+			else
+			{
+				$GET_REMOTE_DATA = FALSE;
+			}
 			usleep(1000000);
 		}
 	
-		$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
-		$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
-		$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
-		$total_inserts = $total_inserts + $meta['total_inserts'];
+		if( $meta )
+		{
+			$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
+			$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
+			$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
+			$total_inserts = $total_inserts + $meta['total_inserts'];
 	
-		$total_count = $meta['total_count']; 
-		$total_failed = $total_count - $total_inserts;
-		$RESULT .= sprintf('<b>Summary</b><br>Total Download : %s',$total_count);
+			$total_count = $meta['total_count']; 
+			$total_failed = $total_count - $total_inserts;
+			$RESULT .= sprintf('<b>Summary</b><br>Total Download : %s',$total_count);
+		}
 		return $RESULT;
 	}
 	

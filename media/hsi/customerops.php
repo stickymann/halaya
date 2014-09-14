@@ -21,6 +21,7 @@ class CustomerOps
 	public $config 	= null;
 	public $dbops 	= null;
 	public $fileops = null;
+	public $curlops = null;
 	private $customer_data = null;
 	private $appurl = "";
 	private $customer_filename = "";
@@ -267,17 +268,24 @@ array_push($this->taxids, $arr['tax_id']);  //remove this line when duplicate ta
 					$total_inserts = $total_inserts + $meta['total_inserts'];
 				}
 			}
+			else
+			{
+				$GET_REMOTE_DATA = FALSE;
+			}
 			usleep(1000000);
 		}
+		
+		if( $meta )
+		{
+			$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
+			$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
+			$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
+			$total_inserts = $total_inserts + $meta['total_inserts'];
 	
-		$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
-		$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
-		$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
-		$total_inserts = $total_inserts + $meta['total_inserts'];
-	
-		$total_count = $meta['total_count']; 
-		$total_failed = $total_count - $total_inserts;
-		$RESULT .= sprintf('<b>Summary</b><br>Total Download : %s',$total_count);
+			$total_count = $meta['total_count']; 
+			$total_failed = $total_count - $total_inserts;
+			$RESULT .= sprintf('<b>Summary</b><br>Total Download : %s',$total_count);
+		}
 		return $RESULT;
 	}
 	
