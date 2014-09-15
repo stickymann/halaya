@@ -13,7 +13,7 @@
 <!--valid values: YES,NO  -->
 <push_customer>YES</push_customer>
 <push_inventory>YES</push_inventory>
-<flag_outofstock>NO</flag_outofstock>
+<flag_outofstock>YES</flag_outofstock>
 </handshake>
 <orderentry>
 <!--valid values: ORDER,DATE  -->

@@ -14,8 +14,10 @@ require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/curlops.php');
+require_once(dirname(__FILE__).'/objectops.php');
 
-define("OUT_OF_STOCK"," [OUT OF STOCK]");
+define("OUT_OF_STOCK"," (OUT OF STOCK)");
+define("NEW_ITEM_CATEGORY","NEW-ITEM.CATEGORY");
 
 class InventoryOps 
 {
@@ -33,7 +35,9 @@ class InventoryOps
 	private $tb_live = "";
 	private $tb_hist = "";
 	private $invchglog_tb_live = "";
-	private $inventory_processing_opt = "api/v2/items?format=xml";
+	private $object_tb_live = "";
+	private $inventory_processing_opt = "";
+	public $new_item_category_objid = 0;
 		
 	public function __construct()
 	{
@@ -51,7 +55,11 @@ class InventoryOps
 		$this->tb_live = $this->config['tb_inventorys'];
 		$this->tb_hist = $this->config['tb_inventorys']."_hs";
 		$this->chglog_tb_live = $this->config['tb_changelogs'];
+		$this->object_tb_live = $this->config['tb_objects'];
 		$this->push_inventory = $this->config['push_inventory'];
+		
+		$this->inventory_processing_opt = $this->config['hs_apiver']."items?format=xml";
+		$this->set_new_item_category();
 	}
 	
 	public function set_inventory_filename($filename)
@@ -89,6 +97,20 @@ class InventoryOps
 	public function get_inventory_data()
 	{
 		return $this->inventory_data;
+	}
+	
+	public function set_new_item_category()
+	{
+		$querystr = sprintf('SELECT hs_objid FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_ITEM_CATEGORY);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$mapping = $result[0];
+			$this->new_item_category_objid = $mapping['hs_objid'];
+		}
+		else
+		{
+			die();
+		}
 	}
 	
 	private function process_handshake_inventory_xml($xmldata,$update_type,$type="string")
@@ -331,6 +353,7 @@ $xmlrows_edit .= sprintf('<row><code>%s0</code><objid>%s</objid><description>%s<
 				{
 					$arr['id'] 			= $value[0];
 					$arr['description'] = $value[1];
+					$arr['category_objid'] = $this->new_item_category_objid;
 					$arr['availunits'] 	= $value[2];
 					$arr['taxable'] 	= $value[3];
 					$arr['unitprice'] 	= $value[4];
@@ -378,7 +401,55 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 	
 	public function push_handshake_inventory($changelog_id)
 	{
-print $changelog_id."\n";
+		$status = array();
+		$querystr = sprintf('SELECT id,changelog_id,changelog_details FROM %s WHERE changelog_id = "%s"',$this->chglog_tb_live,$changelog_id);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$changelog  = $result[0];
+			$formfields = new SimpleXMLElement($changelog['changelog_details']);
+			foreach ($formfields->rows->row as $row)
+			{
+				$id = sprintf('%s',$row->code);
+				$querystr = sprintf('SELECT id,item_objid,description,category_objid,unitprice FROM %s WHERE id = "%s"',$this->tb_live,$id);
+				if( $formdata = $this->dbops->execute_select_query($querystr) )
+				{
+					$item = $formdata[0];
+					$entry = sprintf('%s',$row->entry);
+					if( $entry == "EDIT" )
+					{
+						$arr = array
+						(
+							"sku" => "$id",
+							"name" => $item['description'],
+							"unitPrice" => $item['unitprice'],
+							"minQty" => 1,
+							"multQty" => 1,
+							"category" => array("objID" => intval($item['category_objid']) )
+						);
+						$json_arr = json_encode($arr);
+						$url = sprintf('%s%s%s/%s',$this->appurl,$this->config['hs_apiver'],"items",$item['item_objid']);
+						$response = $this->curlops->put_remote_data($url,$json_arr,$status);
+					}
+					else if ( $entry == "NEW" )
+					{
+						$arr = array
+						(
+							"sku" => "$id",
+							"name" => $item['description'],
+							"unitPrice" => $item['unitprice'],
+							"minQty" => 1,
+							"multQty" => 1,
+							"category" => array("objID" => intval($this->new_item_category_objid) )
+						);
+						$json_arr = json_encode($arr);
+						$url = sprintf('%s%s%s',$this->appurl,$this->config['hs_apiver'],"items");
+						$response = $this->curlops->post_remote_data($url,$json_arr,$status);
+					}
+				}
+				//cannot exceed API 60 request per second
+				usleep(1000000);
+			}
+		}
 	}
 	
 	public function archive_inventory_datafile()

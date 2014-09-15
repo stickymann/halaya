@@ -42,18 +42,18 @@ class HSIConfig
 				$this->hsiconfig['flag_outofstock'] = false;
 				if($cfg->handshake->push_customer) 
 				{
-					$value = strtoupper( sprintf('%s',$cfg->push_customer) );
-					if($value = "YES" || $value = "1" ) { $this->hsiconfig['push_customer'] = true; }
+					$value = strtoupper( sprintf('%s',$cfg->handshake->push_customer) );
+					if($value =="YES" || $value == "1" ) { $this->hsiconfig['push_customer'] = true; }
 				}
 				if($cfg->handshake->push_inventory) 
 				{
-					$value = strtoupper( sprintf('%s',$cfg->push_inventory) );
-					if($value = "YES" || $value = "1" ) { $this->hsiconfig['push_inventory'] = true; }
+					$value = strtoupper( sprintf('%s',$cfg->handshake->push_inventory) );
+					if($value == "YES" || $value =="1" ) { $this->hsiconfig['push_inventory'] = true; }
 				}
 				if($cfg->handshake->flag_outofstock) 
 				{
-					$value = strtoupper( sprintf('%s',$cfg->flag_outofstock) );
-					if($value = "YES" || $value = "1" ) { $this->hsiconfig['flag_outofstock'] = true; }
+					$value = strtoupper( sprintf('%s',$cfg->handshake->flag_outofstock) );
+					if($value == "YES" || $value == "1" ) { $this->hsiconfig['flag_outofstock'] = true; }
 				}
 				
 				

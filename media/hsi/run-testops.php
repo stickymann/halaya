@@ -11,12 +11,22 @@
  * @license      
  */
 
+//Push Inventory
+require_once(dirname(__FILE__).'/inventoryops.php');
+$changelog_id = "ICL-20140914-203600";
+$inventoryops = new InventoryOps();
+print $inventoryops->new_item_category_objid."\n";
+$inventoryops->push_handshake_inventory($changelog_id);
+
+
+/*
 // Object Update
 require_once(dirname(__FILE__).'/objectops.php');
 $mapping_id = "NEW-ITEM.CATEGORY";
 $objectops = new ObjectOps();
 $result = $objectops->update_object_data($mapping_id); 
 print $result."\n";
+*/
 
 /*
 // Import Files
