@@ -233,7 +233,7 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 		$logtext = str_replace("<br>","\r\n",$logtext);
 		$logtext = str_replace("<b>","[",$logtext);
 		$logtext = str_replace("</b>","]",$logtext);
-		$logtext = str_replace("<hr>","---------- ---------- ---------- ----------\r\n",$logtext);
+		$logtext = str_replace("<hr>","---------- --------------------- ----------\r\n",$logtext);
 		
 		$dir = $this->config['archive_log'];  
 		$filename = sprintf("%s/%s.log.txt",$dir,$batch_id);

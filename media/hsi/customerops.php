@@ -15,6 +15,10 @@ require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/curlops.php');
+require_once(dirname(__FILE__).'/objectops.php');
+
+define("NEW_CUSTOMER_USER_GROUP","NEW-CUSTOMER.USER.GROUP");
+define("NEW_CUSTOMER_CUSTOMER_GROUP","NEW-CUSTOMER.CUSTOMER.GROUP");
 
 class CustomerOps 
 {
@@ -29,9 +33,12 @@ class CustomerOps
 	private $tb_live = "";
 	private $tb_hist = "";
 	private $chglog_tb_live = "";
+	private $object_tb_live = "";
 	private $customer_processing_opt = "";
 	private $address_processing_opt = "";
 	private $taxids = array();
+	public $customer_group_objid = 0;
+	public $user_group_objid = 0;
 	
 	public function __construct()
 	{
@@ -49,9 +56,12 @@ class CustomerOps
 		$this->tb_live = $this->config['tb_customers'];
 		$this->tb_hist = $this->config['tb_customers']."_hs";
 		$this->chglog_tb_live = $this->config['tb_changelogs'];
+		$this->object_tb_live = $this->config['tb_objects'];
+		$this->push_customer = $this->config['push_customer'];
 		
 		$this->customer_processing_opt = $this->config['hs_apiver']."customers?format=xml";
 		$this->address_processing_opt = $this->config['hs_apiver']."addresses?format=xml";
+		$this->set_customer_groups();
 	}
 	
 	public function set_customer_filename($filename)
@@ -91,6 +101,31 @@ class CustomerOps
 		return $this->customer_data;
 	}
 	
+	public function set_customer_groups()
+	{
+		$querystr = sprintf('SELECT hs_objid FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_CUSTOMER_USER_GROUP);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$mapping = $result[0];
+			$this->user_group_objid = $mapping['hs_objid'];
+		}
+		else
+		{
+			die();
+		}
+		
+		$querystr = sprintf('SELECT hs_objid FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_CUSTOMER_CUSTOMER_GROUP);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$mapping = $result[0];
+			$this->customer_group_objid = $mapping['hs_objid'];
+		}
+		else
+		{
+			die();
+		}
+	}
+	
 	public function is_valid_phone_number($numstr)
 	{
 		if( strlen($numstr) > 0 )
@@ -101,12 +136,14 @@ class CustomerOps
 			}
 			else
 			{
+				$numstr = str_replace("(   )","(868)",$numstr);
+				/*
 				$vals = preg_split('/ /',$numstr);
-				if( $vals[0] == "(   )" || $vals[0] == "(    )" || $vals[0] == "(     )" )
+				if( $vals[0] ==  || $vals[0] == "(    )" || $vals[0] == "(     )" )
 				{
 					$vals[0] = "(868)";
 					$numstr = $vals[0]." ".$vals[1];
-				}
+				}*/
 				return $numstr;
 			}
 		}
@@ -129,28 +166,31 @@ class CustomerOps
 		foreach ($response->objects->object as $object)
 		{
 			$arr = array(); 
-			$arr['id']			= sprintf('%s',$object->id);
-			$arr['tax_id']		= sprintf('%s',$object->taxID);
-			$arr['customer_objid']	= sprintf('%s',$object->objID);
-			//$arr['name']		= sprintf('%s',$object->name);
-			//$arr['contact']	= sprintf('%s',$object->contact);
-//print "<b>[DEBUG]---></b> "; print( sprintf('%s',$object->defaultShipTo) ); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
-			$vals = preg_split('/\//',sprintf('%s',$object->defaultShipTo));
-//print "<b>[DEBUG]---></b> "; print_r( $vals ); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
-			$arr['address_objid']	=  $vals[4];
-			//$arr['street']	=  "";
-			//$arr['city']		=  "";
-			//$arr['country']	=  "";
-			//$arr['phone']		=  "";
-			$arr['customergroup_objid']		= sprintf('%s',$object->customerGroup->objID);
-			$arr['customergroup_id']		= sprintf('%s',$object->customerGroup->id);
-			
-			$arr['inputter']		= "SYSINPUT";
-			$arr['input_date']		= date('Y-m-d H:i:s'); 
-			$arr['authorizer']		= "SYSAUTH";
-			$arr['auth_date']		= date('Y-m-d H:i:s'); 
-			$arr['record_status']	= "LIVE";
-			$arr['current_no']		= "1";
+			$arr['id']					= sprintf('%s',$object->id);
+			$arr['tax_id']				= sprintf('%s',$object->taxID);
+			$arr['customer_objid']		= sprintf('%s',$object->objID);
+			$arr['name']				= sprintf('%s',$object->name);
+			$arr['contact']				= sprintf('%s',$object->contact);
+			$vals 						= preg_split('/\//',sprintf('%s',$object->defaultShipTo));
+			$arr['address_objid']		= $vals[4];
+			$arr['street']				= sprintf('%s',$object->billTo->street);
+			$arr['city']				= sprintf('%s',$object->billTo->city);
+			$arr['country']				= sprintf('%s',$object->billTo->country);
+			$arr['phone']				= sprintf('%s',$object->billTo->phone);
+			$arr['fax']					= sprintf('%s',$object->billTo->fax);
+			$arr['email']				= sprintf('%s',$object->email);
+			$arr['payment_terms']		= sprintf('%s',$object->paymentTerms);
+			$arr['customergroup_objid']	= sprintf('%s',$object->customerGroup->objID);
+			$arr['customergroup_id']	= sprintf('%s',$object->customerGroup->id);
+			$arr['usergroup_objid']		= sprintf('%s',$object->userGroup->objID);
+			$arr['usergroup_id']		= sprintf('%s',$object->userGroup->id);
+			$arr['hash']				= hash('sha256',$arr['name'].$arr['contact'].$arr['street'].$arr['city'].$arr['country'].$arr['phone'].$arr['fax'].$arr['email'].$arr['payment_terms']);
+			$arr['inputter']			= "SYSINPUT";
+			$arr['input_date']			= date('Y-m-d H:i:s'); 
+			$arr['authorizer']			= "SYSAUTH";
+			$arr['auth_date']			= date('Y-m-d H:i:s'); 
+			$arr['record_status']		= "LIVE";
+			$arr['current_no']			= "1";
 			
 if( !in_array ($arr['tax_id'],$this->taxids) ) 	//remove this line when duplicate tax_id fixed in Handshake
 {
@@ -393,7 +433,7 @@ $value = Array
 			$phone1		= $value[6];
 			$phone2		= $value[7];
 			$fax		= $value[8];
-			$paymentterms = $value[9];
+			if( intval($value[9]) > 0 ) { $payment_terms = sprintf('NET %s',$value[9]); } else { $payment_terms = $value[9]; }
 			$unknown	= $value[10];
 			$psalemancode = $value[11];
 						
@@ -401,30 +441,18 @@ $value = Array
 			if($daceasy_id[0] != "6")
 			{
 				$phone = ""; 
-				if( $num = $this->is_valid_phone_number($phone1) )
-				{
-					$phone .= $num." / ";
-				}
-				
-				if( $num = $this->is_valid_phone_number($phone2) )
-				{
-					$phone .= $num." / ";
-				}
-				
-				if( $num = $this->is_valid_phone_number($fax) )
-				{
-					$phone .= "F".$num." / ";
-				}
+				if( $num = $this->is_valid_phone_number($phone1) ) { $phone .= $num." / "; }
+				if( $num = $this->is_valid_phone_number($phone2) ) { $phone .= $num." / "; }
+				if( $num = $this->is_valid_phone_number($fax) ) { $fax = $num;	} else { $fax = ""; }
 				$phone = substr_replace($phone, '', -3);
-				$hash = hash('sha256',$name.$contact.$street.$city.$country.$phone);
-//print "[DEBUG]--->\n"; print_r ($value ); print( sprintf("\n[line %s - %s, %s]\n",__LINE__,__FUNCTION__,__FILE__) );
+				
+				$hash = hash('sha256',$name.$contact.$street.$city.$country.$phone.$fax.$email.$payment_terms);
+				
 				if( $this->dbops->record_exist($this->tb_live,"tax_id",$daceasy_id) )
 				{
 					$querystr = sprintf('SELECT id,tax_id,hash,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"tax_id",$daceasy_id);
-//print "[DEBUG]--->\n"; print( $querystr ); print( sprintf("\n[line %s - %s, %s]\n",__LINE__,__FUNCTION__,__FILE__) );
 					$formdata = $this->dbops->execute_select_query($querystr);
 					$record	  = $formdata[0];
-//print "[DEBUG]--->\n"; print("FIHASH:".$hash."\nDBHASH:".$record['hash']); print( sprintf("\n[line %s - %s, %s]\n",__LINE__,__FUNCTION__,__FILE__) );
 					if( $hash != $record['hash'] )
 					{
 						$arr['id']			= $record['id'];
@@ -435,6 +463,9 @@ $value = Array
 						$arr['city']		= $city;
 						$arr['country']		= $country;
 						$arr['phone']		= $phone;
+						$arr['fax']			= $fax;
+						$arr['email']		= $email;
+						$arr['payment_terms'] = $payment_terms;
 						$arr['hash']		= $hash; 
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
@@ -460,6 +491,9 @@ $xmlrows_edit .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><con
 					$arr['city']		= $city;
 					$arr['country']		= $country;
 					$arr['phone']		= $phone;
+					$arr['fax']			= $fax;
+					$arr['email']		= $email;
+					$arr['payment_terms'] = $payment_terms;
 					$arr['hash']		= $hash; 
 					$arr['inputter']	= "SYSINPUT";
 					$arr['input_date']	= date('Y-m-d H:i:s'); 
@@ -505,7 +539,61 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 	
 	public function push_handshake_customer($changelog_id)
 	{
-print $changelog_id."\n";
+		$logfile = sprintf('%sPUSH-%s.log.txt',$this->config['archive_log'],$changelog_id);
+		$logdata = "";
+		$status = array();
+		
+		$querystr = sprintf('SELECT id,changelog_id,changelog_details FROM %s WHERE changelog_id = "%s"',$this->chglog_tb_live,$changelog_id);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$changelog  = $result[0];
+			$formfields = new SimpleXMLElement($changelog['changelog_details']);
+			foreach ($formfields->rows->row as $row)
+			{
+				$tax_id = sprintf('%s',$row->tax_id);
+				//$querystr = sprintf('SELECT id,item_objid,description,category_objid,unitprice FROM %s WHERE tax_id = "%s"',$this->tb_live,$tax_id);
+				/*
+				if( $formdata = $this->dbops->execute_select_query($querystr) )
+				{
+					$customer = $formdata[0];
+					$entry = sprintf('%s',$row->entry);
+					if( $entry == "EDIT" )
+					{
+						$arr = array
+						(
+
+						);
+						$json_str = json_encode($arr);
+						$url = sprintf('%s%s%s/%s',$this->appurl,$this->config['hs_apiver'],"customers",$customer['customer_objid']);
+print "PUT:  ".$json_str."\n";
+						//$response = $this->curlops->put_remote_data($url,$json_str,$status);
+						//$logdata .= sprintf("PUT [ EXISTING RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
+					}
+					else if ( $entry == "NEW" )
+					{
+						$arr = array
+						(
+							"billTo": 
+							"customerGroup" => array("objID" => $this->customer_group_objid )  
+
+						);
+						$json_str = json_encode($arr);
+						$url = sprintf('%s%s%s',$this->appurl,$this->config['hs_apiver'],"customers");
+print "POST: ".$json_str."\n";
+						//$response = $this->curlops->post_remote_data($url,$json_str,$status);
+						//$logdata .= sprintf("POST [ NEW RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
+					}
+				}*/
+				//cannot exceed API 60 request per second
+				usleep(1000000);
+			}
+			$this->write_push_logfile($logfile,$logdata);
+		}
+	}
+	
+	public function write_push_logfile($filepath,$filedata)
+	{
+		$this->fileops->write_file($filepath,$filedata);
 	}
 	
 	public function archive_customer_datafile()

@@ -68,7 +68,8 @@ class HSIDaemon
 	if( $result = $daemon->dbops->execute_select_query($querystr) )
 	{ 
 		$scheduler = new Scheduler();
-		$scheduler->setLogFile($daemon->config['archive_log']."scheduler.log.txt"); 
+		$logfile = sprintf('%sSCHEDULER-%s.log.txt',$daemon->config['archive_log'],date('Ymd-His'));
+		$scheduler->setLogFile($logfile); 
 		foreach( $result as $index => $record )
 		{
 			$cmd = "";

@@ -401,7 +401,10 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 	
 	public function push_handshake_inventory($changelog_id)
 	{
+		$logfile = sprintf('%sPUSH-%s.log.txt',$this->config['archive_log'],$changelog_id);
+		$logdata = "";
 		$status = array();
+		
 		$querystr = sprintf('SELECT id,changelog_id,changelog_details FROM %s WHERE changelog_id = "%s"',$this->chglog_tb_live,$changelog_id);
 		if( $result = $this->dbops->execute_select_query($querystr) )
 		{
@@ -426,9 +429,10 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 							"multQty" => 1,
 							"category" => array("objID" => intval($item['category_objid']) )
 						);
-						$json_arr = json_encode($arr);
+						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s/%s',$this->appurl,$this->config['hs_apiver'],"items",$item['item_objid']);
-						$response = $this->curlops->put_remote_data($url,$json_arr,$status);
+						$response = $this->curlops->put_remote_data($url,$json_str,$status);
+						$logdata .= sprintf("PUT [ EXISTING RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
 					}
 					else if ( $entry == "NEW" )
 					{
@@ -441,15 +445,22 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 							"multQty" => 1,
 							"category" => array("objID" => intval($this->new_item_category_objid) )
 						);
-						$json_arr = json_encode($arr);
+						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s',$this->appurl,$this->config['hs_apiver'],"items");
-						$response = $this->curlops->post_remote_data($url,$json_arr,$status);
+						$response = $this->curlops->post_remote_data($url,$json_str,$status);
+						$logdata .= sprintf("POST [ NEW RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
 					}
 				}
 				//cannot exceed API 60 request per second
 				usleep(1000000);
 			}
+			$this->write_push_logfile($logfile,$logdata);
 		}
+	}
+	
+	public function write_push_logfile($filepath,$filedata)
+	{
+		$this->fileops->write_file($filepath,$filedata);
 	}
 	
 	public function archive_inventory_datafile()
