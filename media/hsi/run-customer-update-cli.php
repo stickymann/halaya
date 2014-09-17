@@ -39,17 +39,16 @@ foreach($filespecs as $index => $specs)
 
 		//process data
 		$changelog_id = $customerops->process_customer();
-		array_push($changelogs, $changelog_id);
+		//array_push($changelogs, $changelog_id);
 		
 		//data import data file
 		$customerops->archive_customer_datafile();
+		
+		//push customer
+		if( $fileops->config['push_customer'] )
+		{
+			$customerops->push_handshake_customer($changelog_id);
+		}
 	}
 }
 
-if( $fileops->config['push_customer'] )
-{
-	foreach($changelogs as $index => $changelog_id)
-	{
-		$customerops->push_handshake_customer($changelog_id);
-	}
-}

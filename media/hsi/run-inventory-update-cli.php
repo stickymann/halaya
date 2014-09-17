@@ -45,18 +45,15 @@ foreach($filespecs as $index => $specs)
 			
 			//process data
 			$changelog_id = $inventoryops->process_inventory();
-			array_push($changelogs, $changelog_id);
+			//array_push($changelogs, $changelog_id);
 			
 			//data import data file
 			$inventoryops->archive_inventory_datafile();
+			
+			if( $fileops->config['push_inventory'] )
+			{
+				$inventoryops->push_handshake_inventory($changelog_id);
+			}
 		}
-	}
-}
-
-if( $fileops->config['push_inventory'] )
-{
-	foreach($changelogs as $index => $changelog_id)
-	{
-		$inventoryops->push_handshake_inventory($changelog_id);
 	}
 }

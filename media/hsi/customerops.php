@@ -137,13 +137,6 @@ class CustomerOps
 			else
 			{
 				$numstr = str_replace("(   )","(868)",$numstr);
-				/*
-				$vals = preg_split('/ /',$numstr);
-				if( $vals[0] ==  || $vals[0] == "(    )" || $vals[0] == "(     )" )
-				{
-					$vals[0] = "(868)";
-					$numstr = $vals[0]." ".$vals[1];
-				}*/
 				return $numstr;
 			}
 		}
@@ -191,7 +184,8 @@ class CustomerOps
 			$arr['auth_date']			= date('Y-m-d H:i:s'); 
 			$arr['record_status']		= "LIVE";
 			$arr['current_no']			= "1";
-			
+
+if($arr['tax_id']=="XXXX0001") { print_r($arr);	}	
 if( !in_array ($arr['tax_id'],$this->taxids) ) 	//remove this line when duplicate tax_id fixed in Handshake
 {
 array_push($this->taxids, $arr['tax_id']);  //remove this line when duplicate tax_id fixed in Handshake
@@ -246,9 +240,7 @@ array_push($this->taxids, $arr['tax_id']);  //remove this line when duplicate ta
 		foreach ($response->objects->object as $object)
 		{
 			$arr = array(); 
-//print "<b>[DEBUG]---></b> "; print( sprintf('%s',$object->btCustomer) ); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			$vals = preg_split('/\//',sprintf('%s',$object->btCustomer));
-//print "<b>[DEBUG]---></b> "; print_r( $vals ); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 			$customer_objid = $vals[4];
 			
 			$arr['id']			= "";
@@ -514,7 +506,6 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 		$xmllines = "<?xml version=\'1.0\' standalone=\'yes\'?>\n<formfields>\n";
 		$xmllines .= "<header><column>Id</column><column>TaxId</column><column>Name</column><column>Contact</column><column>Street</column><column>City</column><column>Country</column><column>Phone</column><column>Entry</column></header>\n";
 		$xmllines .= $xmlrows."</formfields>\n";
-//print "[DEBUG]--->\n"; print $xmllines; print( sprintf("\n[line %s - %s, %s]\n",__LINE__,__FUNCTION__,__FILE__) );
 		
 		$chglog['id']			= $this->dbops->create_record_id($this->chglog_tb_live);
 		$chglog['changelog_id']	= $changelog_id;
@@ -530,7 +521,7 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 		$chglog['auth_date']	= date('Y-m-d H:i:s'); 
 		$chglog['record_status'] = "LIVE";
 		$chglog['current_no']	= "1";
-		$count = $this->dbops->insert_record($this->chglog_tb_live, $chglog);
+		if ( $count = $this->dbops->insert_record($this->chglog_tb_live, $chglog) ) { /*wait for insertion */ };
 		
 		//necessary to wait a bit to generate unique changelog ids
 		usleep(1000000);
@@ -551,8 +542,8 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 			foreach ($formfields->rows->row as $row)
 			{
 				$tax_id = sprintf('%s',$row->tax_id);
-				//$querystr = sprintf('SELECT id,item_objid,description,category_objid,unitprice FROM %s WHERE tax_id = "%s"',$this->tb_live,$tax_id);
-				/*
+				$querystr = sprintf('SELECT id,tax_id,customer_objid,name,contact,street,city,country,phone,fax,email,payment_terms,customergroup_objid,usergroup_objid FROM %s WHERE tax_id = "%s"',$this->tb_live,$tax_id);
+				
 				if( $formdata = $this->dbops->execute_select_query($querystr) )
 				{
 					$customer = $formdata[0];
@@ -561,32 +552,47 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 					{
 						$arr = array
 						(
-
+							"id" 		=> $customer['id'],
+							"taxID" 	=> $customer['tax_id'],
+							"name" 		=> $customer['name'],
+							"contact" 	=> $customer['contact'],
+							"email" 	=> $customer['email'],
+							"paymentTerms" => $customer['payment_terms'],
+							"billTo" => array( "street" => $customer['street'], "city"  => $customer['city'], "country" => $customer['country'], "phone" => $customer['phone'], "fax" => $customer['fax'] )
+							//Errors when sending to handshake, excluding for now
+							//"customerGroup" => array("resource_uri"	=> "/api/v2/customer_groups/".$customer['customergroup_objid'] ),  
+							//"userGroup" 	=> array("resource_uri"	=> "/api/v2/user_groups/".$customer['usergroup_objid'] ) 
 						);
 						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s/%s',$this->appurl,$this->config['hs_apiver'],"customers",$customer['customer_objid']);
-print "PUT:  ".$json_str."\n";
-						//$response = $this->curlops->put_remote_data($url,$json_str,$status);
-						//$logdata .= sprintf("PUT [ EXISTING RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
+
+						$response = $this->curlops->put_remote_data($url,$json_str,$status);
+						$logdata .= sprintf("PUT [ EXISTING RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
 					}
 					else if ( $entry == "NEW" )
 					{
 						$arr = array
 						(
-							"billTo": 
-							"customerGroup" => array("objID" => $this->customer_group_objid )  
-
+							"id"  		=> $customer['id'], 
+							"taxID" 	=> $customer['tax_id'],
+							"name" 		=> $customer['name'],
+							"contact" 	=> $customer['contact'],
+							"email" 	=> $customer['email'],
+							"paymentTerms" => $customer['payment_terms'],
+							"billTo" => array( "street" => $customer['street'], "city"  => $customer['city'], "country" => $customer['country'], "phone" => $customer['phone'], "fax" => $customer['fax'] ),
+							"userGroup" 	=> array("resource_uri"	=> "/api/v2/user_groups/".$this->user_group_objid )
 						);
 						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s',$this->appurl,$this->config['hs_apiver'],"customers");
 print "POST: ".$json_str."\n";
-						//$response = $this->curlops->post_remote_data($url,$json_str,$status);
-						//$logdata .= sprintf("POST [ NEW RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
+						$response = $this->curlops->post_remote_data($url,$json_str,$status);
+						$logdata .= sprintf("POST [ NEW RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
 					}
-				}*/
+				}
 				//cannot exceed API 60 request per second
 				usleep(1000000);
 			}
+			if($logdata == "") {$logdata = "NO NEW OR EDITED RECORDS\r\n"; }
 			$this->write_push_logfile($logfile,$logdata);
 		}
 	}
