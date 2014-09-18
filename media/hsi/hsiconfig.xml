@@ -9,7 +9,7 @@
 <handshake>
 <appurl>https://app.handshake-app.com/</appurl>
 <apiversion>api/v2/</apiversion>
-<apikey>dadc68c1ee88efb68f82bd51017645ca6188022d</apikey>
+<apikey>de959285a4c0980a2c9d68b1c6eded5611493705</apikey>
 <!--valid values: YES,NO  -->
 <push_customer>YES</push_customer>
 <push_inventory>YES</push_inventory>

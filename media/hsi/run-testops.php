@@ -11,9 +11,23 @@
  * @license      
  */
 
+/*
+//New Id Generator
+require_once(dirname(__FILE__).'/customerops.php');
+$firstname = "PAJ";
+$lastname  = "MAHABIR";
+
+//$firstname = "";
+//$lastname  = "RAJ GENERAL HARDWARE AND AUTO SUPPLIES";
+$customerops = new CustomerOps();
+print sprintf("Last Name  : %s\n",$lastname);
+print sprintf("Customer Id: %s\n",$customerops->get_new_id("hs_customers",$firstname,$lastname));
+*/
+
+
 //Push Inventory
 require_once(dirname(__FILE__).'/inventoryops.php');
-$changelog_id = "ICL-20140914-203600";
+$changelog_id = "ICL-20140918-022430";
 $inventoryops = new InventoryOps();
 print $inventoryops->new_item_category_objid."\n";
 $inventoryops->push_handshake_inventory($changelog_id);

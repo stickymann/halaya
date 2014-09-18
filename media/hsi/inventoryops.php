@@ -174,6 +174,33 @@ class InventoryOps
 		$meta['faillist']		= $faillist;
 		return $meta;
 	}
+	
+	private function update_inventory_object_ids($id,$jsondata,$update_type)
+	{
+		try
+			{
+				$object = json_decode($jsondata);
+				$arr['id']				= $id;
+				$arr['item_objid']		= sprintf('%s',$object->objID);
+				$arr['category_objid']	= sprintf('%s',$object->category->objID);
+				$arr['category']		= sprintf('%s',$object->category->id);
+
+				if( $this->dbops->record_exist($this->tb_live, "id", $arr['id']) )
+				{ 
+					$count = $this->dbops->update_record($this->tb_live, $arr);
+				}
+			}
+		catch (Exception $e) 
+			{
+				if($update_type == "INSERT")
+				{
+					//Record did not upload to Handshake, delete from interface
+					$querystr = sprintf('DELETE FROM %s WHERE %s = "%s"',$this->tb_live,"id",$id);
+					if ( $this->dbops->execute_non_select_query($querystr) ) { /*wait for deletions*/ }
+				}
+				print "Failed to update Handshake record: ".$xmldata."\n".$e->getMessage()."\n";
+			}
+	}
 			
 	public function update_inventory_with_handshake_data($update_type)
 	{
@@ -230,6 +257,8 @@ class InventoryOps
 		{
 			$RESULT = $this->update_inventory_with_handshake_data("INSERT");
 		}
+		/*
+		// exclude this from production, takes too long to run
 		else if ( $counter > 0 )
 		{
 			if( $RESET )
@@ -244,6 +273,7 @@ class InventoryOps
 				}
 			}
 		}
+		*/
 	}
 	
 	public function process_inventory()
@@ -343,7 +373,7 @@ $xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</
 								} 
 								else if( !$UPDATE && $PUSH )
 								{
-$xmlrows_edit .= sprintf('<row><code>%s0</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$record['availunits'],$record['taxable'],$arr['unitprice'])."\n";
+$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$record['availunits'],$record['taxable'],$arr['unitprice'])."\n";
 								}
 							}
 						}
@@ -431,7 +461,9 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 						);
 						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s/%s',$this->appurl,$this->config['hs_apiver'],"items",$item['item_objid']);
+						
 						$response = $this->curlops->put_remote_data($url,$json_str,$status);
+						$this->update_inventory_object_ids($id,$response,"UPDATE");
 						$logdata .= sprintf("PUT [ EXISTING RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
 					}
 					else if ( $entry == "NEW" )
@@ -447,7 +479,9 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 						);
 						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s',$this->appurl,$this->config['hs_apiver'],"items");
+			
 						$response = $this->curlops->post_remote_data($url,$json_str,$status);
+						$this->update_inventory_object_ids($id,$response,"INSERT");
 						$logdata .= sprintf("POST [ NEW RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
 					}
 				}

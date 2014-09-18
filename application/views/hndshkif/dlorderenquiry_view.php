@@ -64,7 +64,7 @@ function get_section1($item,$labels,$param)
 						<td class="ne_td2" ><a href="$baseurl/$batch_report?batch_id=$item_02" target="enquiry" title="View Batch Report">$item_02</a></td></tr>
 						
 						<tr valign=top><td class="ne_td1">$label_03 : </td>
-						<td class="ne_td2" ><a href="$baseurl/$customer/index/$item_03" target="enquiry" title="View Customer">$item_03</a></td></tr>
+						<td class="ne_td2" ><a href="$baseurl/$customer/index/$item_04" target="enquiry" title="View Customer">$item_03</a></td></tr>
 						
 						<tr valign=top><td class="ne_td1">$label_04 : </td>
 						<td class="ne_td2" ><a href="$baseurl/$customer/index/$item_04" target="enquiry" title="View Customer">$item_04</a></td></tr>
