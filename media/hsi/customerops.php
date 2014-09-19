@@ -321,7 +321,6 @@ array_push($this->taxids, $arr['tax_id']);  //remove this line when duplicate ta
 		while( $GET_REMOTE_DATA )
 		{
 			$xml = $this->curlops->get_remote_data($url,$status);
-print_r($status);
 			if( $status['http_code'] == 200 )
 			{
 				$meta = $this->process_handshake_customer_xml($xml,$update_type);
@@ -409,7 +408,7 @@ print_r($status);
 			//$RESULT .= $this->update_address_with_handshake_data();
 		}
 		/*
-		// excluding this from production, takes too long to run
+		// exclude this from production, takes too long to run
 		else if ( $counter > 0 )
 		{
 			if( $RESET )
@@ -697,7 +696,7 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 		$n = "001";
 		$customer_id = $subname.$n;
 
-		while( $this->dbops->record_exist($tb_live,"new_id",$customer_id) )
+		while( $this->dbops->record_exist($tb_live,"customer_id",$customer_id) )
 		{
 			$n = intval(n) + 1;
 			$n = str_pad($n, 3, "0", STR_PAD_LEFT);

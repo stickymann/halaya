@@ -19,8 +19,8 @@ class Controller_Hndshkif_Dbreqs extends Controller
 {
 	public function before()
     {
-		$this->cfg	  = new HSIConfig();
-		$this->config = $this->cfg->get_config();
+		$cfg	  = new HSIConfig();
+		$this->config = $cfg->get_config();
 		$this->sitedb = new Model_SiteDB;
 		$this->enqdb  = new Model_EnqDB;
 		$this->paramkey = $this->sitedb->get_param_keys();
@@ -69,6 +69,13 @@ class Controller_Hndshkif_Dbreqs extends Controller
 				$RESULT	= $this->picklistprint($order_id,$prnopt);
 				print $RESULT;
 			break;
+			
+			case 'daceasyid':
+				$firstname = $_REQUEST['firstname'];
+				$lastname  = $_REQUEST['lastname'];
+				$RESULT	= $this->get_daceasy_id($firstname,$lastname);
+				print $RESULT;
+			break;
 		}
 	}
 	
@@ -105,10 +112,7 @@ class Controller_Hndshkif_Dbreqs extends Controller
 	
 	function upload_filecount()
 	{
-	    require_once('media/hsi/hsiconfig.php');
-		$this->cfg = new HSIConfig();		
-		$config    = $this->cfg->get_config();
-	    $dir = $config['current_export'];
+	    $dir = $this->config['current_export'];
 	    $i = 0; 
 		
 		/* //alternative method for getting order entry files
@@ -182,8 +186,8 @@ class Controller_Hndshkif_Dbreqs extends Controller
 	{
 		require_once('media/hsi/printerwriteops.php');
 		$tb_printq = $this->config['tb_printq'];
-		$picklist = $this->config['prn_picklist'];
-		$printer = $picklist['printer'];
+		$picklist  = $this->config['prn_picklist'];
+		$printer   = $picklist['printer'];
 		
 		$printerwrite = new PrinterWriteOps();
 		$filename = $printerwrite->create_order_picklist($order_id,null,$prnopt,false);
@@ -195,5 +199,15 @@ class Controller_Hndshkif_Dbreqs extends Controller
 			/* wait for deletions*/ 
 		} 
 	}
-
+	
+	function get_daceasy_id($firstname,$lastname)
+	{
+		require_once('media/hsi/customerops.php');
+		$customerops = new CustomerOps();
+		$table = $this->config['tb_customers'];
+		$customer_id = $customerops->get_new_id($table,$firstname,$lastname);
+		$arr = array('customer_id' => $customer_id);
+		return json_encode($arr);
+	}
+	
 } // End Hndshkif_Dbreqs

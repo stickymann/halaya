@@ -26,7 +26,6 @@ var cmdbox = new function()
 				filecount = data['count'];
 			});
 	}
-		
 			
 	this.displayReadyForUploadFileCountInfo = function()
 	{
