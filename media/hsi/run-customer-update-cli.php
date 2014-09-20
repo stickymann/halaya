@@ -22,9 +22,12 @@ if( ProcOps::process_exist($grep_arg) )
 	die("Process already exist, terminating now!\n");
 }
 
+$delete_bad_files=true;
 $fileops = new FileOps();
 $filespecs = $fileops->process_import_files();
+$fileops->write_errorlog_import_files($filespecs,$delete_bad_files);
 $changelogs = array(); 
+
 
 foreach($filespecs as $index => $specs)
 {
@@ -47,7 +50,7 @@ foreach($filespecs as $index => $specs)
 		//push customer
 		if( $fileops->config['push_customer'] )
 		{
-			$customerops->push_handshake_customer($changelog_id);
+			//$customerops->push_handshake_customer($changelog_id);
 		}
 	}
 }

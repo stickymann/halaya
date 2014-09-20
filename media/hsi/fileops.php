@@ -135,12 +135,21 @@ class FileOps
 		return false;
 	}
 	
+	public function append_to_file($filepath,$filedata)
+	{
+		if( $handle = fopen($filepath, 'a') ) 
+		{
+			fwrite($handle, $filedata);
+			fclose($handle);
+			return true;
+		}
+		return false;
+	}
+	
 	public function process_import_files()
 	{
 		$errorlog_prefix = ERRORLOG_PREFIX;
-		$filespecs = array();
 		$filelist = $this->get_all_filenames_in_directory( $this->config['current_import'] );
-			
 		foreach( $filelist as $index => $filename )
 		{
 			$errorlog_prefix = substr( $filename, 0, strlen(ERRORLOG_PREFIX) );
@@ -187,7 +196,7 @@ class FileOps
 			$line_invert_count = substr_count($line, '"');
 			if( $filetype == "INVENTORY" && $index > 0 ) 
 			{ 
-				if( !($line_comma_count == INVENTORY_COMMA_COUNT) || !($line_invert_count == INVENTORY_INVERT_COUNT) )
+				if( !($line_comma_count == INVENTORY_COMMA_COUNT && $line_invert_count == INVENTORY_INVERT_COUNT) )
 				{
 					$errors['total_min']++; $errors['total_max']++; 
 					$linenum_min[ $errors['total_min'] ] = sprintf("%s",$index+1);
@@ -211,27 +220,31 @@ class FileOps
 					( preg_match('/\bSMR\b/i',$line) || preg_match('/\bS\.M\.R\.\b/i',$line) ) ||
 					( preg_match('/\bEMR\b/i',$line) || preg_match('/\bE\.M\.R\.\b/i',$line) ) ||
 					( preg_match('/\bWMR\b/i',$line) || preg_match('/\bW\.M\.R\.\b/i',$line) ) ||
-					  preg_match('/\bPRINCESS\b/i',$line) ||
-					( preg_match('/\b#\b/i',$line) || preg_match('/[\s]#[\s]/i',$line) ) ||
+					  preg_match('/\bPRINCESS TOWN\b/i',$line) ||
+					( preg_match('/\b#\b/i',$line) || preg_match('/[\s]#[\s]/i',$line) ) ||  
 					  preg_match('/\.\"/i',$line)
 				)
 				{
 					$none_comma_error = true;
 				}
 				
-				if( $none_comma_error )
+				if( $none_comma_error || !($line_comma_count == CUSTOMER_COMMA_COUNT && $line_invert_count == CUSTOMER_INVERT_COUNT) )
 				{
-					$errors['total_max']++;
-					$linenum_max[ $errors['total_max'] ] = sprintf("%s",$index+1); 
-					$errors['errorlines_max'] .= $line."\r\n";
-				}
-				else if( !($line_comma_count == CUSTOMER_COMMA_COUNT) || !($line_invert_count == CUSTOMER_INVERT_COUNT) )
-				{
-					$errors['total_min']++; $errors['total_max']++; 
-					$linenum_min[ $errors['total_min'] ] = sprintf("%s",$index+1);
-					$linenum_max[ $errors['total_max'] ] = sprintf("%s",$index+1);
-					$errors['errorlines_min'] .= $line."\r\n";
-					$errors['errorlines_max'] .= $line."\r\n";
+					if( $none_comma_error )
+					{
+						$errors['total_max']++;
+						$linenum_max[ $errors['total_max'] ] = sprintf("%s",$index+1); 
+						$errors['errorlines_max'] .= $line."\r\n";
+					}
+				
+					if( !($line_comma_count == CUSTOMER_COMMA_COUNT && $line_invert_count == CUSTOMER_INVERT_COUNT) )
+					{
+						$errors['total_min']++; $errors['total_max']++; 
+						$linenum_min[ $errors['total_min'] ] = sprintf("%s",$index+1);
+						$linenum_max[ $errors['total_max'] ] = sprintf("%s",$index+1);
+						$errors['errorlines_min'] .= $line."\r\n";
+						//$errors['errorlines_max'] .= $line."\r\n";
+					}
 				}
 				else
 				{
@@ -255,7 +268,7 @@ class FileOps
 		return $arr;
 	}
 	
-	public function write_errorlog_import_files($filespecs,$delete_bad_files=false)
+	public function write_errorlog_import_files(&$filespecs,$delete_bad_files=false)
 	{
 		$datestr = date('YmdHis');
 		$current_import_dir = $this->config['current_import'];
@@ -263,24 +276,25 @@ class FileOps
 		{
 			if( $specs['filetype'] == "UNKNOWN" )
 			{
-				if( $delete_bad_files ) { $this->delete_file( $specs['filepath'] ); }
+				$filepath = sprintf("%s%s_%s.%s-FORMAT[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
+				if( $delete_bad_files ) { $this->move_file($specs['filepath'],$filepath); }
 			}
 			else
 			{			
 				if( $specs['filetype'] == "CUSTOMER" )
 				{
-					$filepath = sprintf("%s%s_%s.MAX.%s[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
+					$filepath = sprintf("%s%s_%s.%s.WARNINGS[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
 					if( $specs['errors']['total_max'] > 0 )
 					{
 						$this->write_file($filepath,$specs['errors']['errorlines_max']);
-						if( $delete_bad_files ) { $this->delete_file( $specs['filepath'] ); }
 					}
 				}
-				$filepath = sprintf("%s%s_%s.MIN.%s[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
+				$filepath = sprintf("%s%s_%s.%s[ %s ].txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,$specs['filetype'],$specs['filename']);
 				if( $specs['errors']['total_min'] > 0 )
 				{
 					$this->write_file($filepath,$specs['errors']['errorlines_min']);
 					if( $delete_bad_files ) { $this->delete_file( $specs['filepath'] ); }
+					$filespecs[$index]['filetype']  = $specs['filetype']."-ERR";
 				}
 			}
 		}

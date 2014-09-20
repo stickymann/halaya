@@ -30,6 +30,7 @@ class CustomerOps
 	private $appurl = "";
 	private $customer_filename = "";
 	private $customer_archive_filename = "";
+	private $filepath_dup_id = "";
 	private $tb_live = "";
 	private $tb_hist = "";
 	private $chglog_tb_live = "";
@@ -62,6 +63,10 @@ class CustomerOps
 		$this->customer_processing_opt = $this->config['hs_apiver']."customers?format=xml";
 		$this->address_processing_opt = $this->config['hs_apiver']."addresses?format=xml";
 		$this->set_customer_groups();
+		
+		$datestr = date('YmdHis');
+		$current_import_dir = $this->config['current_import'];
+		$this->filepath_dup_id = sprintf("%s%s_%s.%s.txt",$current_import_dir,ERRORLOG_PREFIX,$datestr,"DUPLICATE_TAXID.WARNINGS");
 	}
 	
 	public function set_customer_filename($filename)
@@ -186,33 +191,36 @@ class CustomerOps
 			$arr['record_status']		= "LIVE";
 			$arr['current_no']			= "1";
 
-if($arr['tax_id']=="XXXX0002") { print_r($arr);	}	
-if( !in_array ($arr['tax_id'],$this->taxids) ) 	//remove this line when duplicate tax_id fixed in Handshake
-{
-array_push($this->taxids, $arr['tax_id']);  //remove this line when duplicate tax_id fixed in Handshake
-			if( $update_type == "UPDATE" )
+			if( !in_array ($arr['tax_id'],$this->taxids) )
 			{
-				if( $this->dbops->record_exist($this->tb_live, "customer_id", $arr['customer_id']) )
-				{ 
-					$querystr = sprintf('SELECT id,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"customer_id",$arr['customer_id']);
-					$formdata = $this->dbops->execute_select_query($querystr);
-					$record	  = $formdata[0];
-					$arr['id'] = $record['id']; //set correct existing id
-					$arr['current_no']	= $record['current_no'] + 1; //increment current_no
-					if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$arr['id'],$record['current_no']) )
-					{
-						$count = $this->dbops->update_record($this->tb_live, $arr);
-						if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
+				array_push($this->taxids, $arr['tax_id']);
+				if( $update_type == "UPDATE" )
+				{
+					if( $this->dbops->record_exist($this->tb_live, "customer_id", $arr['customer_id']) )
+					{ 
+						$querystr = sprintf('SELECT id,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"customer_id",$arr['customer_id']);
+						$formdata = $this->dbops->execute_select_query($querystr);
+						$record	  = $formdata[0];
+						$arr['id'] = $record['id']; //set correct existing id
+						$arr['current_no']	= $record['current_no'] + 1; //increment current_no
+						if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$arr['id'],$record['current_no']) )
+						{
+							$count = $this->dbops->update_record($this->tb_live, $arr);
+							if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
+						}
 					}
 				}
+				else if ( $update_type == "INSERT" )
+				{
+					$count = $this->dbops->insert_record($this->tb_live, $arr);
+					if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
+				}
 			}
-			else if ( $update_type == "INSERT" )
+			else
 			{
-				$count = $this->dbops->insert_record($this->tb_live, $arr);
-				if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
+				$xmlstring = (string) $object;
+				$this->write_errorlog_duplicate_taxid($arr['tax_id'],$xmlstring,"Handshake");
 			}
-}											//remove this line when duplicate taxids fixed in Handshake
-
 		}
 		$faillist = substr_replace($faillist, '', -1);
 
@@ -452,6 +460,7 @@ $value = Array
     [12] => 10TBG01902
 )
 */
+		$this->taxids = array();
 		foreach($datalist as $key => $value)
 		{
 			// field mapping
@@ -480,15 +489,47 @@ $value = Array
 				
 				$hash = hash('sha256',$name.$contact.$street.$city.$country.$phone.$fax.$email.$payment_terms);
 				
-				if( $this->dbops->record_exist($this->tb_live,"tax_id",$daceasy_id) )
+				if( !in_array ($daceasy_id,$this->taxids) )
 				{
-					$querystr = sprintf('SELECT id,customer_id,tax_id,hash,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"tax_id",$daceasy_id);
-					$formdata = $this->dbops->execute_select_query($querystr);
-					$record	  = $formdata[0];
-					if( $hash != $record['hash'] )
+					array_push($this->taxids, $daceasy_id);
+					if( $this->dbops->record_exist($this->tb_live,"tax_id",$daceasy_id) )
 					{
-						$arr['id']			= $record['id'];
-						$arr['customer_id']	= $record['customer_id']; //@@ GET CUSTOMER_ID FROM IMPORT FILE, CHANGE NEEDS TO BE MADE IN IMPORT_FILE  
+						$querystr = sprintf('SELECT id,customer_id,tax_id,hash,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"tax_id",$daceasy_id);
+						$formdata = $this->dbops->execute_select_query($querystr);
+						$record	  = $formdata[0];
+						if( $hash != $record['hash'] )
+						{
+							$arr['id']			= $record['id'];
+							$arr['customer_id']	= $record['customer_id']; //@@ GET CUSTOMER_ID FROM IMPORT FILE, CHANGE NEEDS TO BE MADE IN IMPORT_FILE  
+							$arr['tax_id']		= $daceasy_id;
+							$arr['name']		= $name;
+							$arr['contact']		= $contact;
+							$arr['street']		= $street;
+							$arr['city']		= $city;
+							$arr['country']		= $country;
+							$arr['phone']		= $phone;
+							$arr['fax']			= $fax;
+							$arr['email']		= $email;
+							$arr['payment_terms'] = $payment_terms;
+							$arr['hash']		= $hash; 
+							$arr['input_date']	= date('Y-m-d H:i:s'); 
+							$arr['input_date']	= date('Y-m-d H:i:s'); 
+							$arr['auth_date']	= date('Y-m-d H:i:s'); 
+							$arr['current_no']	= $record['current_no'] + 1;
+							if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$record['id'],$record['current_no']) )
+							{
+								if( $count = $this->dbops->update_record($this->tb_live, $arr) )
+								{
+$xmlrows_edit .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>EDIT</entry></row>',$arr['customer_id'],$daceasy_id,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
+								}
+							}
+						}
+					}
+					else
+					{
+						usleep(1000000);
+						$arr['id'] 			= $this->dbops->create_record_id($this->tb_live);
+						$arr['customer_id']	= date('YmdHis'); //@@ GET CUSTOMER_ID FROM IMPORT FILE, CHANGE NEEDS TO BE MADE IN IMPORT_FILE 
 						$arr['tax_id']		= $daceasy_id;
 						$arr['name']		= $name;
 						$arr['contact']		= $contact;
@@ -500,48 +541,24 @@ $value = Array
 						$arr['email']		= $email;
 						$arr['payment_terms'] = $payment_terms;
 						$arr['hash']		= $hash; 
+						$arr['inputter']	= "SYSINPUT";
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
-						$arr['input_date']	= date('Y-m-d H:i:s'); 
+						$arr['authorizer']	= "SYSAUTH";
 						$arr['auth_date']	= date('Y-m-d H:i:s'); 
-						$arr['current_no']	= $record['current_no'] + 1;
-						if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$record['id'],$record['current_no']) )
+						$arr['record_status'] = "LIVE";
+						$arr['current_no']	= "1";
+						if( $count = $this->dbops->insert_record($this->tb_live, $arr) )
 						{
-							if( $count = $this->dbops->update_record($this->tb_live, $arr) )
-							{
-$xmlrows_edit .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>EDIT</entry></row>',$arr['customer_id'],$daceasy_id,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
-							}
+$xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>NEW</entry></row>',$arr['customer_id'],$daceasy_id,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
 						}
 					}
 				}
 				else
 				{
-					usleep(1000000);
-					$arr['id'] 			= $this->dbops->create_record_id($this->tb_live);
-					$arr['customer_id']	= date('YmdHis'); //@@ GET CUSTOMER_ID FROM IMPORT FILE, CHANGE NEEDS TO BE MADE IN IMPORT_FILE 
-					$arr['tax_id']		= $daceasy_id;
-					$arr['name']		= $name;
-					$arr['contact']		= $contact;
-					$arr['street']		= $street;
-					$arr['city']		= $city;
-					$arr['country']		= $country;
-					$arr['phone']		= $phone;
-					$arr['fax']			= $fax;
-					$arr['email']		= $email;
-					$arr['payment_terms'] = $payment_terms;
-					$arr['hash']		= $hash; 
-					$arr['inputter']	= "SYSINPUT";
-					$arr['input_date']	= date('Y-m-d H:i:s'); 
-					$arr['authorizer']	= "SYSAUTH";
-					$arr['auth_date']	= date('Y-m-d H:i:s'); 
-					$arr['record_status'] = "LIVE";
-					$arr['current_no']	= "1";
-					if( $count = $this->dbops->insert_record($this->tb_live, $arr) )
-					{
-$xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>NEW</entry></row>',$arr['customer_id'],$daceasy_id,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
-					}
+					$linerecord = $value;
+					$this->write_errorlog_duplicate_taxid($daceasy_id,$linerecord,"DacEasy");
 				}
 			}
-		
 		}
 		
 		$xmlrows  = "<rows>\n"."<!-- ########### NEW CUSTOMERS ########### -->\n".$xmlrows_new."<!-- ########### EXISTING CUSTOMERS ########### -->\n".$xmlrows_edit."</rows>\n";
@@ -642,6 +659,27 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 	public function write_push_logfile($filepath,$filedata)
 	{
 		$this->fileops->write_file($filepath,$filedata);
+	}
+	
+	public function write_errorlog_duplicate_taxid($tax_id,$duplicate_record,$system)
+	{
+		$querystr = sprintf('SELECT name,id,customer_id,tax_id FROM %s WHERE %s = "%s"',$this->tb_live,"tax_id",$tax_id);
+		$formdata = $this->dbops->execute_select_query($querystr);
+		$record	  = $formdata[0];
+		$interface_record = join(";",$record);	
+		if( is_array($duplicate_record) )
+		{
+			$duplicate_record = join(";",$duplicate_record);	
+		}
+		
+		$filedata = <<<_TEXT_
+[ Interface Record (First Instance) ]
+$interface_record
+[ $system Record (Duplicate Instance) ]
+$duplicate_record
+-----------------------------------------
+_TEXT_;
+		$this->fileops->append_to_file($this->filepath_dup_id,$filedata);
 	}
 	
 	public function archive_customer_datafile()
