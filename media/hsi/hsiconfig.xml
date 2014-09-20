@@ -24,11 +24,13 @@
 <tax><code>2</code><value>0</value></tax>
 </taxes>	
 <folders>
+<approot>/shazam/www/hndshkif</approot>
 <current_import>/shazam/hsi/current/hsi_import</current_import>
 <current_export>/shazam/hsi/current/order_entry_import</current_export>
 <archive_import>/shazam/hsi/archive/hsi_import</archive_import>
 <archive_export>/shazam/hsi/archive/order_entry_import</archive_export>
 <archive_log>/shazam/hsi/archive/logs</archive_log>
+<backupdir>/shazam/backups</backupdir>
 </folders>
 <tables>
 <tb_configs>hsi_configs</tb_configs>

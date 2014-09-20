@@ -28,7 +28,6 @@ $filespecs = $fileops->process_import_files();
 $fileops->write_errorlog_import_files($filespecs,$delete_bad_files);
 $changelogs = array(); 
 
-
 foreach($filespecs as $index => $specs)
 {
 	if( $specs['filetype'] == "CUSTOMER" )
@@ -50,7 +49,7 @@ foreach($filespecs as $index => $specs)
 		//push customer
 		if( $fileops->config['push_customer'] )
 		{
-			//$customerops->push_handshake_customer($changelog_id);
+			$customerops->push_handshake_customer($changelog_id);
 		}
 	}
 }

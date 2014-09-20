@@ -74,11 +74,13 @@ class HSIConfig
 				$this->hsiconfig['tax'] = $taxarr;
 
 				//folders
+				if($cfg->folders->approot) { $this->hsiconfig['approot'] = rtrim( sprintf('%s',$cfg->folders->approot), "/" )."/"; }
 				if($cfg->folders->current_import) { $this->hsiconfig['current_import'] = rtrim( sprintf('%s',$cfg->folders->current_import), "/" )."/"; }
 				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = rtrim( sprintf('%s',$cfg->folders->current_export), "/" )."/"; }
 				if($cfg->folders->archive_import) { $this->hsiconfig['archive_import'] = rtrim( sprintf('%s',$cfg->folders->archive_import), "/" )."/"; }
 				if($cfg->folders->archive_export) { $this->hsiconfig['archive_export'] = rtrim( sprintf('%s',$cfg->folders->archive_export), "/" )."/"; }
 				if($cfg->folders->archive_log) 	  { $this->hsiconfig['archive_log']    = rtrim( sprintf('%s',$cfg->folders->archive_log), "/" )."/"; }
+				if($cfg->folders->backupdir) { $this->hsiconfig['backupdir'] = rtrim( sprintf('%s',$cfg->folders->backupdir), "/" )."/"; }
 				
 				//tables
 				if($cfg->tables->tb_configs) { $this->hsiconfig['tb_configs'] = sprintf('%s',$cfg->tables->tb_configs); }
