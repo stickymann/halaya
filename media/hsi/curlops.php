@@ -22,14 +22,14 @@ class CurlOps
 		}
 	}
 	
-	public function get_remote_data($url,&$status)
+	public function get_remote_data($url,&$status,$use_password=true)
 	{
 		$curl = curl_init($url);
 //print "<b>[DEBUG]---></b> "; print($url); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		curl_setopt($curl, CURLOPT_VERBOSE, 0);
 		curl_setopt($curl, CURLOPT_TIMEOUT, 60);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
-		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
+		if( $use_password ) { curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x'); }
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
 
@@ -49,7 +49,7 @@ class CurlOps
 		return $response;
 	}
 	
-	public function put_remote_data($url,$data_json,&$status)
+	public function put_remote_data($url,$data_json,&$status,$password=true)
 	{
 		//PUT USED TO UPDATE EXISTING RECORDS
 		$curl = curl_init($url);
@@ -65,7 +65,7 @@ class CurlOps
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json') );
 		curl_setopt($curl, CURLOPT_VERBOSE, 0);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
+		if( $use_password ) { curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x'); }
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
 		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
@@ -79,7 +79,7 @@ class CurlOps
 		return $response;
 	}
 	
-	public function post_remote_data($url,$data_json,&$status)
+	public function post_remote_data($url,$data_json,&$status,$password=true)
 	{
 		//POST USED TO CREATE NEW RECORDS
 		$curl = curl_init($url);
@@ -88,7 +88,7 @@ class CurlOps
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json') );
 		curl_setopt($curl, CURLOPT_VERBOSE, 0);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x');
+		if( $use_password ) { curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x'); }
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
 		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
