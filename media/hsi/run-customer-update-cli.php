@@ -19,7 +19,7 @@ require_once(dirname(__FILE__).'/customerops.php');
 $grep_arg = basename(__FILE__);
 if( ProcOps::process_exist($grep_arg) )
 {
-	die("Process already exist, terminating now!\n");
+	die("Process already running, exiting now!\n");
 }
 
 $delete_bad_files=true;

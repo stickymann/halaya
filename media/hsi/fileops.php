@@ -108,6 +108,21 @@ class FileOps
 		return $datafixed;
 	}
 	
+	public function file_date_diff($file)
+	{
+		// file modification date - today
+		$today = date('Y-m-d');
+		$filecdate = date('Y-m-d',filemtime($file));
+		
+		// diff is in seconds 
+		$diff = abs( strtotime($today) - strtotime($filecdate) );
+			
+		$years  = floor($diff / (365*60*60*24)); 
+		$months = floor($diff / (30*60*60*24));
+		$days = floor($diff / (60*60*24));
+		return $days;
+	}
+		
 	public function move_file($src,$dest)
 	{
 		if(file_exists($src))
@@ -122,6 +137,37 @@ class FileOps
 	public function delete_file($filepath)
 	{
 		if(file_exists($filepath)){ unlink($filepath); }
+	}
+	
+	public function delete_files_after_days($dir,$lifedays)
+	{
+		if( is_dir($dir) ) 
+		{
+			if ($dh = opendir($dir)) 
+			{
+				while (($file = readdir($dh)) !== false) 
+				{
+					if ($file != "." && $file != "..")
+					{
+						if( is_dir($dir.$file) && ($file != "." || $file != ".." ) )
+						{
+							//delete files from sub-directories if exist
+							$next_subdir = $dir.$file."/";
+							$this->delete_files_after_days($next_subdir,$lifedays);
+						}
+						else
+						{
+							$current_file = $dir.$file;
+							$ddiff = $this->file_date_diff($current_file);
+							if($ddiff >= $lifedays)
+							{
+								$this->delete_file($current_file);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	public function write_file($filepath,$filedata)

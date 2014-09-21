@@ -20,7 +20,7 @@ require_once(dirname(__FILE__).'/orderentryops.php');
 $grep_arg = $arg = basename(__FILE__);
 if( ProcOps::process_exist($grep_arg) )
 {
-	die("Process already exist, terminating now!\n");
+	die("Process already running, exiting now!\n");
 }
 
 $auto = true;
