@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * DacEasy id enerator.
+ * DacEasy id generator.
  *
  * $Id: Idgenerator.php 2014-09-19 17:00:49 dnesbit $
  *
@@ -10,6 +10,7 @@
  * @copyright   (c) 2014
  * @license      
  */
+
 class Controller_Hndshkif_Customers_Idgenerator extends Controller_Include
 {
 	public $template	= 'site.view'; 
