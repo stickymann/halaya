@@ -80,7 +80,6 @@ class HSIDaemon
 			else
 			{
 				$cmd = sprintf('%s %s /dev/null 2>/dev/null &',$record['fullpath'],$record['args']);
-				//$cmd = sprintf('%s %s',$record['fullpath'],$record['args']);
 			}
 //print "[DEBUG]---> "; print $cmd." | ".$record['crontab']; print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
 			$scheduler->addTask($cmd, $record['crontab']);

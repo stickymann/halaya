@@ -44,4 +44,3 @@ $fileops->delete_files_after_days( $fileops->config['archive_export'], MAX_DAYS_
 //delete current/hsi_import errorlog files older than 7 days
 $fileops->delete_files_after_days( $fileops->config['current_import'], MAX_DAYS_BEFORE_CURRENT_HSI_IMPORT_DELETE );
 ?>
-
