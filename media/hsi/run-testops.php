@@ -24,14 +24,14 @@ print sprintf("Last Name  : %s\n",$lastname);
 print sprintf("Customer Id: %s\n",$customerops->get_new_id("hs_customers",$firstname,$lastname));
 */
 
-
+/*
 //Push Inventory
 require_once(dirname(__FILE__).'/inventoryops.php');
 $changelog_id = "ICL-20140918-022430";
 $inventoryops = new InventoryOps();
 print $inventoryops->new_item_category_objid."\n";
 $inventoryops->push_handshake_inventory($changelog_id);
-
+*/
 
 /*
 // Object Update
@@ -87,3 +87,4 @@ $order_id = "846376"; //with ntx
 $order_id = "881741";
 $order_id = "1688847";  //all three warehouses
 */
+?>
