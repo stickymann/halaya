@@ -14,7 +14,7 @@
 require_once(dirname(__FILE__).'/procops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 
-define("MAX_DAYS_BEFORE_BACKUP_DELETE",2);
+define("MAX_DAYS_BEFORE_BACKUP_DELETE",30);
 define("MAX_DAYS_BEFORE_LOGS_DELETE",180);
 define("MAX_DAYS_BEFORE_ARCHIVE_HSI_IMPORT_DELETE",180);
 define("MAX_DAYS_BEFORE_ARCHIVE_ORDER_ENTRY_IMPORT_DELETE",180);
