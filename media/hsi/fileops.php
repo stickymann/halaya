@@ -254,91 +254,102 @@ class FileOps
 			} 
 			else if ( $filetype == "CUSTOMER" && $index > 0 ) 
 			{ 
-				$none_comma_error = FALSE;
+				$warning_error = FALSE;
+				$faillist_error = FALSE;
+				
 				$data_r = array('abbr' => "AVE", 'baseword' => "AVENUE", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "CO", 'baseword' => "COMPANY", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "COR", 'baseword' => "CORNER", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "ENT", 'baseword' => "ENTERPRISES", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 		
 				$data_r = array('abbr' => "ELEC", 'baseword' => "ELECTRICAL", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "H/WARE", 'baseword' => "HARDWARE", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "HWY", 'baseword' => "HIGHWAY", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 		
 				$data_r = array('abbr' => "JNCT", 'baseword' => "JUNCTION", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "LTD", 'baseword' => "LIMITED", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 				
 				$data_r = array('abbr' => "RD", 'baseword' => "ROAD", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "SUPP", 'baseword' => "SUPPLIES", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "VILL", 'baseword' => "VILLAGE", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
-				if( preg_match('/\bST\s/i',$line) ) { $none_comma_error = TRUE; }
+				if( preg_match('/\bST\s/i',$line) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "STR", 'baseword' => "STREET", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "EMR", 'baseword' => "EASTERN MAIN ROAD", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "E.M.R.", 'baseword' => "EASTERN MAIN ROAD", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "SMR", 'baseword' => "SOUTHERN MAIN ROAD", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "S.M.R.", 'baseword' => "SOUTHERN MAIN ROAD", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "WMR", 'baseword' => "WESTERN MAIN ROAD", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
 				$data_r = array('abbr' => "W.M.R.", 'baseword' => "WESTERN MAIN ROAD", 'maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_abbreviation($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_abbreviation($data_r) ) { $warning_error = TRUE; }
 	
-				if( preg_match('/L\.P\./i',$line) || preg_match('/LP\./i',$line) || preg_match('/LP#/i',$line)) { $none_comma_error = TRUE; }
+				if( preg_match('/L\.P\./i',$line) || preg_match('/LP\./i',$line) || preg_match('/LP#/i',$line)) { $warning_error = TRUE; }
 	
 				$data_r = array('maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
-				if( !$this->is_valid_lightpole_number($data_r) ) { $none_comma_error = TRUE; }
+				if( !$this->is_valid_lightpole_number($data_r) ) { $warning_error = TRUE; }
 	
-				if( preg_match('/\bPRINCESS TOWN\b/i',$line) ) { $none_comma_error = TRUE; }
+				if( preg_match('/\bPRINCESS TOWN\b/i',$line) ) { $warning_error = TRUE; }
+				
+				if( preg_match('/\bMAROUGA\b/i',$line) ) { $warning_error = TRUE; }
+				 
+				if( preg_match('/\bSAN-FERNANDO\b/i',$line) ) { $warning_error = TRUE; }
+				
+				if( preg_match('/\bMIAN RD\b/i',$line) || preg_match('/\bMIAN ROAD\b/i',$line) ) { $warning_error = TRUE; }
+				
+				if( preg_match('/#\D/i',$line) ){ $warning_error = TRUE; }
+				
+				$data_r = array('maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
+				if( !$this->is_valid_customer_id($data_r) ) { $faillist_error = TRUE; }
 	
-				if( preg_match('/#\D/i',$line) ){ $none_comma_error = TRUE; }
-	
-				if( $none_comma_error || !($line_comma_count == CUSTOMER_COMMA_COUNT && $line_invert_count == CUSTOMER_INVERT_COUNT) )
+				if( $faillist_error || $warning_error || !($line_comma_count == CUSTOMER_COMMA_COUNT && $line_invert_count == CUSTOMER_INVERT_COUNT) )
 				{
-					if( $none_comma_error )
+					if( $warning_error )
 					{
 						$errors['total_max']++;
 						$linenum_max[ $errors['total_max'] ] = sprintf("%s",$index+1); 
 						$errors['errorlines_max'] .= $line."\r\n";
 					}
 				
-					if( !($line_comma_count == CUSTOMER_COMMA_COUNT && $line_invert_count == CUSTOMER_INVERT_COUNT) )
+					if( (!($line_comma_count == CUSTOMER_COMMA_COUNT && $line_invert_count == CUSTOMER_INVERT_COUNT) || $faillist_error) && !$warning_error )
 					{
-						$errors['total_min']++; $errors['total_max']++; 
+						$errors['total_min']++; 
+						//$errors['total_max']++; 
 						$linenum_min[ $errors['total_min'] ] = sprintf("%s",$index+1);
-						$linenum_max[ $errors['total_max'] ] = sprintf("%s",$index+1);
+						///$linenum_max[ $errors['total_max'] ] = sprintf("%s",$index+1);
 						$errors['errorlines_min'] .= $line."\r\n";
-						//$errors['errorlines_max'] .= $line."\r\n";
 					}
 				}
 				else
@@ -470,6 +481,20 @@ class FileOps
 					}
 				}
 			}
+		}
+		return $valid;
+	}
+	
+	public function is_valid_customer_id($data_r)
+	{
+		$valid = true;
+		$field_r = explode(',', $data_r['line']);
+		$field = trim($field_r[12],'"');
+		$FIELD_LENGTH = strlen($field);
+
+		if( preg_match('/\d{2}[A-Z]{3}\d{5}/i',$field,$output_r) || preg_match('/\A\d{1,10}\z/i',$field,$output_r) )
+		{
+			$valid = false;
 		}
 		return $valid;
 	}
