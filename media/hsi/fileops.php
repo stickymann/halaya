@@ -195,6 +195,7 @@ class FileOps
 	
 	public function process_import_files()
 	{
+		$filespecs = array();
 		$errorlog_prefix = ERRORLOG_PREFIX;
 		$filelist = $this->get_all_filenames_in_directory( $this->config['current_import'] );
 		foreach( $filelist as $index => $filename )

@@ -183,7 +183,7 @@ class CustomerOps
 			$arr['customergroup_id']	= sprintf('%s',$object->customerGroup->id);
 			$arr['usergroup_objid']		= sprintf('%s',$object->userGroup->objID);
 			$arr['usergroup_id']		= sprintf('%s',$object->userGroup->id);
-			$arr['hash']				= hash('sha256',$arr['name'].$arr['contact'].$arr['street'].$arr['city'].$arr['country'].$arr['phone'].$arr['fax'].$arr['email'].$arr['payment_terms']);
+			$arr['hash']				= hash('sha256',$arr['tax_id'].$arr['name'].$arr['contact'].$arr['street'].$arr['city'].$arr['country'].$arr['phone'].$arr['fax'].$arr['email'].$arr['payment_terms']);
 			$arr['inputter']			= "SYSINPUT";
 			$arr['input_date']			= date('Y-m-d H:i:s'); 
 			$arr['authorizer']			= "SYSAUTH";
@@ -191,9 +191,41 @@ class CustomerOps
 			$arr['record_status']		= "LIVE";
 			$arr['current_no']			= "1";
 
-			if( !in_array ($arr['tax_id'],$this->taxids) )
+			if( preg_match('/\d{2}[A-Z]{3}\d{5}/i',$arr['tax_id']) )
 			{
-				array_push($this->taxids, $arr['tax_id']);
+				if( !in_array ($arr['tax_id'],$this->taxids) )
+				{
+					array_push($this->taxids, $arr['tax_id']);
+					if( $update_type == "UPDATE" )
+					{
+						if( $this->dbops->record_exist($this->tb_live, "customer_id", $arr['customer_id']) )
+						{ 
+							$querystr = sprintf('SELECT id,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"customer_id",$arr['customer_id']);
+							$formdata = $this->dbops->execute_select_query($querystr);
+							$record	  = $formdata[0];
+							$arr['id'] = $record['id']; //set correct existing id
+							$arr['current_no']	= $record['current_no'] + 1; //increment current_no
+							if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$arr['id'],$record['current_no']) )
+							{
+								$count = $this->dbops->update_record($this->tb_live, $arr);
+								if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
+							}
+						}
+					}
+					else if ( $update_type == "INSERT" )
+					{
+						$count = $this->dbops->insert_record($this->tb_live, $arr);
+						if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
+					}
+				}
+				else
+				{
+					$xmlstring = (string) $object;
+					$this->write_errorlog_duplicate_taxid($arr['tax_id'],$xmlstring,"Handshake");
+				}
+			}
+			else
+			{
 				if( $update_type == "UPDATE" )
 				{
 					if( $this->dbops->record_exist($this->tb_live, "customer_id", $arr['customer_id']) )
@@ -215,11 +247,6 @@ class CustomerOps
 					$count = $this->dbops->insert_record($this->tb_live, $arr);
 					if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
 				}
-			}
-			else
-			{
-				$xmlstring = (string) $object;
-				$this->write_errorlog_duplicate_taxid($arr['tax_id'],$xmlstring,"Handshake");
 			}
 		}
 		$faillist = substr_replace($faillist, '', -1);
@@ -476,7 +503,7 @@ $value = Array
 			$fax		= $value[8];
 			if( intval($value[9]) > 0 ) { $payment_terms = sprintf('NET %s',$value[9]); } else { $payment_terms = $value[9]; }
 			$unknown	= $value[10];
-			$psalemancode = $value[11];
+			$salesperson = $value[11];
 						
 			// codes that start with "9" do not exist in Handshake and should be excluded
 			if($daceasy_id[0] != "6")
@@ -487,50 +514,18 @@ $value = Array
 				if( $num = $this->is_valid_phone_number($fax) ) { $fax = $num;	} else { $fax = ""; }
 				$phone = substr_replace($phone, '', -3);
 				
-				$hash = hash('sha256',$name.$contact.$street.$city.$country.$phone.$fax.$email.$payment_terms);
+				$hash = hash('sha256',$salesperson.$name.$contact.$street.$city.$country.$phone.$fax.$email.$payment_terms);
 				
-				if( !in_array ($daceasy_id,$this->taxids) )
+				if( $this->dbops->record_exist($this->tb_live,"customer_id",$daceasy_id) )
 				{
-					array_push($this->taxids, $daceasy_id);
-					if( $this->dbops->record_exist($this->tb_live,"tax_id",$daceasy_id) )
+					$querystr = sprintf('SELECT id,customer_id,tax_id,hash,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"customer_id",$daceasy_id);
+					$formdata = $this->dbops->execute_select_query($querystr);
+					$record	  = $formdata[0];
+					if( $hash != $record['hash'] )
 					{
-						$querystr = sprintf('SELECT id,customer_id,tax_id,hash,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"tax_id",$daceasy_id);
-						$formdata = $this->dbops->execute_select_query($querystr);
-						$record	  = $formdata[0];
-						if( $hash != $record['hash'] )
-						{
-							$arr['id']			= $record['id'];
-							$arr['customer_id']	= $record['customer_id']; //@@ GET CUSTOMER_ID FROM IMPORT FILE, CHANGE NEEDS TO BE MADE IN IMPORT_FILE  
-							$arr['tax_id']		= $daceasy_id;
-							$arr['name']		= $name;
-							$arr['contact']		= $contact;
-							$arr['street']		= $street;
-							$arr['city']		= $city;
-							$arr['country']		= $country;
-							$arr['phone']		= $phone;
-							$arr['fax']			= $fax;
-							$arr['email']		= $email;
-							$arr['payment_terms'] = $payment_terms;
-							$arr['hash']		= $hash; 
-							$arr['input_date']	= date('Y-m-d H:i:s'); 
-							$arr['input_date']	= date('Y-m-d H:i:s'); 
-							$arr['auth_date']	= date('Y-m-d H:i:s'); 
-							$arr['current_no']	= $record['current_no'] + 1;
-							if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$record['id'],$record['current_no']) )
-							{
-								if( $count = $this->dbops->update_record($this->tb_live, $arr) )
-								{
-$xmlrows_edit .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>EDIT</entry></row>',$arr['customer_id'],$daceasy_id,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
-								}
-							}
-						}
-					}
-					else
-					{
-						usleep(1000000);
-						$arr['id'] 			= $this->dbops->create_record_id($this->tb_live);
-						$arr['customer_id']	= date('YmdHis'); //@@ GET CUSTOMER_ID FROM IMPORT FILE, CHANGE NEEDS TO BE MADE IN IMPORT_FILE 
-						$arr['tax_id']		= $daceasy_id;
+						$arr['id']			= $record['id'];
+						$arr['customer_id']	= $daceasy_id;
+						$arr['tax_id']		= $salesperson;
 						$arr['name']		= $name;
 						$arr['contact']		= $contact;
 						$arr['street']		= $street;
@@ -541,22 +536,45 @@ $xmlrows_edit .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><con
 						$arr['email']		= $email;
 						$arr['payment_terms'] = $payment_terms;
 						$arr['hash']		= $hash; 
-						$arr['inputter']	= "SYSINPUT";
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
-						$arr['authorizer']	= "SYSAUTH";
+						$arr['input_date']	= date('Y-m-d H:i:s'); 
 						$arr['auth_date']	= date('Y-m-d H:i:s'); 
-						$arr['record_status'] = "LIVE";
-						$arr['current_no']	= "1";
-						if( $count = $this->dbops->insert_record($this->tb_live, $arr) )
+						$arr['current_no']	= $record['current_no'] + 1;
+						if( $this->dbops->insert_from_table_to_table($this->tb_hist,$this->tb_live,$record['id'],$record['current_no']) )
 						{
-$xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>NEW</entry></row>',$arr['customer_id'],$daceasy_id,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
+							if( $count = $this->dbops->update_record($this->tb_live, $arr) )
+							{
+$xmlrows_edit .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>EDIT</entry></row>',$arr['customer_id'],$salesperson,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
+							}
 						}
 					}
 				}
 				else
 				{
-					$linerecord = $value;
-					$this->write_errorlog_duplicate_taxid($daceasy_id,$linerecord,"DacEasy");
+					usleep(1000000);
+					$arr['id'] 			= $this->dbops->create_record_id($this->tb_live);
+					$arr['customer_id']	= $daceasy_id; 
+					$arr['tax_id']		= $salesperson;
+					$arr['name']		= $name;
+					$arr['contact']		= $contact;
+					$arr['street']		= $street;
+					$arr['city']		= $city;
+					$arr['country']		= $country;
+					$arr['phone']		= $phone;
+					$arr['fax']			= $fax;
+					$arr['email']		= $email;
+					$arr['payment_terms'] = $payment_terms;
+					$arr['hash']		= $hash; 
+					$arr['inputter']	= "SYSINPUT";
+					$arr['input_date']	= date('Y-m-d H:i:s'); 
+					$arr['authorizer']	= "SYSAUTH";
+					$arr['auth_date']	= date('Y-m-d H:i:s'); 
+					$arr['record_status'] = "LIVE";
+					$arr['current_no']	= "1";
+					if( $count = $this->dbops->insert_record($this->tb_live, $arr) )
+					{
+$xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><contact>%s</contact><street>%s</street><city>%s</city><country>%s</country><phone>%s</phone><fax>%s</fax><email>%s</email><payment_terms>%s</payment_terms><entry>NEW</entry></row>',$arr['customer_id'],$salesperson,$name,$contact,$street,$city,$country,$phone,$fax,$email,$payment_terms)."\n";
+					}
 				}
 			}
 		}

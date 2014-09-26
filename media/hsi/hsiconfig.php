@@ -144,4 +144,5 @@ class HSIConfig
 	{
 		return $this->hsiconfig;
 	}
-}
+	
+} //End HSIConfig 

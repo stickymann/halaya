@@ -49,7 +49,7 @@ class CurlOps
 		return $response;
 	}
 	
-	public function put_remote_data($url,$data_json,&$status,$password=true)
+	public function put_remote_data($url,$data_json,&$status,$use_password=true)
 	{
 		//PUT USED TO UPDATE EXISTING RECORDS
 		$curl = curl_init($url);
@@ -79,7 +79,7 @@ class CurlOps
 		return $response;
 	}
 	
-	public function post_remote_data($url,$data_json,&$status,$password=true)
+	public function post_remote_data($url,$data_json,&$status,$use_password=true)
 	{
 		//POST USED TO CREATE NEW RECORDS
 		$curl = curl_init($url);
