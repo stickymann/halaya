@@ -266,7 +266,7 @@ class OrderEntryOps
 			if( $result = $this->dbops->execute_select_query($querystr) )
 			{
 				//get customer group id
-				$customer_group = $result[0]['customer_id'];
+				$customer_group = $result[0]['customergroup_id'];
 				switch( $customer_group )
 				{
 						case "CustPrice1":

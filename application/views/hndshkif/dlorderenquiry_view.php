@@ -30,6 +30,11 @@ print_to_screen($enquiryrecords,$pagination,$labels,$config,$param);
 
 function get_section1($item,$labels,$param)
 {
+	require_once('media/hsi/hsiconfig.php');
+	$cfg = new HSIConfig();
+	$hsiconfig = $cfg->get_config();
+	$tb_customers = $hsiconfig['tb_customers'];
+	
 	$baseurl = URL::base()."index.php";
 	$dlorder = $param['order_param_id'];
 	$customer = "hndshkif_customers_customermapping"; //$param['customer_param_id'];
@@ -52,6 +57,14 @@ function get_section1($item,$labels,$param)
 	$label_13 = $labels['phone'];			$item_13 = $item->phone;
 	$label_14 = $labels['paymentterms'];	$item_14 = $item->paymentterms;
 	 	
+	$customer_group = "";
+	$querystr = sprintf('SELECT customergroup_id FROM %s WHERE customer_id = "%s"',$tb_customers,$item_03);
+	if( $custgrp_r = $param['model']->execute_select_query($querystr) )
+	{
+		$custgrp_r = (array) $custgrp_r[0];
+		$customer_group = $custgrp_r['customergroup_id'];
+	}
+	
 	$HTML=<<<_HTML_
 	<table  width="100%">
 			<tr valign=top>
@@ -64,10 +77,10 @@ function get_section1($item,$labels,$param)
 						<td class="ne_td2" ><a href="$baseurl/$batch_report?batch_id=$item_02" target="enquiry" title="View Batch Report">$item_02</a></td></tr>
 						
 						<tr valign=top><td class="ne_td1">$label_03 : </td>
-						<td class="ne_td2" ><a href="$baseurl/$customer/index/$item_04" target="enquiry" title="View Customer">$item_03</a></td></tr>
+						<td class="ne_td2" ><a href="$baseurl/$customer/index/$item_03" target="enquiry" title="View Customer">$item_03</a></td></tr>
 						
 						<tr valign=top><td class="ne_td1">$label_04 : </td>
-						<td class="ne_td2" ><a href="$baseurl/$customer/index/$item_04" target="enquiry" title="View Customer">$item_04</a></td></tr>
+						<td class="ne_td2" >$item_04 ($customer_group)</td></tr>
 												
 						<tr valign=top><td class="ne_td1">$label_05 : </td><td class="ne_td2" >$item_05</td></tr>
 						<tr valign=top><td class="ne_td1">$label_06 : </td><td class="ne_td2" >$item_06</td></tr>	
