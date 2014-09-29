@@ -43,7 +43,8 @@ var idgenerator = new function()
 	{
 		var fn = $('#first_name').val();
 		var ln = $('#last_name').val();
-				
+		fn = fn.replace(/&/g,'');
+		ln = ln.replace(/&/g,'');
 		params = "option=daceasyid&" + "firstname=" + fn + "&" + "lastname=" + ln;
 		$.getJSON(this.getDBReqsURL() + params, function(data) 
 			{ 
