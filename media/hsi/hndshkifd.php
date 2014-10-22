@@ -36,13 +36,6 @@ class HSIDaemon
     
 } // End HSIDaemon
 	
-	//prevent running more than one instance
-	$grep_arg = basename(__FILE__);
-	if( ProcOps::process_exist($grep_arg) )
-	{
-		die("Process already exist, terminating now!\n");
-	}
-	
 	$fail_message = sprintf("Run with: \n\t php %s -t %s\n\n",__FILE__,"cli");
 	$opts  = "";
 	$opts .= "t:";  
@@ -55,6 +48,20 @@ class HSIDaemon
 	}
 	else
 	{
+		if( $options["t"] == "onboot" )
+		{
+			//do nothing
+		}
+		else
+		{
+			//prevent running more than one instance
+			$grep_arg = basename(__FILE__);
+			if( ProcOps::process_exist($grep_arg) )
+			{
+				die("Process already exist, terminating now!\n");
+			}
+		}
+				
 		$daemon = new HSIDaemon();
 		if( $options["t"] == "cli" || $options["t"] == "onboot")
 		{

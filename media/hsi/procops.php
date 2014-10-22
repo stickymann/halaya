@@ -163,7 +163,7 @@ class ProcOps
 		//parse ps output minus grep entries
 		foreach($output as $index => $value)
 		{
-			if( preg_match('/sh /i', $value) )   { $nohup_used = true; $minprocs = 2; }
+			if( preg_match('/sh /i', $value) || preg_match('/su /i', $value) )   { $nohup_used = true; $minprocs = 2; }
 		}
 		
 		$count = count($output);

@@ -29,7 +29,7 @@ class CurlOps
 		curl_setopt($curl, CURLOPT_VERBOSE, 0);
 		curl_setopt($curl, CURLOPT_TIMEOUT, 60);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
-		if( $use_password ) { curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x'); }
+		if( $use_password ) { curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':X'); }
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
 
@@ -42,7 +42,7 @@ class CurlOps
 		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
 
 		$response = curl_exec($curl);
-//print "<b>[DEBUG]---></b> "; print htmlspecialchars($xml); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
+//print "<b>[DEBUG]---></b> "; print htmlspecialchars($response); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		$status = curl_getinfo($curl);  
 //print "<b>[DEBUG]---></b> "; print_r($status); print( sprintf('<br><b>[line %s - %s, %s]</b><hr>',__LINE__,__FUNCTION__,__FILE__) );
 		curl_close($curl);

@@ -152,7 +152,7 @@ class Scheduler {
 
 	function runcmd(&$task){
 
-		exec($task["cmd"].$output);
+		exec($task["cmd"],$output);
 		if ($this->logfile)
 		{
 			$this->writeLog($task["uid"], $task["cmd"]);
