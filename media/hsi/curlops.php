@@ -38,7 +38,8 @@ class CurlOps
 		 * 35 - error:14077410:SSL routines:SSL23_GET_SERVER_HELLO:sslv3 alert handshake failure
 		 * uncomment the following curl_setopt lines
 		 */
-		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
+		//curl_setopt($curl, CURLOPT_SSLVERSION, 3);
+		//curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3,RC4-SHA,RC4-MD5');
 		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
 
 		$response = curl_exec($curl);
@@ -67,7 +68,7 @@ class CurlOps
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		if( $use_password ) { curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x'); }
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
+		//curl_setopt($curl, CURLOPT_SSLVERSION, 3);
 		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
 		
 		$response = curl_exec($curl);
@@ -90,7 +91,7 @@ class CurlOps
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		if( $use_password ) { curl_setopt($curl, CURLOPT_USERPWD, $this->hs_apikey.':x'); }
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($curl, CURLOPT_SSLVERSION, 3);
+		//curl_setopt($curl, CURLOPT_SSLVERSION, 3);
 		curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'SSLv3');
 		
 		$response = curl_exec($curl);
