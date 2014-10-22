@@ -121,7 +121,7 @@ class ProcOps
     
     public function status($pid)
     {
-        $command = 'ps -p '.$pid;
+        $command = 'ps p '.$pid;
         exec($command,$op);
         if( !isset($op[1]) ) return false;
 		else return true;
@@ -151,7 +151,7 @@ class ProcOps
 		$nohup_used = false;
 		$minprocs = 1;
 		$output_format = "%p;%a";
-		$cmd = sprintf('ps -axo "%s" | grep -i "%s"',$output_format,$grep_arg);
+		$cmd = sprintf('ps axo "%s" | grep -i "%s"',$output_format,$grep_arg);
 		exec($cmd,$output);
 		
 		//parse original ps output and remove grep entries
