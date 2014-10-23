@@ -15,8 +15,6 @@ require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 
-define("NON_TAX_CUSTOMER_GROUP","20");
-
 class OrderEntryOps
 {
 	public $cfg 	= null;
@@ -41,7 +39,8 @@ class OrderEntryOps
 			"enddtl"=>"@ENDDTL___",
 			"footer"=>"@ENSERIAL_"
 		);
-	
+	private $arr_NON_TAX_SALESPERSON = array("20");
+		
 	public function __construct()
 	{
 		$this->cfg		= new HSIConfig();
@@ -78,7 +77,7 @@ class OrderEntryOps
 	{
 		$orders_table = $this->config['tb_orders'];
 		$querystr = sprintf('SELECT id,customer_id,tax_id,paymentterms,cdate,ctime,orderlines FROM %s WHERE id = "%s"',$orders_table,$order_id);
-		if( $result   = $this->dbops->execute_select_query($querystr) )
+		if( $result = $this->dbops->execute_select_query($querystr) )
 		{
 			$order = $result[0];
 			$xml = $order['orderlines'];
@@ -122,12 +121,11 @@ class OrderEntryOps
 						if( $this->dbops->record_exist($table,"id",$sku) )
 						{
 							$querystr = sprintf('SELECT description,availunits,taxable,unitprice FROM %s WHERE id = "%s"',$table,$sku);
-							$result   = $this->dbops->execute_select_query($querystr);
-							
+							$result = $this->dbops->execute_select_query($querystr);
 							$description = $result[0]['description'];
 							$availunits = $result[0]['availunits'];
-							$customer_group = substr($order['tax_id'],8,2);
-							if($customer_group == NON_TAX_CUSTOMER_GROUP) { $taxable = "N"; } else { $taxable = $result[0]['taxable']; }
+							$sales_person_code = substr($order['tax_id'],0,2);
+							if( in_array($sales_person_code,$this->arr_NON_TAX_SALESPERSON) ) { $taxable = "N"; } else { $taxable = $result[0]['taxable']; }
 							$unitprice = $result[0]['unitprice'];
 							$customer_price = 0;
 							
