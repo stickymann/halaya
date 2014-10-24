@@ -93,6 +93,8 @@ class Controller_Core_Customer_Customer extends Controller_Core_Site
 		$validation
 			->rule('branch_id','not_empty')
 			->rule('branch_id','min_length', array(':value', 2))->rule('branch_id','max_length', array(':value', 50));
+		$validation
+			->rule('pricegroup_id','not_empty');
 
 		$this->param['isinputvalid'] = $validation->check();
 		$this->param['validatedpost'] = $validation->data();

@@ -24,7 +24,7 @@ define("FORMDEFS","/formdefs/");
 define("PARAMDEFS","/paramdefs/");
 define("MVCDEFS","/mvcs/");
 define("ERRMSGDIR","/errmsgs/");
-define("OUTFILE_PERMISSION",0664);
+define("OUTFILE_PERMISSION",0666);
 define("OUTDIR_PERMISSION",0777);
 define("OUTFILE_OWNER","www-data");
 define("OUTFILE_GROUP","users");
@@ -1115,23 +1115,24 @@ _HTML_;
 					{
 						$backupstr = $sysrow['target'].".".date("YmdHis").".php";
 						if (!copy($sysrow['target'], $backupstr)) 
-							{
-								$HTML .= "Backup failed : ".$backupstr."<br>";
-							} 
+						{
+							$HTML .= "Backup failed : ".$backupstr."<br>";
+						} 
 						else 
-							{
-								chmod($backupstr, OUTFILE_PERMISSION);
-								$HTML .= "Backup successful : ".$backupstr."<br>";
-							}
+						{
+							chmod($backupstr, OUTFILE_PERMISSION);
+							$HTML .= "Backup successful : ".$backupstr."<br>";
+						}
 					}
+					
 					if(!copy($sysrow['src'], $sysrow['target'])) 
 					{
 						$HTML .= "Copy failed : ".$sysrow['target']."<br>";
 					} 
 					else 
 					{
-						chmod($backupstr, OUTFILE_PERMISSION);
-						$HTML .= "Backup successful : ".$sysrow['target']."<br>";
+						chmod($sysrow['target'], OUTFILE_PERMISSION);
+						$HTML .= "Copy successful : ".$sysrow['target']."<br>";
 					}
 				}
 			}
