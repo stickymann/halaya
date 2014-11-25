@@ -57,7 +57,7 @@ var popout = new function()
 		for(var i=0; i<len; i++) 
 		{	idfield = 'po_'+ qfieldarr[i]; 
 			label = qfieldarr[i];
-			label = window.siteutils.strtotitlecase(label.replace("_"," "));
+			label = window.siteutils.strtotitlecase(label.replace(/_/g," "));
 			po_HTML_LABEL += '<td><label for="'+ qfieldarr[i] + '">'+ label +'</label><td>';
 			po_HTML_INPUT += '<td><input type="text" id="'+ idfield + '" size=10 onKeyUp=popout.getInput()><td>';
 		}

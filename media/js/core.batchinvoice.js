@@ -113,7 +113,7 @@ function batchinvoice_UpdateDetails()
 		xmltxt			+= "<row>"+ id + batch_id + order_id + invoice_id + alt_invoice_id + order_date + first_name + last_name + order_details + extended_total + tax_total + order_total + payment_total + balance + payment_type + "</row>";
 	}  
 	xmltxt = xmlhr + xmltxt + xmlft;
-	xmltxt = xmltxt.replace("&","&amp;");
+	xmltxt = xmltxt.replace(/&/g,"&amp;");
 	$('#batch_details').val(xmltxt);
 }
 
