@@ -30,7 +30,10 @@ class Controller_Core_Useradmin_Userpasswdreset extends Controller_Core_Site
 		<script type="text/javascript">
 		$(document).ready(function()
 		{
-			$('#password').val("");
+			if( $('#record_status').val() == "IHLD" )
+			{
+				$('#password').val("");
+			}
 		});
 		</script>
 _text_;

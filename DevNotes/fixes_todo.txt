@@ -1,0 +1,13 @@
+2014-09-09: Controller_Core_Developer_Param->insert_sys_autoid_startnum() should check it record exist, if not then insert
+2014-09-09: Double check indexes on all core tables
+2014-09-10: ErrorException [ Notice ]: Undefined variable: backupstr
+		APPPATH/classes/Controller/Core/Developer/Autodef.php [ 1133 ]
+		1128 {
+		1129 	$HTML .= "Copy failed : ".$sysrow['target']."<br>";
+		1130 } 
+		1131 else 
+		1132 {
+		1133 	chmod($backupstr, OUTFILE_PERMISSION);
+		1134 	$HTML .= "Backup successful : ".$sysrow['target']."<br>";
+		1135 }
+		
