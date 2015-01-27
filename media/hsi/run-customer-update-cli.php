@@ -45,12 +45,12 @@ foreach($filespecs as $index => $specs)
 		
 		//data import data file
 		$customerops->archive_customer_datafile();
-		
+		/*
 		//push customer
 		if( $fileops->config['push_customer'] )
 		{
 			$customerops->push_handshake_customer($changelog_id);
-		}
+		}*/
 	}
 }
 
