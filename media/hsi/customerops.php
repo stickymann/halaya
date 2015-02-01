@@ -19,6 +19,8 @@ require_once(dirname(__FILE__).'/objectops.php');
 
 define("NEW_CUSTOMER_USER_GROUP","NEW-CUSTOMER.USER.GROUP");
 define("NEW_CUSTOMER_CUSTOMER_GROUP","NEW-CUSTOMER.CUSTOMER.GROUP");
+define("SALESPERSON_PREFIX","SALESPERSON");
+define("PRICEGROUP_PREFIX","PRICEGROUP");
 
 class CustomerOps 
 {
@@ -62,7 +64,6 @@ class CustomerOps
 		
 		$this->customer_processing_opt = $this->config['hs_apiver']."customers?format=xml";
 		$this->address_processing_opt = $this->config['hs_apiver']."addresses?format=xml";
-		$this->set_customer_groups();
 		
 		$datestr = date('YmdHis');
 		$current_import_dir = $this->config['current_import'];
@@ -105,32 +106,70 @@ class CustomerOps
 	{
 		return $this->customer_data;
 	}
+	/*
+	$arr['customergroup_objid'] = $this->customergroup_objid;
+	$arr['customergroup_id']	= $this->customergroup_id,
+	$arr['usergroup_objid'] = $this->usergroup_objid;
+	$arr['usergroup_id']	= $this->usergroup_id;
+	$this->set_customergroup($pricegroup);
+			$this->set_usergroup($salesperson);
+
 	
-	public function set_customer_groups()
+	*/
+	
+	public function set_customergroup($pricegroup)
 	{
-		$querystr = sprintf('SELECT hs_objid FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_CUSTOMER_USER_GROUP);
+		$mapping_id = PRICEGROUP_PREFIX."-".$pricegroup;
+		$querystr = sprintf('SELECT hs_objid,hs_id FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,$mapping_id);
 		if( $result = $this->dbops->execute_select_query($querystr) )
 		{
 			$mapping = $result[0];
-			$this->user_group_objid = $mapping['hs_objid'];
+			$this->customergroup_objid = $mapping['hs_objid'];
+			$this->customergroup_id = $mapping['hs_id'];
 		}
 		else
 		{
-			die();
-		}
-		
-		$querystr = sprintf('SELECT hs_objid FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_CUSTOMER_CUSTOMER_GROUP);
-		if( $result = $this->dbops->execute_select_query($querystr) )
-		{
-			$mapping = $result[0];
-			$this->customer_group_objid = $mapping['hs_objid'];
-		}
-		else
-		{
-			die();
-		}
+			$querystr = sprintf('SELECT hs_objid,hs_id FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_CUSTOMER_CUSTOMER_GROUP);
+			if( $result = $this->dbops->execute_select_query($querystr) )
+			{
+				$mapping = $result[0];
+				$this->customergroup_objid = $mapping['hs_objid'];
+				$this->customergroup_id = $mapping['hs_id'];
+			}
+			else
+			{
+				die();
+			}
+		}		
 	}
 	
+	public function set_usergroup($salesperson)
+	{
+		$salesperson_code = substr($salesperson,0,2);
+		$mapping_id = SALESPERSON_PREFIX."-".$salesperson_code;
+		$querystr = sprintf('SELECT hs_objid,hs_id FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,$mapping_id);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$mapping = $result[0];
+			$this->usergroup_objid = $mapping['hs_objid'];
+			$this->usergroup_id = $mapping['hs_id'];
+		}
+		else
+		{
+			$querystr = sprintf('SELECT hs_objid,hs_id FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_CUSTOMER_USER_GROUP);
+			if( $result = $this->dbops->execute_select_query($querystr) )
+			{
+				$mapping = $result[0];
+				$this->usergroup_objid = $mapping['hs_objid'];
+				$this->usergroup_id = $mapping['hs_id'];
+			}
+			else
+			{
+				die();
+			}
+		}		
+	}
+				
 	public function is_valid_phone_number($numstr)
 	{
 		if( strlen($numstr) > 0 )
@@ -483,8 +522,8 @@ $value = Array
     [8] => (868)    -
     [9] => COD
     [10] => N
-    [11] => 10
-    [12] => 10TBG01902
+    [11] => 10TB
+    [12] => 3KSPLUM001
 )
 */
 		$this->taxids = array();
@@ -502,9 +541,11 @@ $value = Array
 			$phone2		= $value[7];
 			$fax		= $value[8];
 			if( intval($value[9]) > 0 ) { $payment_terms = sprintf('NET %s',$value[9]); } else { $payment_terms = $value[9]; }
-			$unknown	= $value[10];
+			$pricegroup	= $value[10];
 			$salesperson = $value[11];
-						
+			$this->set_customergroup($pricegroup);
+			$this->set_usergroup($salesperson);
+
 			// codes that start with "9" do not exist in Handshake and should be excluded
 			if($daceasy_id[0] != "6")
 			{
@@ -535,6 +576,14 @@ $value = Array
 						$arr['fax']			= $fax;
 						$arr['email']		= $email;
 						$arr['payment_terms'] = $payment_terms;
+						
+						/*
+						// do not update via interface, api does push these values, update in Handshake manually and interface will sync them periodically 
+						$arr['customergroup_objid'] = $this->customergroup_objid;
+						$arr['customergroup_id']	= $this->customergroup_id;
+						$arr['usergroup_objid'] = $this->usergroup_objid;
+						$arr['usergroup_id']	= $this->usergroup_id;
+						*/
 						$arr['hash']		= $hash; 
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
 						$arr['input_date']	= date('Y-m-d H:i:s'); 
@@ -564,6 +613,10 @@ $xmlrows_edit .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><con
 					$arr['fax']			= $fax;
 					$arr['email']		= $email;
 					$arr['payment_terms'] = $payment_terms;
+					$arr['customergroup_objid'] = $this->customergroup_objid;
+					$arr['customergroup_id']	= $this->customergroup_id;
+					$arr['usergroup_objid'] = $this->usergroup_objid;
+					$arr['usergroup_id']	= $this->usergroup_id;
 					$arr['hash']		= $hash; 
 					$arr['inputter']	= "SYSINPUT";
 					$arr['input_date']	= date('Y-m-d H:i:s'); 
@@ -636,9 +689,9 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 							"email" 	=> $customer['email'],
 							"paymentTerms" => $customer['payment_terms'],
 							"billTo" => array( "street" => $customer['street'], "city"  => $customer['city'], "country" => $customer['country'], "phone" => $customer['phone'], "fax" => $customer['fax'] )
-							//Errors when sending to handshake, excluding for now
-							//"customerGroup" => array("resource_uri"	=> "/api/v2/customer_groups/".$customer['customergroup_objid'] ),  
-							//"userGroup" 	=> array("resource_uri"	=> "/api/v2/user_groups/".$customer['usergroup_objid'] ) 
+						   //update of these fields not supported by api
+						   //"customerGroup" => array("objID" => $customer['customergroup_objid'], "resource_uri"	=> "/api/v2/customer_groups/".$customer['customergroup_objid'] ),  
+						   //"userGroup" 	=> array("objID" => $customer['usergroup_objid'], "resource_uri"	=> "/api/v2/user_groups/".$customer['usergroup_objid'] )
 						);
 						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s/%s',$this->appurl,$this->config['hs_apiver'],"customers",$customer['customer_objid']);
@@ -657,7 +710,8 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 							"email" 	=> $customer['email'],
 							"paymentTerms" => $customer['payment_terms'],
 							"billTo" => array( "street" => $customer['street'], "city"  => $customer['city'], "country" => $customer['country'], "phone" => $customer['phone'], "fax" => $customer['fax'] ),
-							"userGroup" 	=> array("resource_uri"	=> "/api/v2/user_groups/".$this->user_group_objid )
+							"customerGroup" => array("resource_uri"	=> "/api/v2/customer_groups/".$customer['customergroup_objid'] ),  
+							"userGroup" 	=> array("resource_uri"	=> "/api/v2/user_groups/".$customer['usergroup_objid'] )
 						);
 						$json_str = json_encode($arr);
 						$url = sprintf('%s%s%s',$this->appurl,$this->config['hs_apiver'],"customers");

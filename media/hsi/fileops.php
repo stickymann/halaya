@@ -334,7 +334,9 @@ class FileOps
 				
 				$data_r = array('maxfldlen' => MAX_FIELD_LENGTH, 'line' => trim($line) );
 				if( !$this->is_valid_customer_id($data_r) ) { $faillist_error = TRUE; }
-	
+				if( !$this->is_valid_salesperson($data_r) ) { $faillist_error = TRUE; }
+				if( $this->is_two_digit_salesperson($data_r) ) { $warning_error = TRUE; }
+								
 				if( $faillist_error || $warning_error || !($line_comma_count == CUSTOMER_COMMA_COUNT && $line_invert_count == CUSTOMER_INVERT_COUNT) )
 				{
 					if( $warning_error )
@@ -491,11 +493,38 @@ class FileOps
 		$valid = true;
 		$field_r = explode(',', $data_r['line']);
 		$field = trim($field_r[12],'"');
-		$FIELD_LENGTH = strlen($field);
 
 		if( preg_match('/\d{2}[A-Z]{3}\d{5}/i',$field,$output_r) || preg_match('/\A\d{1,10}\z/i',$field,$output_r) )
 		{
 			$valid = false;
+		}
+		return $valid;
+	}
+	
+	public function is_valid_salesperson($data_r)
+	{
+		$valid = false;
+		$field_r = explode(',', $data_r['line']);
+		$field = trim($field_r[11],'"');
+		$FIELD_LENGTH = strlen($field);
+		
+		if( (preg_match('/\d{2}[A-Z]{2}/i',$field,$output_r) || preg_match('/d{2}/',$field,$output_r)) && ($FIELD_LENGTH == 2 || $FIELD_LENGTH == 4) )
+		{
+			$valid = true;
+		}
+		return $valid;
+	}
+	
+	public function is_two_digit_salesperson($data_r)
+	{
+		$valid = false;
+		$field_r = explode(',', $data_r['line']);
+		$field = trim($field_r[11],'"');
+		$FIELD_LENGTH = strlen($field);
+		
+		if( preg_match('/\d{2}/',$field,$output_r) && $FIELD_LENGTH == 2 )
+		{
+			$valid = true;
 		}
 		return $valid;
 	}

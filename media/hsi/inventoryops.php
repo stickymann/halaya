@@ -134,6 +134,8 @@ class InventoryOps
 			$arr['category_objid']	= sprintf('%s',$object->category->objID);
 			$arr['category']		= str_replace('"',' _in_ ', sprintf('%s',$object->category->id) );
 			$arr['unitprice']		= sprintf('%s',$object->unitPrice);
+			$arr['minqty']			= sprintf('%s',$object->minQty);
+			$arr['multqty']			= sprintf('%s',$object->multQty);
 			$arr['hash2']  			= hash('sha256',$arr['description'].$arr['unitprice']);
 			$arr['inputter']		= "SYSINPUT";
 			$arr['input_date']		= date('Y-m-d H:i:s'); 
@@ -443,7 +445,7 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 			foreach ($formfields->rows->row as $row)
 			{
 				$id = sprintf('%s',$row->code);
-				$querystr = sprintf('SELECT id,item_objid,description,category_objid,unitprice FROM %s WHERE id = "%s"',$this->tb_live,$id);
+				$querystr = sprintf('SELECT id,item_objid,description,category_objid,unitprice,minqty,multqty FROM %s WHERE id = "%s"',$this->tb_live,$id);
 				if( $formdata = $this->dbops->execute_select_query($querystr) )
 				{
 					$item = $formdata[0];
@@ -455,8 +457,8 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 							"sku" => "$id",
 							"name" => $item['description'],
 							"unitPrice" => $item['unitprice'],
-							"minQty" => 1,
-							"multQty" => 1,
+							"minQty" => $item['minqty'],
+							"multQty" => $item['multqty'],
 							"category" => array("objID" => intval($item['category_objid']) )
 						);
 						$json_str = json_encode($arr);

@@ -84,6 +84,8 @@ class ObjectOps
 			$arr = array(); 
 			$arr['id']				= sprintf('%s',$object->sku);
 			$arr['item_objid']		= sprintf('%s',$object->objID);
+			$arr['minqty']			= sprintf('%s',$object->minQty);
+			$arr['multqty']			= sprintf('%s',$object->multQty);
 			$arr['category_objid']	= sprintf('%s',$object->category->objID);
 			$arr['category']		= str_replace('"',' _in_ ', sprintf('%s',$object->category->id) );
 
@@ -159,7 +161,7 @@ class ObjectOps
 		if( $result = $this->dbops->execute_select_query($querystr) )
 		{
 			$mapping = $result[0];
-			$url = sprintf('%s%s%s?id=%s',$this->config['appurl'],$this->config['hs_apiver'],$mapping['hs_object'],$mapping['hs_id']);
+			$url = sprintf('%s%s%s?id=%s',$this->config['appurl'],$this->config['hs_apiver'],$mapping['hs_object'],rawurlencode($mapping['hs_id']) );
 			$GET_REMOTE_DATA = TRUE;
 			while( $GET_REMOTE_DATA )
 			{
