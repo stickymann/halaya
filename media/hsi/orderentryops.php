@@ -125,6 +125,7 @@ class OrderEntryOps
 							$description = $result[0]['description'];
 							$availunits = $result[0]['availunits'];
 							$sales_person_code = substr($order['tax_id'],0,2);
+//print sprintf('EXIST: %s ; %s ; %s',$sku,$description,$availunits)."\n";
 							if( in_array($sales_person_code,$this->arr_NON_TAX_SALESPERSON) ) { $taxable = "N"; } else { $taxable = $result[0]['taxable']; }
 							$unitprice = $result[0]['unitprice'];
 							$customer_price = 0;
@@ -424,7 +425,9 @@ class OrderEntryOps
 		$filedata .= $this->get_oefile_enddata($this->sectionhdr['endadr'],$ADR);
 		$filedata .= $this->get_oefile_enddata($this->sectionhdr['enddtl'],$DTL);
 		$filedata .= $this->get_oefile_footer();
+//print sprintf("%s\n",$filedata);	
 		$this->fileops->write_file($filepath,$filedata);
+	
 	}
 	
 	public function process_orderentry_files($file_id="",$auto=false)
@@ -441,7 +444,7 @@ class OrderEntryOps
 			$archive_filepath = sprintf("%s%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
-//print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
+//print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);	
 		}
 		
 		if( $this->count_NTXDTL > 0 )
@@ -451,7 +454,7 @@ class OrderEntryOps
 			$archive_filepath = sprintf("%s%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
-//print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
+//print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);	
 		}
 	}
 	

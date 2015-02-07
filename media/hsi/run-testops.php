@@ -49,9 +49,9 @@ $fileops = new FileOps();
 $fileops->process_import_files();
 */
 
-/*
+
 $auto = true;
-$batch_id = "BDO-20140821-091005"; //non tax items  
+$batch_id = "BDO-20150206-193042"; 
 $order_id = "895115"; //only pumps
 //orderentry batch
 require_once(dirname(__FILE__).'/orderentryops.php');
@@ -60,9 +60,9 @@ $orderentry->create_batch_entry($batch_id,$auto);
 $orderentry->process_orderentry_files($batch_id,$auto);
 
 //orderentry by order
-$orderentry->create_order_entry($order_id,$auto);
-$orderentry->process_orderentry_files("ORD-".$order_id,$auto);
-*/
+//$orderentry->create_order_entry($order_id,$auto);
+//$orderentry->process_orderentry_files("ORD-".$order_id,$auto);
+
 
 /*
 //prints
