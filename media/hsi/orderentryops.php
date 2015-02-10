@@ -303,9 +303,13 @@ class OrderEntryOps
 		{
 			$payment_terms = trim( str_replace("NET","",$order['paymentterms']) );
 		}
-		else if( preg_match('/P.D./i', $order['paymentterms']) )
+		else if( preg_match('/P/i', $order['paymentterms']) )
 		{
-			$payment_terms = trim( str_replace("P.D.","",$order['paymentterms']) );
+			$payment_terms = trim( str_replace("PD30","30 PD",$order['paymentterms']) );
+		}
+		else 
+		{
+			$payment_terms = "COD";
 		}
 		
 		//payment due date, add payment terms number to order date 
