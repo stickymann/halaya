@@ -11,11 +11,21 @@
  * @license      
  */
 
+require_once(dirname(__FILE__).'/procops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/customerops.php');
 
+//prevent running more than one instance
+$grep_arg = basename(__FILE__);
+if( ProcOps::process_exist($grep_arg) )
+{
+	die("Process already running, exiting now!\n");
+}
+
+$delete_bad_files=true;
 $fileops = new FileOps();
 $filespecs = $fileops->process_import_files();
+$fileops->write_errorlog_import_files($filespecs,$delete_bad_files);
 $changelogs = array(); 
 
 foreach($filespecs as $index => $specs)
@@ -31,17 +41,17 @@ foreach($filespecs as $index => $specs)
 
 		//process data
 		$changelog_id = $customerops->process_customer();
-		array_push($changelogs, $changelog_id);
+		//array_push($changelogs, $changelog_id);
 		
 		//data import data file
 		$customerops->archive_customer_datafile();
+		
+		//push customer
+		if( $fileops->config['push_customer'] )
+		{
+			$customerops->push_handshake_customer($changelog_id);
+		}
+		
 	}
 }
 
-if( $fileops->config['push_customer'] )
-{
-	foreach($changelogs as $index => $changelog_id)
-	{
-		$customerops->push_handshake_customer($changelog_id);
-	}
-}

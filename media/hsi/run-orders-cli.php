@@ -11,10 +11,18 @@
  * @license      
  */
 
+require_once(dirname(__FILE__).'/procops.php');
 require_once(dirname(__FILE__).'/orderops.php');
 require_once(dirname(__FILE__).'/printerwriteops.php');
 require_once(dirname(__FILE__).'/orderentryops.php');
 	
+//prevent running more than one instance
+$grep_arg = $arg = basename(__FILE__);
+if( ProcOps::process_exist($grep_arg) )
+{
+	die("Process already running, exiting now!\n");
+}
+
 $auto = true;
 $orderops = new OrderOps();
 $meta = $orderops->update_orders($auto);

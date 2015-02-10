@@ -24,7 +24,7 @@ class OrderOps
 	private $dlorderbatchs_tb_live = "";
 	private $idfield = "id";
 	private $appurl = "";
-	private $order_processing_opt = "api/v2/orders.xml?status=Processing";
+	private $order_processing_opt = "";
 	
 	public function __construct()
 	{
@@ -35,6 +35,7 @@ class OrderOps
 		$this->curlops 	= new CurlOps($this->config);
 		$this->orders_table = $this->config['tb_orders'];
 		$this->dlorderbatchs_tb_live = $this->config['tb_dlorderbatchs'];
+		$this->order_processing_opt =  $this->config['hs_apiver']."orders.xml?status=Processing";
 	}
 	
 	private function process_orders_xml($xmldata,$auto,$type="string")
@@ -232,7 +233,7 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 		$logtext = str_replace("<br>","\r\n",$logtext);
 		$logtext = str_replace("<b>","[",$logtext);
 		$logtext = str_replace("</b>","]",$logtext);
-		$logtext = str_replace("<hr>","---------- ---------- ---------- ----------\r\n",$logtext);
+		$logtext = str_replace("<hr>","---------- --------------------- ----------\r\n",$logtext);
 		
 		$dir = $this->config['archive_log'];  
 		$filename = sprintf("%s/%s.log.txt",$dir,$batch_id);

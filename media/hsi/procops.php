@@ -121,7 +121,7 @@ class ProcOps
     
     public function status($pid)
     {
-        $command = 'ps -p '.$pid;
+        $command = 'ps p '.$pid;
         exec($command,$op);
         if( !isset($op[1]) ) return false;
 		else return true;
@@ -145,5 +145,33 @@ class ProcOps
 		}
         else return false;
     }
+    
+    public static function process_exist($grep_arg)
+    {
+		$nohup_used = false;
+		$minprocs = 1;
+		$output_format = "%p;%a";
+		$cmd = sprintf('ps axo "%s" | grep -i "%s"',$output_format,$grep_arg);
+		exec($cmd,$output);
+		
+		//parse original ps output and remove grep entries
+		foreach($output as $index => $value)
+		{
+			if( preg_match('/grep /i', $value) ) {  unset($output[$index]); }
+		}
+		
+		//parse ps output minus grep entries
+		foreach($output as $index => $value)
+		{
+			if( preg_match('/sh /i', $value) || preg_match('/su /i', $value) )   { $nohup_used = true; $minprocs = 2; }
+		}
+		
+		$count = count($output);
+		if($count > $minprocs )
+		{
+			return true;
+		}
+		return false;
+	}
 
 } // End ProcOps

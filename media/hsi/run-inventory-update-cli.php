@@ -11,8 +11,16 @@
  * @license      
  */
 
+//prevent running more than one instance
+require_once(dirname(__FILE__).'/procops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/inventoryops.php');
+
+$grep_arg = basename(__FILE__);
+if( ProcOps::process_exist($grep_arg) )
+{
+	die("Process already running, exiting now!\n");
+}
 
 $delete_bad_files=true;
 $fileops = new FileOps();
@@ -37,18 +45,15 @@ foreach($filespecs as $index => $specs)
 			
 			//process data
 			$changelog_id = $inventoryops->process_inventory();
-			array_push($changelogs, $changelog_id);
+			//array_push($changelogs, $changelog_id);
 			
 			//data import data file
 			$inventoryops->archive_inventory_datafile();
+			
+			if( $fileops->config['push_inventory'] )
+			{
+				$inventoryops->push_handshake_inventory($changelog_id);
+			}
 		}
-	}
-}
-
-if( $fileops->config['push_inventory'] )
-{
-	foreach($changelogs as $index => $changelog_id)
-	{
-		$inventoryops->push_handshake_inventory($changelog_id);
 	}
 }

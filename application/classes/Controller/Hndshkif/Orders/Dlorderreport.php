@@ -86,9 +86,17 @@ class Controller_Hndshkif_Orders_Dlorderreport extends Controller_Core_Siterepor
 				{
 					$record['printmode'] = $config[0]->print_mode;
 				}
-				
+								
 				$record['pumps'] = $pumps;
 				$record['pipes'] = $pipes;
+				
+				$customer_group = "";
+				$querystr = sprintf('SELECT customergroup_id FROM %s WHERE customer_id = "%s"',$this->config['tb_customers'],$record['customer_id']);
+				if( $custgrp_r = $this->sitemodel->execute_select_query($querystr) )
+				{
+					$custgrp_r = (array) $custgrp_r[0];
+					$customer_group = $custgrp_r['customergroup_id'];
+				}
 				
 				$RESULT .= sprintf('<div>');
 				$RESULT .= sprintf('<table style="%s">',$s1)."\n";
@@ -100,7 +108,7 @@ class Controller_Hndshkif_Orders_Dlorderreport extends Controller_Core_Siterepor
 				$RESULT .= sprintf('<td style="%s">Customer Id :</td><td style="%s">%s</td><td style="%s">Contact :</td><td style="%s">%s</td>',$s2,$s3,$record['customer_id'],$s2,$s4,$record['contact'])."\n";
 				$RESULT .= sprintf('</tr>')."\n";
 				$RESULT .= sprintf('<tr valign="top">')."\n";
-				$RESULT .= sprintf('<td style="%s">Tax Id :</td><td style="%s">%s</td><td style="%s">Street :</td><td style="%s">%s</td>',$s2,$s3,$record['tax_id'],$s2,$s4,$record['street'])."\n";
+				$RESULT .= sprintf('<td style="%s">Tax Id :</td><td style="%s">%s (%s)</td><td style="%s">Street :</td><td style="%s">%s</td>',$s2,$s3,$record['tax_id'],$customer_group,$s2,$s4,$record['street'])."\n";
 				$RESULT .= sprintf('</tr>')."\n";
 				$RESULT .= sprintf('<tr valign="top">')."\n";
 				$RESULT .= sprintf('<td style="%s">Order Date :</td><td style="%s">%s</td><td style="%s">City :</td><td style="%s">%s</td>',$s2,$s3,$record['cdate'],$s2,$s4,$record['city'])."\n";
@@ -168,8 +176,6 @@ _HTML_;
 		$s3 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:150px;";
 		$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:450px;";
 		
-
-
 		$HTML = "\n".sprintf('<table style="%s">',$s1)."\n";
 		$subopt  =  $this->sitemodel->get_form_subtable_options($controller,$key);
 		foreach($subopt as $subkey => $row)

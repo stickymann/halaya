@@ -34,20 +34,28 @@ class HSIConfig
 				$this->hsiconfig['connectstr'] = sprintf('mysql:host=%s;dbname=%s', $this->hsiconfig['dbserver'], $this->hsiconfig['dbname']);
 
 				//hanshake
-				if($cfg->handshake->appurl) { $this->hsiconfig['appurl'] = sprintf('%s',$cfg->handshake->appurl); }
+				if($cfg->handshake->appurl) { $this->hsiconfig['appurl'] = rtrim( sprintf('%s',$cfg->handshake->appurl), "/" )."/"; }
+				if($cfg->handshake->apiversion) { $this->hsiconfig['hs_apiver'] = rtrim( sprintf('%s',$cfg->handshake->apiversion), "/" )."/"; }
 				if($cfg->handshake->apikey) { $this->hsiconfig['hs_apikey'] = sprintf('%s',$cfg->handshake->apikey); }
 				$this->hsiconfig['push_customer'] = false;
 				$this->hsiconfig['push_inventory'] = false;
+				$this->hsiconfig['flag_outofstock'] = false;
 				if($cfg->handshake->push_customer) 
 				{
-					$value = strtoupper( sprintf('%s',$cfg->push_customer) );
-					if($value = "YES" || $value = "1" ) { $this->hsiconfig['push_customer'] = true; }
+					$value = strtoupper( sprintf('%s',$cfg->handshake->push_customer) );
+					if($value =="YES" || $value == "1" ) { $this->hsiconfig['push_customer'] = true; }
 				}
 				if($cfg->handshake->push_inventory) 
 				{
-					$value = strtoupper( sprintf('%s',$cfg->push_inventory) );
-					if($value = "YES" || $value = "1" ) { $this->hsiconfig['push_inventory'] = true; }
+					$value = strtoupper( sprintf('%s',$cfg->handshake->push_inventory) );
+					if($value == "YES" || $value =="1" ) { $this->hsiconfig['push_inventory'] = true; }
 				}
+				if($cfg->handshake->flag_outofstock) 
+				{
+					$value = strtoupper( sprintf('%s',$cfg->handshake->flag_outofstock) );
+					if($value == "YES" || $value == "1" ) { $this->hsiconfig['flag_outofstock'] = true; }
+				}
+				
 				
 				//orderentry
 				if($cfg->orderentry->autoid_type) { $this->hsiconfig['autoid_type'] = sprintf('%s',$cfg->orderentry->autoid_type); }
@@ -66,11 +74,13 @@ class HSIConfig
 				$this->hsiconfig['tax'] = $taxarr;
 
 				//folders
-				if($cfg->folders->current_import) { $this->hsiconfig['current_import'] = sprintf('%s',$cfg->folders->current_import); }
-				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = sprintf('%s',$cfg->folders->current_export); }
-				if($cfg->folders->archive_import) { $this->hsiconfig['archive_import'] = sprintf('%s',$cfg->folders->archive_import); }
-				if($cfg->folders->archive_export) { $this->hsiconfig['archive_export'] = sprintf('%s',$cfg->folders->archive_export); }
-				if($cfg->folders->archive_log) 	  { $this->hsiconfig['archive_log']    = sprintf('%s',$cfg->folders->archive_log); }
+				if($cfg->folders->approot) { $this->hsiconfig['approot'] = rtrim( sprintf('%s',$cfg->folders->approot), "/" )."/"; }
+				if($cfg->folders->current_import) { $this->hsiconfig['current_import'] = rtrim( sprintf('%s',$cfg->folders->current_import), "/" )."/"; }
+				if($cfg->folders->current_export) { $this->hsiconfig['current_export'] = rtrim( sprintf('%s',$cfg->folders->current_export), "/" )."/"; }
+				if($cfg->folders->archive_import) { $this->hsiconfig['archive_import'] = rtrim( sprintf('%s',$cfg->folders->archive_import), "/" )."/"; }
+				if($cfg->folders->archive_export) { $this->hsiconfig['archive_export'] = rtrim( sprintf('%s',$cfg->folders->archive_export), "/" )."/"; }
+				if($cfg->folders->archive_log) 	  { $this->hsiconfig['archive_log']    = rtrim( sprintf('%s',$cfg->folders->archive_log), "/" )."/"; }
+				if($cfg->folders->backupdir) { $this->hsiconfig['backupdir'] = rtrim( sprintf('%s',$cfg->folders->backupdir), "/" )."/"; }
 				
 				//tables
 				if($cfg->tables->tb_configs) { $this->hsiconfig['tb_configs'] = sprintf('%s',$cfg->tables->tb_configs); }
@@ -79,6 +89,7 @@ class HSIConfig
 				if($cfg->tables->tb_changelogs) { $this->hsiconfig['tb_changelogs'] = sprintf('%s',$cfg->tables->tb_changelogs); }
 				if($cfg->tables->tb_inventorys) { $this->hsiconfig['tb_inventorys'] = sprintf('%s',$cfg->tables->tb_inventorys); }
 				if($cfg->tables->tb_customers) { $this->hsiconfig['tb_customers'] = sprintf('%s',$cfg->tables->tb_customers); }
+				if($cfg->tables->tb_objects) { $this->hsiconfig['tb_objects'] = sprintf('%s',$cfg->tables->tb_objects); }
 				if($cfg->tables->tb_schedulers) { $this->hsiconfig['tb_schedulers'] = sprintf('%s',$cfg->tables->tb_schedulers); }
 				if($cfg->tables->tb_pidregs) { $this->hsiconfig['tb_pidregs'] = sprintf('%s',$cfg->tables->tb_pidregs); }
 				if($cfg->tables->tb_printq) { $this->hsiconfig['tb_printq'] = sprintf('%s',$cfg->tables->tb_printq); }
@@ -133,4 +144,5 @@ class HSIConfig
 	{
 		return $this->hsiconfig;
 	}
-}
+	
+} //End HSIConfig 

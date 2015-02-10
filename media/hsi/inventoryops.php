@@ -14,8 +14,10 @@ require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 require_once(dirname(__FILE__).'/curlops.php');
+require_once(dirname(__FILE__).'/objectops.php');
 
-define("OUT_OF_STOCK"," [OUT OF STOCK]");
+define("OUT_OF_STOCK"," (OUT OF STOCK)");
+define("NEW_ITEM_CATEGORY","NEW-ITEM.CATEGORY");
 
 class InventoryOps 
 {
@@ -33,7 +35,9 @@ class InventoryOps
 	private $tb_live = "";
 	private $tb_hist = "";
 	private $invchglog_tb_live = "";
-	private $inventory_processing_opt = "api/v2/items?format=xml";
+	private $object_tb_live = "";
+	private $inventory_processing_opt = "";
+	public $new_item_category_objid = 0;
 		
 	public function __construct()
 	{
@@ -51,7 +55,11 @@ class InventoryOps
 		$this->tb_live = $this->config['tb_inventorys'];
 		$this->tb_hist = $this->config['tb_inventorys']."_hs";
 		$this->chglog_tb_live = $this->config['tb_changelogs'];
+		$this->object_tb_live = $this->config['tb_objects'];
 		$this->push_inventory = $this->config['push_inventory'];
+		
+		$this->inventory_processing_opt = $this->config['hs_apiver']."items?format=xml";
+		$this->set_new_item_category();
 	}
 	
 	public function set_inventory_filename($filename)
@@ -73,12 +81,12 @@ class InventoryOps
 	
 	public function get_inventory_filepath()
 	{
-		return $this->current_import."/".$this->inventory_filename;
+		return $this->current_import.$this->inventory_filename;
 	}
 	
 	public function get_inventory_archive_filepath()
 	{
-		return $this->archive_import."/".$this->inventory_archive_filename;
+		return $this->archive_import.$this->inventory_archive_filename;
 	}
 	
 	public function set_inventory_data()
@@ -89,6 +97,20 @@ class InventoryOps
 	public function get_inventory_data()
 	{
 		return $this->inventory_data;
+	}
+	
+	public function set_new_item_category()
+	{
+		$querystr = sprintf('SELECT hs_objid FROM %s WHERE mapping_id = "%s"',$this->object_tb_live,NEW_ITEM_CATEGORY);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$mapping = $result[0];
+			$this->new_item_category_objid = $mapping['hs_objid'];
+		}
+		else
+		{
+			die();
+		}
 	}
 	
 	private function process_handshake_inventory_xml($xmldata,$update_type,$type="string")
@@ -103,14 +125,18 @@ class InventoryOps
 			$response = simplexml_load_string($xmldata);
 		}
 
-		$batch_id = 'BDO-'.date('Ymd-His');
 		foreach ($response->objects->object as $object)
 		{
 			$arr = array(); 
 			$arr['id']				= sprintf('%s',$object->sku);
 			$arr['item_objid']		= sprintf('%s',$object->objID);
+			$arr['description']		= str_replace('"','\"', sprintf('%s',$object->name) );
 			$arr['category_objid']	= sprintf('%s',$object->category->objID);
 			$arr['category']		= str_replace('"',' _in_ ', sprintf('%s',$object->category->id) );
+			$arr['unitprice']		= sprintf('%s',$object->unitPrice);
+			$arr['minqty']			= sprintf('%s',$object->minQty);
+			$arr['multqty']			= sprintf('%s',$object->multQty);
+			$arr['hash2']  			= hash('sha256',$arr['description'].$arr['unitprice']);
 			$arr['inputter']		= "SYSINPUT";
 			$arr['input_date']		= date('Y-m-d H:i:s'); 
 			$arr['authorizer']		= "SYSAUTH";
@@ -150,6 +176,33 @@ class InventoryOps
 		$meta['faillist']		= $faillist;
 		return $meta;
 	}
+	
+	private function update_inventory_object_ids($id,$jsondata,$update_type)
+	{
+		try
+			{
+				$object = json_decode($jsondata);
+				$arr['id']				= $id;
+				$arr['item_objid']		= sprintf('%s',$object->objID);
+				$arr['category_objid']	= sprintf('%s',$object->category->objID);
+				$arr['category']		= sprintf('%s',$object->category->id);
+
+				if( $this->dbops->record_exist($this->tb_live, "id", $arr['id']) )
+				{ 
+					$count = $this->dbops->update_record($this->tb_live, $arr);
+				}
+			}
+		catch (Exception $e) 
+			{
+				if($update_type == "INSERT")
+				{
+					//Record did not upload to Handshake, delete from interface
+					$querystr = sprintf('DELETE FROM %s WHERE %s = "%s"',$this->tb_live,"id",$id);
+					if ( $this->dbops->execute_non_select_query($querystr) ) { /*wait for deletions*/ }
+				}
+				print "Failed to update Handshake record: ".$xmldata."\n".$e->getMessage()."\n";
+			}
+	}
 			
 	public function update_inventory_with_handshake_data($update_type)
 	{
@@ -175,17 +228,24 @@ class InventoryOps
 					$total_inserts = $total_inserts + $meta['total_inserts'];
 				}
 			}
+			else
+			{
+				$GET_REMOTE_DATA = FALSE;
+			}
 			usleep(1000000);
 		}
 	
-		$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
-		$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
-		$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
-		$total_inserts = $total_inserts + $meta['total_inserts'];
+		if( $meta )
+		{
+			$RESULT .= sprintf('Processing records up to offset : %s<br>',$meta['offset']);
+			$RESULT .= sprintf('Fail list : %s<br>',$meta['faillist']);
+			$RESULT .= sprintf('Records refreshed : %s<br><hr>',$meta['total_inserts']);
+			$total_inserts = $total_inserts + $meta['total_inserts'];
 	
-		$total_count = $meta['total_count']; 
-		$total_failed = $total_count - $total_inserts;
-		$RESULT .= sprintf('<b>Summary</b><br>Total Download : %s',$total_count);
+			$total_count = $meta['total_count']; 
+			$total_failed = $total_count - $total_inserts;
+			$RESULT .= sprintf('<b>Summary</b><br>Total Download : %s',$total_count);
+		}
 		return $RESULT;
 	}
 	
@@ -199,6 +259,8 @@ class InventoryOps
 		{
 			$RESULT = $this->update_inventory_with_handshake_data("INSERT");
 		}
+		/*
+		// exclude this from production, takes too long to run
 		else if ( $counter > 0 )
 		{
 			if( $RESET )
@@ -213,6 +275,7 @@ class InventoryOps
 				}
 			}
 		}
+		*/
 	}
 	
 	public function process_inventory()
@@ -247,7 +310,7 @@ class InventoryOps
 			//codes that start with "9" do not exist in Handshake and should be excluded
 			if($code[0] != "9")
 			{
-				if( $value[2] < 1 )
+				if( $value[2] < 1 && $this->config['flag_outofstock'] )
 				{
 					$value[1] = $value[1].OUT_OF_STOCK;
 				}
@@ -312,7 +375,7 @@ $xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</
 								} 
 								else if( !$UPDATE && $PUSH )
 								{
-$xmlrows_edit .= sprintf('<row><code>%s0</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$record['availunits'],$record['taxable'],$arr['unitprice'])."\n";
+$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $arr['description']),str_replace('&','&amp;', $record['category']),$record['availunits'],$record['taxable'],$arr['unitprice'])."\n";
 								}
 							}
 						}
@@ -322,6 +385,7 @@ $xmlrows_edit .= sprintf('<row><code>%s0</code><objid>%s</objid><description>%s<
 				{
 					$arr['id'] 			= $value[0];
 					$arr['description'] = $value[1];
+					$arr['category_objid'] = $this->new_item_category_objid;
 					$arr['availunits'] 	= $value[2];
 					$arr['taxable'] 	= $value[3];
 					$arr['unitprice'] 	= $value[4];
@@ -369,7 +433,70 @@ $xmlrows_new .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</d
 	
 	public function push_handshake_inventory($changelog_id)
 	{
-print $changelog_id."\n";
+		$logfile = sprintf('%sPUSH-%s.log.txt',$this->config['archive_log'],$changelog_id);
+		$logdata = "";
+		$status = array();
+		
+		$querystr = sprintf('SELECT id,changelog_id,changelog_details FROM %s WHERE changelog_id = "%s"',$this->chglog_tb_live,$changelog_id);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			$changelog  = $result[0];
+			$formfields = new SimpleXMLElement($changelog['changelog_details']);
+			foreach ($formfields->rows->row as $row)
+			{
+				$id = sprintf('%s',$row->code);
+				$querystr = sprintf('SELECT id,item_objid,description,category_objid,unitprice,minqty,multqty FROM %s WHERE id = "%s"',$this->tb_live,$id);
+				if( $formdata = $this->dbops->execute_select_query($querystr) )
+				{
+					$item = $formdata[0];
+					$entry = sprintf('%s',$row->entry);
+					if( $entry == "EDIT" )
+					{
+						$arr = array
+						(
+							"sku" => "$id",
+							"name" => $item['description'],
+							"unitPrice" => $item['unitprice'],
+							"minQty" => $item['minqty'],
+							"multQty" => $item['multqty'],
+							"category" => array("objID" => intval($item['category_objid']) )
+						);
+						$json_str = json_encode($arr);
+						$url = sprintf('%s%s%s/%s',$this->appurl,$this->config['hs_apiver'],"items",$item['item_objid']);
+						
+						$response = $this->curlops->put_remote_data($url,$json_str,$status);
+						$this->update_inventory_object_ids($id,$response,"UPDATE");
+						$logdata .= sprintf("PUT [ EXISTING RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
+					}
+					else if ( $entry == "NEW" )
+					{
+						$arr = array
+						(
+							"sku" => "$id",
+							"name" => $item['description'],
+							"unitPrice" => $item['unitprice'],
+							"minQty" => 1,
+							"multQty" => 1,
+							"category" => array("objID" => intval($this->new_item_category_objid) )
+						);
+						$json_str = json_encode($arr);
+						$url = sprintf('%s%s%s',$this->appurl,$this->config['hs_apiver'],"items");
+			
+						$response = $this->curlops->post_remote_data($url,$json_str,$status);
+						$this->update_inventory_object_ids($id,$response,"INSERT");
+						$logdata .= sprintf("POST [ NEW RECORD ]:\r\n%s\r\nRESPONSE:\r\n%s\r\n-----------------------------------------\r\n",$json_str,$response);
+					}
+				}
+				//cannot exceed API 60 request per second
+				usleep(1000000);
+			}
+			$this->write_push_logfile($logfile,$logdata);
+		}
+	}
+	
+	public function write_push_logfile($filepath,$filedata)
+	{
+		$this->fileops->write_file($filepath,$filedata);
 	}
 	
 	public function archive_inventory_datafile()

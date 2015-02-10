@@ -141,6 +141,7 @@ class DbOps
 		{
 			return TRUE;
 		}
+		return FALSE;
 	}
 	
 	public function create_record_id($tb_live)

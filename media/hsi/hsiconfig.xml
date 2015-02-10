@@ -8,10 +8,12 @@
 </database>
 <handshake>
 <appurl>https://app.handshake-app.com/</appurl>
-<apikey>dadc68c1ee88efb68f82bd51017645ca6188022d</apikey>
+<apiversion>api/v2/</apiversion>
+<apikey>893e06694c33c9fe762247f533f41b4bc5a47e11</apikey>
 <!--valid values: YES,NO  -->
-<push_customer>YES</push_customer>
-<push_inventory>YES</push_inventory>
+<push_customer>NO</push_customer>
+<push_inventory>NO</push_inventory>
+<flag_outofstock>YES</flag_outofstock>
 </handshake>
 <orderentry>
 <!--valid values: ORDER,DATE  -->
@@ -22,11 +24,13 @@
 <tax><code>2</code><value>0</value></tax>
 </taxes>	
 <folders>
+<approot>/shazam/www/hndshkif</approot>
 <current_import>/shazam/hsi/current/hsi_import</current_import>
 <current_export>/shazam/hsi/current/order_entry_import</current_export>
 <archive_import>/shazam/hsi/archive/hsi_import</archive_import>
 <archive_export>/shazam/hsi/archive/order_entry_import</archive_export>
 <archive_log>/shazam/hsi/archive/logs</archive_log>
+<backupdir>/shazam/backups</backupdir>
 </folders>
 <tables>
 <tb_configs>hsi_configs</tb_configs>
@@ -35,6 +39,7 @@
 <tb_changelogs>hsi_changelogs</tb_changelogs>
 <tb_inventorys>hsi_inventorys</tb_inventorys>
 <tb_customers>hsi_customers</tb_customers>
+<tb_objects>hsi_objectmappings</tb_objects>
 <tb_schedulers>hsi_schedulers</tb_schedulers>
 <tb_pidregs>_hsi_pids</tb_pidregs>
 <tb_printq>_hsi_printq</tb_printq>

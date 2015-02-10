@@ -15,8 +15,6 @@ require_once(dirname(__FILE__).'/hsiconfig.php');
 require_once(dirname(__FILE__).'/dbops.php');
 require_once(dirname(__FILE__).'/fileops.php');
 
-define("NON_TAX_CUSTOMER_GROUP","20");
-
 class OrderEntryOps
 {
 	public $cfg 	= null;
@@ -41,7 +39,8 @@ class OrderEntryOps
 			"enddtl"=>"@ENDDTL___",
 			"footer"=>"@ENSERIAL_"
 		);
-	
+	private $arr_NON_TAX_SALESPERSON = array("20");
+		
 	public function __construct()
 	{
 		$this->cfg		= new HSIConfig();
@@ -77,8 +76,8 @@ class OrderEntryOps
 	public function create_order_entry($order_id,$auto=false)
 	{
 		$orders_table = $this->config['tb_orders'];
-		$querystr = sprintf('SELECT id,tax_id,paymentterms,cdate,ctime,orderlines FROM %s WHERE id = "%s"',$orders_table,$order_id);
-		if( $result   = $this->dbops->execute_select_query($querystr) )
+		$querystr = sprintf('SELECT id,customer_id,tax_id,paymentterms,cdate,ctime,orderlines FROM %s WHERE id = "%s"',$orders_table,$order_id);
+		if( $result = $this->dbops->execute_select_query($querystr) )
 		{
 			$order = $result[0];
 			$xml = $order['orderlines'];
@@ -122,19 +121,19 @@ class OrderEntryOps
 						if( $this->dbops->record_exist($table,"id",$sku) )
 						{
 							$querystr = sprintf('SELECT description,availunits,taxable,unitprice FROM %s WHERE id = "%s"',$table,$sku);
-							$result   = $this->dbops->execute_select_query($querystr);
-							
+							$result = $this->dbops->execute_select_query($querystr);
 							$description = $result[0]['description'];
 							$availunits = $result[0]['availunits'];
-							$customer_group = substr($order['tax_id'],8,2);
-							if($customer_group == NON_TAX_CUSTOMER_GROUP) { $taxable = "N"; } else { $taxable = $result[0]['taxable']; }
+							$sales_person_code = substr($order['tax_id'],0,2);
+//print sprintf('EXIST: %s ; %s ; %s',$sku,$description,$availunits)."\n";
+							if( in_array($sales_person_code,$this->arr_NON_TAX_SALESPERSON) ) { $taxable = "N"; } else { $taxable = $result[0]['taxable']; }
 							$unitprice = $result[0]['unitprice'];
 							$customer_price = 0;
 							
 							//line item in stock
 							if( $availunits > 0 )
 							{
-								$customer_price = $this->get_customer_price($order['tax_id'],$sku,$unitprice);
+								$customer_price = $this->get_customer_price($order['customer_id'],$sku,$unitprice);
 								if( $taxable == "N" ) 
 								{ 
 									$this->count_NTXDTL++;
@@ -173,7 +172,7 @@ class OrderEntryOps
 								$field[4]  = sprintf('"%s"',$description);
 								$field[5]  = sprintf('"%s"',""); //unknown 
 								$field[6]  = sprintf('"%s"',substr($order['tax_id'],0,2)); //first two characters
-								$field[7]  = sprintf('"%s"',$order['tax_id']);
+								$field[7]  = sprintf('"%s"',$order['customer_id']);
 								$field[8]  = sprintf('"%s"',"EACH"); //default to "EACH", can also be "LENGTH" 
 								$field[9]  = sprintf('"%s"',$taxcode); 
 								$field[10] = sprintf('%s',number_format($vat*100,3,'.','')); 
@@ -184,10 +183,10 @@ class OrderEntryOps
 								$field[15] = sprintf('%s',"Y"); //unknown, use default value 
 								$field[16] = sprintf('%s',"N"); //unknown, use default value 
 								$field[17] = sprintf('%s',"");  //unknown, use default value 
-								$field[18] = sprintf('%s',$qty); 
-								$field[19] = sprintf('%s',"0"); //unknown, use default value 
-								$field[20] = sprintf('%s',"0"); //unknown, use default value 
-								$field[21] = sprintf('%s',$qty);
+								$field[18] = sprintf('%s',$qty); // ORDERED
+								$field[19] = sprintf('%s',"0");  // SHIPPED
+								$field[20] = sprintf('%s',$qty); // THIS SHIPMENT 
+								$field[21] = sprintf('%s',"0");  // BACKORDER
 								$field[22] = sprintf('%s',$customer_price);
 								$field[23] = sprintf('%s',number_format(0,2,'.','')); 
 								$field[24] = sprintf('%s',number_format(0,2,'.',''));
@@ -249,7 +248,7 @@ class OrderEntryOps
 		}
 	}
 	
-	private function get_customer_price($daceasy_id,$sku,$unitprice)
+	private function get_customer_price($customer_id,$sku,$unitprice)
 	{
 		//IMPLEMENT BUSINESS RULES HERE!
 		
@@ -262,27 +261,26 @@ class OrderEntryOps
 			$PriceB			= $PriceA * .95; 		//PriceBase (05)
 			$PriceC			= $PriceB * .98; 		//PriceALR (07)
 		
-			$len =  strlen($daceasy_id);
-			if( $len == 10 )
+			$querystr = sprintf('SELECT customergroup_id FROM %s WHERE customer_id = "%s"',$this->config['tb_customers'],$customer_id);
+			if( $result = $this->dbops->execute_select_query($querystr) )
 			{
-				//get customer group id, last 2 digits
-				$customer_group = substr($daceasy_id,8,2);
+				//get customer group id
+				$customer_group = $result[0]['customergroup_id'];
 				switch( $customer_group )
 				{
-						case "01":
+						case "CustPrice1":
 							$unitprice = $PriceA;
 						break;
 					
-						case "02":
+						case "CustPrice2":
 							$unitprice = $PriceDefault;
 						break;
 						
-						case "05":
+						case "CustBase":
 							$unitprice = $PriceB;
 						break;
 						
-						case "04":
-						case "07":
+						case "CustALR":
 							$unitprice = $PriceC;
 						break;
 				}
@@ -295,7 +293,7 @@ class OrderEntryOps
 	{
 		$field = array();
 		$table = $this->config['tb_customers'];
-		$querystr = sprintf('SELECT id,tax_id,name,contact,street,city,country,phone FROM %s WHERE tax_id = "%s"',$table,$order['tax_id']);
+		$querystr = sprintf('SELECT id,customer_id,tax_id,name,contact,street,city,country,phone FROM %s WHERE customer_id = "%s"',$table,$order['customer_id']);
 		$result   = $this->dbops->execute_select_query($querystr);
 		$customer = $result[0];
 		
@@ -323,7 +321,7 @@ class OrderEntryOps
 		$field[0]  = sprintf('"%s"',$auto_order_id);
 		$field[1]  = sprintf('%s',"");                     //Unknown Field
 		$field[2]  = sprintf('%s',"");                     //Unknown Field
-		$field[3]  = sprintf('"%s"',$order['tax_id']);     //Customer Code 
+		$field[3]  = sprintf('"%s"',$order['customer_id']);     //Customer Code 
 		$field[4]  = sprintf('"%s"',$customer['name']);    //Billing Address (Line 1)
 		$field[5]  = sprintf('"%s"',$customer['contact']); //Billing Address (Line 2)
 		$field[6]  = sprintf('"%s"',$customer['street']);  //Billing Address (Line 3)
@@ -427,35 +425,36 @@ class OrderEntryOps
 		$filedata .= $this->get_oefile_enddata($this->sectionhdr['endadr'],$ADR);
 		$filedata .= $this->get_oefile_enddata($this->sectionhdr['enddtl'],$DTL);
 		$filedata .= $this->get_oefile_footer();
+//print sprintf("%s\n",$filedata);	
 		$this->fileops->write_file($filepath,$filedata);
+	
 	}
 	
 	public function process_orderentry_files($file_id="",$auto=false)
 	{
 		if( $auto ) { $autostr = "AUTO"; } else { $autostr = "MANU"; }
-		//BDO-20140818-161016.AUTO.TAX.txt
 		$datestr = date('YmdHis');
 		$current_export_dir = $this->config['current_export'];
 		$archive_export_dir = $this->config['archive_export'];	
-		
+
 		if( $this->count_TAXDTL > 0 )
 		{	
 			$taxtype = "TAX";
-			$current_filepath = sprintf("%s/%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
-			$archive_filepath = sprintf("%s/%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$current_filepath = sprintf("%s%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$archive_filepath = sprintf("%s%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
-//print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
+//print sprintf("TAX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);	
 		}
 		
 		if( $this->count_NTXDTL > 0 )
 		{
 			$taxtype = "NTX";
-			$current_filepath = sprintf("%s/%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
-			$archive_filepath = sprintf("%s/%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$current_filepath = sprintf("%s%s.%s.%s.%s.txt",$current_export_dir,$datestr,$file_id,$autostr,$taxtype);
+			$archive_filepath = sprintf("%s%s.%s.%s.%s.txt",$archive_export_dir,$datestr,$file_id,$autostr,$taxtype);
 			$this->write_orderentry_file($current_filepath,$taxtype);
 			$this->write_orderentry_file($archive_filepath,$taxtype);
-//print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);		
+//print sprintf("NTX FILES: \n%s\n%s\n",$current_filepath,$archive_filepath);	
 		}
 	}
 	

@@ -19,11 +19,11 @@ class HSIDaemon
 {	
 	public function __construct()
     {
-        $this->cfg		= new HSIConfig();
-		$config 		= $this->cfg->get_config();
-		$this->dbops	= new DbOps($config);
-		$this->tb_schedulers = $config['tb_schedulers'];
-		$this->tb_pidregs = $config['tb_pidregs'];
+        $cfg		= new HSIConfig();
+		$this->config 	= $cfg->get_config();
+		$this->dbops	= new DbOps($this->config );
+		$this->tb_schedulers = $this->config ['tb_schedulers'];
+		$this->tb_pidregs = $this->config ['tb_pidregs'];
 	}
     
     public function register_pid($type="")
@@ -48,6 +48,20 @@ class HSIDaemon
 	}
 	else
 	{
+		if( $options["t"] == "onboot" )
+		{
+			//do nothing
+		}
+		else
+		{
+			//prevent running more than one instance
+			$grep_arg = basename(__FILE__);
+			if( ProcOps::process_exist($grep_arg) )
+			{
+				die("Process already exist, terminating now!\n");
+			}
+		}
+				
 		$daemon = new HSIDaemon();
 		if( $options["t"] == "cli" || $options["t"] == "onboot")
 		{
@@ -61,6 +75,8 @@ class HSIDaemon
 	if( $result = $daemon->dbops->execute_select_query($querystr) )
 	{ 
 		$scheduler = new Scheduler();
+		$logfile = sprintf('%sSCHEDULER-%s.log.txt',$daemon->config['archive_log'],date('Ymd-His'));
+		$scheduler->setLogFile($logfile); 
 		foreach( $result as $index => $record )
 		{
 			$cmd = "";
@@ -70,10 +86,9 @@ class HSIDaemon
 			}
 			else
 			{
-				$cmd = sprintf('%s %s',$record['fullpath'],$record['args']);
+				$cmd = sprintf('%s %s /dev/null 2>/dev/null &',$record['fullpath'],$record['args']);
 			}
 //print "[DEBUG]---> "; print $cmd." | ".$record['crontab']; print( sprintf("\n[line %s - %s, %s]\n\n",__LINE__,__FUNCTION__,__FILE__) );
-			
 			$scheduler->addTask($cmd, $record['crontab']);
 		}
 		$scheduler->run();

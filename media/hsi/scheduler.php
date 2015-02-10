@@ -90,7 +90,7 @@ class Scheduler {
 
 	function Scheduler(){ }
 
-	function setLogFile($file, $chmod = 0700){
+	function setLogFile($file, $chmod = 0666){
 	// returns false if can't touch or chmod
 		$this->logfile = $file;
 		$this->chmod = $chmod;
@@ -152,10 +152,15 @@ class Scheduler {
 
 	function runcmd(&$task){
 
-		exec($task["cmd"]);
-
+		exec($task["cmd"],$output);
 		if ($this->logfile)
+		{
 			$this->writeLog($task["uid"], $task["cmd"]);
+			foreach($output as $index => $value)
+			{
+				$this->writeLog($task["uid"], $value);
+			}
+		}
 	}
 
 	function writeLog($uid, $msg){
@@ -163,18 +168,15 @@ class Scheduler {
 			echo "ERROR: Cannot write to logfile '".$this->logfile."'. Make sure user '".$_ENV["USER"]."' has write permissions on the file.";
 			return;
 		}
-		$stamp = date('m-d-Y H:i:s');
+		$stamp = date('Y-m-d H:i:s');
 		fwrite($f, "[$stamp] ran #$uid: $msg\n");
 		fclose($f);
 	}
 
 }
 
-
 class SchedulerDate {
-
 	var $legalDays = array('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN');
-
 	var $sec;
 	var $min;
 	var $hour;
@@ -182,11 +184,8 @@ class SchedulerDate {
 	var $month;
 
 	function SchedulerDate($raw){
-
 		$raw = strtoupper($raw); // this'll work for now, Mon -> MON, tUe -> TUE
-
 		$this->parse($raw);
-
 		//print_r($this->day);
 	}
 
@@ -277,7 +276,6 @@ class SchedulerDate {
 
 		return false;
 	}
-
 
 	function parse($str){
 
