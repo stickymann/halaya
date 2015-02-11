@@ -49,7 +49,7 @@ $fileops = new FileOps();
 $fileops->process_import_files();
 */
 
-
+/*
 $auto = true;
 $batch_id = "BDO-20150206-193042"; 
 $order_id = "895115"; //only pumps
@@ -62,7 +62,7 @@ $orderentry->process_orderentry_files($batch_id,$auto);
 //orderentry by order
 //$orderentry->create_order_entry($order_id,$auto);
 //$orderentry->process_orderentry_files("ORD-".$order_id,$auto);
-
+*/
 
 /*
 //prints
@@ -87,4 +87,16 @@ $order_id = "846376"; //with ntx
 $order_id = "881741";
 $order_id = "1688847";  //all three warehouses
 */
+ //$now = date_create("2015-02-11 02:45:20");
+ $now = strtotime('2015-02-11 02:45:20');
+ 
+ $datetime = date("Y-m-d H:m:s", strtotime('-4 hours', $now));
+ $date = date("Y-m-d", strtotime('-4 hours', $now));
+ $time = date("H:m:s", strtotime('-4 hours', $now));
+ print $datetime."\n";
+ print $date."\n";
+ print $time."\n";
+
+
+
 ?>
