@@ -64,14 +64,16 @@ $orderentry->process_orderentry_files($batch_id,$auto);
 //$orderentry->process_orderentry_files("ORD-".$order_id,$auto);
 */
 
-/*
+
 //prints
+$auto = true;
+$batch_id = "BDO-20150211-151712";
 require_once(dirname(__FILE__).'/printerwriteops.php');
 $printerwrite = new PrinterWriteOps();
 $printerwrite->create_batch_picklists($batch_id,$auto);
-$printerwrite->create_order_picklist($order_id,null,null,$auto);
+//$printerwrite->create_order_picklist($order_id,null,null,$auto);
 $printerwrite->process_pdf_queue();
-*/
+
 
 /*
 // sample ids
@@ -87,6 +89,8 @@ $order_id = "846376"; //with ntx
 $order_id = "881741";
 $order_id = "1688847";  //all three warehouses
 */
+
+/*
  //$now = date_create("2015-02-11 02:45:20");
  $now = strtotime('2015-02-11 02:45:20');
  
@@ -96,7 +100,7 @@ $order_id = "1688847";  //all three warehouses
  print $datetime."\n";
  print $date."\n";
  print $time."\n";
-
+*/
 
 
 ?>

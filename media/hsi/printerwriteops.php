@@ -157,7 +157,33 @@ class PrinterWriteOps
 				{
 					foreach($pdfobj as $key => $pdfdata)
 					{
-						$pdffile[$key] = $this->write_pdf($pdfdata,$dataopt,$auto);
+						$copies = 1;
+						$pdf_exist = false;
+						if($key == "warehouse" )
+						{
+							$copies = $this->config['prn_picklist']['copies_wh'] + 1;
+							$pdf_exist = true;
+						}
+						else if($key == "pipeyard" )
+						{
+							$copies = $this->config['prn_picklist']['copies_py'] + 1;
+							$pdf_exist = true;
+						}
+						else if($key == "pumproom" )
+						{
+							$copies = $this->config['prn_picklist']['copies_pr'] + 1;
+							$pdf_exist = true;
+						}
+												
+						if($pdf_exist)
+						{
+							$filename = $pdfdata->filename;
+							for($i=1; $i<$copies; $i++)
+							{
+								$pdfdata->filename = $filename."-".$i.".pdf"; 
+								$pdffile[$key] = $this->write_pdf($pdfdata,$dataopt,$auto);
+							}
+						}
 					}
 				}
 				else
