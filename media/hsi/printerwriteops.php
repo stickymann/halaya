@@ -52,9 +52,10 @@ class PrinterWriteOps
 		$data = array(); $pdfobj = array(); $pdffile = array();
 		$pumps = $this->config['pumps']; 
 		$pipes = $this->config['pipes']; 
+		$location_set = "";
 		
 		$orders_table = $this->config['tb_orders'];
-		$querystr = sprintf('SELECT id,name,street,city,country,orderlines FROM %s WHERE id = "%s"',$orders_table,$order_id);
+		$querystr = sprintf('SELECT id,name,street,city,country,orderlines,notes FROM %s WHERE id = "%s"',$orders_table,$order_id);
 		$result   = $this->dbops->execute_select_query($querystr);
 		$xml = $result[0]['orderlines'];
 		$data['py'] = $data['pr'] = $data['wh'] = $result[0];
@@ -112,13 +113,19 @@ class PrinterWriteOps
 				$HTML2 = "</tdata>\n";
 				$HTML2 .= "</table>\n";
 
+				
+				if( $rowcount['wh'] > 0 ) { $location_set .= "WH,"; }
+				if( $rowcount['py'] > 0 ) { $location_set .= "PY,"; }
+				if( $rowcount['pr'] > 0 ) { $location_set .= "PR,"; }
+				$location_set = substr_replace($location_set, '', -1);
+								
 				// create warehouse pdf
 				if( $rowcount['wh'] > 0 )
 				{
 					$WH = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_WH,$HTML2);
 					$data['wh']['orderlines_table'] = $WH;
 					$data['wh']['rowcount'] = $rowcount['wh'];
-					$data['wh']['title'] = "[ WAREHOUSE ]";
+					$data['wh']['title'] = sprintf("[ WAREHOUSE {%s} ]",$location_set);
 					//$data['wh'] = $arr;
 					$pdfobj['warehouse'] = $this->create_pdf($data['wh']);
 				}
@@ -129,7 +136,7 @@ class PrinterWriteOps
 					$PY = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PY,$HTML2);
 					$data['py']['orderlines_table'] = $PY;
 					$data['py']['rowcount'] = $rowcount['py'];
-					$data['py']['title'] = "[ PIPE YARD ]";
+					$data['py']['title'] = sprintf("[ PIPE YARD {%s} ]",$location_set);
 					//$data['py'] = $arr;
 					$pdfobj['pipeyard'] = $this->create_pdf($data['py']);
 				}
@@ -140,7 +147,7 @@ class PrinterWriteOps
 					$PR = sprintf('%s%s%s',$HTML1,$HTML_TABLE_ROWS_PR,$HTML2);
 					$data['pr']['orderlines_table'] = $PR;
 					$data['pr']['rowcount'] = $rowcount['pr'];
-					$data['pr']['title'] = "[ PUMP ROOM ]";
+					$data['pr']['title'] = sprintf("[ PUMP ROOM {%s} ]",$location_set);
 					//$data['pr'] = $arr;
 					$pdfobj['pumproom'] = $this->create_pdf($data['pr']);
 				}
@@ -203,8 +210,33 @@ class PrinterWriteOps
 		$page_width = 110; //mm
 		$osy = 5;	//offset_y
 		$ohh = 26; 	//order_header_height
+		$notes_exist = false;
+		$notes_lines = 0;
+		if( $data['notes'] != "" )
+		{
+			$notes_exist = true;
+			$notes = "NOTES : ".$data['notes'];
+			if( strlen($notes) > 196)
+			{
+				$notes_lines = ($line_height - 0.5) * 4;
+			}
+			else if( strlen($notes) > 128)
+			{
+				$notes_lines = ($line_height - 0.5) * 3;
+			}
+			else if( strlen($notes) > 64)
+			{
+				$notes_lines = ($line_height - 0.5) * 2;
+			}
+			else
+			{
+				$notes_lines = ($line_height - 0.5) * 1;
+			}
+			$notes = $data['notes'];
+		} 
+		
 		$olh = $line_height * ($data['rowcount'] + 1); //orderlines height
-		$page_height = 20 + $ohh + $olh; //20 is margin/header/footer spacing
+		$page_height = 20 + $ohh + $olh + $notes_lines; //20 is margin/header/footer spacing
 		if(	$page_height < $page_width ) { 	$page_height = $page_width; }
 		$page_dimensions = array($page_height,$page_width);
 		
@@ -266,7 +298,16 @@ class PrinterWriteOps
 		$name = $data['name'];
 		$address = $data['street'];
 		$country = $data['country'];
-		if( $data['city'] != "" ) { $address .= ", ".$data['city']; }
+		if( $data['city'] != "" ) 
+		{ 
+			$address .= ", ".$data['city']; 
+			if( strlen($address) > 48 )
+			{
+				$address = $data['street'];
+				$country = $data['city'].", ".$data['country'];
+			}
+		}
+	
 		//if( $data['country'] != "" ) { $address .= ", ".$data['country']; }
 		$orderlines_table = $data["orderlines_table"];
 		$title_text = $data['title'];
@@ -285,6 +326,7 @@ _HTML_;
 		$order_header_hr_btm = <<<_HTML_
 <hr style="border: black solid 0px;">	
 _HTML_;
+
 		$title = <<<_HTML_
 <b>$title_text</b>
 _HTML_;
@@ -295,8 +337,15 @@ _HTML_;
 		$pdf->writeHTMLCell(0, 0, 0, $osy, 	 	$order_header_hr_top, 0, 0, 0, true, 'C', true);
 		$pdf->writeHTMLCell(0, 0, 0, $osy+1, 	$order_header, 0, 1, 0, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+1, $order_header_hr_btm, 0, 1, 0, true, 'C', true);
-		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+3, $title, 0, 1, 0, true, 'C', true);
-		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+3, $orderlines, 0, 1, 0, true, 'L', true);
+		if( $notes_exist )
+		{
+		$notes_text = <<<_HTML_
+<b>NOTES :</b> $notes
+_HTML_;
+			$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+3, $notes_text, 0, 1, 0, true, 'L', true);
+		}
+		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+$notes_lines+3, $title, 0, 1, 0, true, 'C', true);
+		$pdf->writeHTMLCell(0, 0, 0, $osy+$ohh+$notes_lines+3, $orderlines, 0, 1, 0, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, 0, $page_height-15, $order_header_hr_btm, 0, 1, 0, true, 'L', true);
 		
 //print sprintf("Page Width: %s\nPage Height: %s\nOrdLn Height: %s\n",$page_width,$page_height,$olh);

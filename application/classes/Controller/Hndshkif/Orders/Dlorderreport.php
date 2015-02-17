@@ -119,6 +119,9 @@ class Controller_Hndshkif_Orders_Dlorderreport extends Controller_Core_Siterepor
 				$RESULT .= sprintf('<tr valign="top">')."\n";
 				$RESULT .= sprintf('<td style="%s">Payment Terms :</td><td style="%s">%s</td><td style="%s">Phone :</td><td style="%s">%s</td>',$s2,$s3,$record['paymentterms'],$s2,$s4,$record['phone'])."\n";
 				$RESULT .= sprintf('</tr>')."\n";
+				$RESULT .= sprintf('<tr valign="top">')."\n";
+				$RESULT .= sprintf('<td style="%s" >Notes :</td><td style="%s" colspan="3">%s</td>',$s2,$s3,$record['notes'])."\n";
+				$RESULT .= sprintf('</tr>')."\n";
 				$RESULT .= '</tbody>'."\n".'</table>'."\n";
 				$RESULT	.= $this->view_xml_table("orderlines",$record);
 				$RESULT .= sprintf('</div><br><br>');

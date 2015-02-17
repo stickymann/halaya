@@ -91,6 +91,7 @@ orderlines;text;DEFAULT NULL;
 			$arr['cdate'] = date("Y-m-d", strtotime('-4 hours', $now));
 			$arr['ctime'] = date("H:m:s", strtotime('-4 hours', $now));
 			$arr['orderlines']		= $this->get_order_lines($object);
+			$arr['notes']			= sprintf('%s',$object->notes);
 			$arr['inputter']		= "SYSINPUT";
 			$arr['input_date']		= date('Y-m-d H:i:s'); 
 			$arr['authorizer']		= "SYSAUTH";
