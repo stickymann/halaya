@@ -56,6 +56,7 @@ function get_section1($item,$labels,$param)
 	$label_12 = $labels['country'];			$item_12 = $item->country;
 	$label_13 = $labels['phone'];			$item_13 = $item->phone;
 	$label_14 = $labels['paymentterms'];	$item_14 = $item->paymentterms;
+	$label_15 = $labels['notes'];			$item_15 = $item->notes;
 	 	
 	$customer_group = "";
 	$querystr = sprintf('SELECT customergroup_id FROM %s WHERE customer_id = "%s"',$tb_customers,$item_03);
@@ -85,6 +86,7 @@ function get_section1($item,$labels,$param)
 						<tr valign=top><td class="ne_td1">$label_05 : </td><td class="ne_td2" >$item_05</td></tr>
 						<tr valign=top><td class="ne_td1">$label_06 : </td><td class="ne_td2" >$item_06</td></tr>	
 						<tr valign=top><td class="ne_td1">$label_07 : </td><td class="ne_td2" >$item_07</td></tr>
+						<tr valign=top><td class="ne_td1">&nbsp</td><td class="ne_td2" >&nbsp</td></tr>
 					</table>
 				</td>
 				<td width="60%">
@@ -95,7 +97,8 @@ function get_section1($item,$labels,$param)
 						<tr valign=top><td class="ne_td1">$label_11 : </td><td class="ne_td2" >$item_11</td></tr>
 						<tr valign=top><td class="ne_td1">$label_12 : </td><td class="ne_td2" >$item_12</td></tr>
 						<tr valign=top><td class="ne_td1">$label_13 : </td><td class="ne_td2" >$item_13</td></tr>	
-						<tr valign=top><td class="ne_td1">$label_14 : </td><td class="ne_td2" >$item_14</td></tr>	
+						<tr valign=top><td class="ne_td1">$label_14 : </td><td class="ne_td2" >$item_14</td></tr>
+						<tr valign=top><td class="ne_td1">$label_15 : </td><td class="ne_td2" >$item_15</td></tr>	
 					</table>
 				</td>
 			</tr>
@@ -159,7 +162,7 @@ function view_xml_table($key,$record,$param)
 	$wh_exist = false; $pr_exist = false; $py_exist = false;
 	$pipes = $record['pipes'];  $pumps = $record['pumps'];
 	$xml = $record['orderlines'];
-		
+
 	$s3 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:150px;";
 	$s4 = "border:1px solid silver; font-weight:normal; padding:2px; background:#ebf2f9;; color:black; width:450px;";
 

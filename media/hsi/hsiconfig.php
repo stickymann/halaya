@@ -96,14 +96,16 @@ class HSIConfig
 				if($cfg->tables->tb_autoids) { $this->hsiconfig['tb_autoids'] = sprintf('%s',$cfg->tables->tb_autoids); }
 				
 				//printers
-				$this->hsiconfig['prn_picklist'] = array('printer'=>'PDF','copies'=>'1'); 
+				$this->hsiconfig['prn_picklist'] = array('printer'=>'PDF','copies_wh'=>'1','copies_py'=>'1','copies_pr'=>'1'); 
 				if($cfg->printers->picklist) 
 				{ 
 					$picklist['printer'] = sprintf('%s',$cfg->printers->picklist->printer); 
-					$picklist['copies'] = sprintf('%s',$cfg->printers->picklist->copies); 
+					$picklist['copies_wh'] = sprintf('%s',$cfg->printers->picklist->autoprint->copies_warehouse); 
+					$picklist['copies_py'] = sprintf('%s',$cfg->printers->picklist->autoprint->copies_pipeyard); 
+					$picklist['copies_pr'] = sprintf('%s',$cfg->printers->picklist->autoprint->copies_pumproom); 
 					$this->hsiconfig['prn_picklist'] = $picklist;
 				} 
-				
+			
 				//ranges
 				$this->hsiconfig['fittings'] =  array('lower'=>'0','upper'=>'0'); 
 				$this->hsiconfig['pipes'] 	 =  array('lower'=>'0','upper'=>'0'); 

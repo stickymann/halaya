@@ -62,7 +62,10 @@
 <printers>
 <picklist>
 <printer>TSP800II</printer>
-<copies>1</copies>
+<autoprint>
+<copies_warehouse>1</copies_warehouse>
+<copies_pipeyard>2</copies_pipeyard>
+<copies_pumproom>1</copies_pumproom></autoprint>
 </picklist>
 </printers>
 <extprogs>
