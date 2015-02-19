@@ -42,7 +42,7 @@ foreach($filespecs as $index => $specs)
 			
 			//read data in into array for processing
 			$inventoryops->set_inventory_data();
-			
+
 			//process data
 			$changelog_id = $inventoryops->process_inventory();
 			//array_push($changelogs, $changelog_id);
