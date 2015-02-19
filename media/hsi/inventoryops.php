@@ -371,7 +371,8 @@ $xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</
 								}
 								else if( $UPDATE && !$PUSH )
 								{
-$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $record['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$record['unitprice'])."\n";
+//do not add to change log
+//$xmlrows_edit .= sprintf('<row><code>%s</code><objid>%s</objid><description>%s</description><category>%s</category><availunits>%s</availunits><taxable>%s</taxable><unitprice>%s</unitprice><entry>EDIT</entry></row>',$arr['id'],$record['item_objid'],str_replace('&','&amp;', $record['description']),str_replace('&','&amp;', $record['category']),$arr['availunits'],$arr['taxable'],$record['unitprice'])."\n";
 								} 
 								else if( !$UPDATE && $PUSH )
 								{
