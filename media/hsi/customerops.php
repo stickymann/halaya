@@ -21,6 +21,7 @@ define("NEW_CUSTOMER_USER_GROUP","NEW-CUSTOMER.USER.GROUP");
 define("NEW_CUSTOMER_CUSTOMER_GROUP","NEW-CUSTOMER.CUSTOMER.GROUP");
 define("SALESPERSON_PREFIX","SALESPERSON");
 define("PRICEGROUP_PREFIX","PRICEGROUP");
+define("EXCLUDEGROUP1","00DL");
 
 class CustomerOps 
 {
@@ -113,8 +114,6 @@ class CustomerOps
 	$arr['usergroup_id']	= $this->usergroup_id;
 	$this->set_customergroup($pricegroup);
 			$this->set_usergroup($salesperson);
-
-	
 	*/
 	
 	public function set_customergroup($pricegroup)
@@ -324,16 +323,17 @@ class CustomerOps
 			$arr['city']		= sprintf('%s',$object->city);
 			$arr['country']		= sprintf('%s',$object->country);
 			$arr['phone']		= sprintf('%s',$object->phone);
+			$arr['fax']			= sprintf('%s',$object->fax);
 			$arr['hash']		= ""; 
 			
 			if( $this->dbops->record_exist($this->tb_live, "customer_objid", $customer_objid) )
 			{ 
-				$querystr = sprintf('SELECT id,name,contact FROM %s WHERE %s = "%s"',$this->tb_live,"customer_objid", $customer_objid);
+				$querystr = sprintf('SELECT id,tax_id,name,contact,email,payment_terms FROM %s WHERE %s = "%s"',$this->tb_live,"customer_objid", $customer_objid);
 				$formdata = $this->dbops->execute_select_query($querystr);
 				$record	  = $formdata[0];
 				
 				$arr['id']		= $record['id'];
-				$arr['hash'] 	= hash('sha256',$record['name'].$record['contact'].$arr['street'].$arr['city'].$arr['country'].$arr['phone'] );;
+				$arr['hash'] = hash('sha256',$record['tax_id'].$record['name'].$record['contact'].$arr['street'].$arr['city'].$arr['country'].$arr['phone'].$arr['fax'].$record['email'].$record['payment_terms'] );
 								
 				$count = $this->dbops->update_record($this->tb_live, $arr);
 				if($count > 0) { $total = $total + $count; } else { $faillist .= $arr['id'].",";}
@@ -545,9 +545,12 @@ $value = Array
 			$salesperson = $value[11];
 			$this->set_customergroup($pricegroup);
 			$this->set_usergroup($salesperson);
-
+			
+			 //do process records in exclude group, example: customers for deletion
+			// if( $daceasy_id[0] != "0" || $salesperson == EXCLUDEGROUP1 ) { continue; }
+					
 			// codes that start with "9" do not exist in Handshake and should be excluded
-			if($daceasy_id[0] != "6")
+			if($daceasy_id[0] != "0" ) 
 			{
 				$phone = ""; 
 				if( $num = $this->is_valid_phone_number($phone1) ) { $phone .= $num." / "; }
@@ -559,9 +562,14 @@ $value = Array
 				
 				if( $this->dbops->record_exist($this->tb_live,"customer_id",$daceasy_id) )
 				{
-					$querystr = sprintf('SELECT id,customer_id,tax_id,hash,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"customer_id",$daceasy_id);
+					$querystr = sprintf('SELECT id,customer_id,customer_objid,tax_id,hash,current_no FROM %s WHERE %s = "%s"',$this->tb_live,"customer_id",$daceasy_id);
 					$formdata = $this->dbops->execute_select_query($querystr);
 					$record	  = $formdata[0];
+/*
+$change = "NO CHANGE";
+if( $hash != $record['hash'] ) { $change = "CHANGE"; }
+print sprintf("%s | %s\t | %s | %s | %s \n",$record['customer_id'],$record['customer_objid'],$hash,$record['hash'],$change);
+*/					
 					if( $hash != $record['hash'] )
 					{
 						$arr['id']			= $record['id'];
@@ -671,9 +679,8 @@ $xmlrows_new .= sprintf('<row><id>%s</id><tax_id>%s</tax_id><name>%s</name><cont
 			$formfields = new SimpleXMLElement($changelog['changelog_details']);
 			foreach ($formfields->rows->row as $row)
 			{
-				$tax_id = sprintf('%s',$row->tax_id);
-				$querystr = sprintf('SELECT id,customer_id,tax_id,customer_objid,name,contact,street,city,country,phone,fax,email,payment_terms,customergroup_objid,usergroup_objid FROM %s WHERE tax_id = "%s"',$this->tb_live,$tax_id);
-				
+				$customer_id = sprintf('%s',$row->id);
+				$querystr = sprintf('SELECT id,customer_id,tax_id,customer_objid,name,contact,street,city,country,phone,fax,email,payment_terms,customergroup_objid,usergroup_objid FROM %s WHERE customer_id = "%s"',$this->tb_live,$customer_id);
 				if( $formdata = $this->dbops->execute_select_query($querystr) )
 				{
 					$customer = $formdata[0];
