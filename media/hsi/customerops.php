@@ -546,8 +546,8 @@ $value = Array
 			$this->set_customergroup($pricegroup);
 			$this->set_usergroup($salesperson);
 			
-			 //do process records in exclude group, example: customers for deletion
-			// if( $daceasy_id[0] != "0" || $salesperson == EXCLUDEGROUP1 ) { continue; }
+			 //do process records in exclude group, example: customers for deletion || $salesperson == EXCLUDEGROUP1  $daceasy_id[0] != "0"
+			if( $daceasy_id[0] == "0" || $salesperson == EXCLUDEGROUP1 ) { 	continue; }
 					
 			// codes that start with "9" do not exist in Handshake and should be excluded
 			if($daceasy_id[0] != "0" ) 
