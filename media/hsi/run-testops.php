@@ -49,9 +49,9 @@ $fileops = new FileOps();
 $fileops->process_import_files();
 */
 
-/*
+
 $auto = true;
-$batch_id = "BDO-20150206-193042"; 
+$batch_id = "BDO-20150305-121300"; 
 $order_id = "895115"; //only pumps
 //orderentry batch
 require_once(dirname(__FILE__).'/orderentryops.php');
@@ -62,10 +62,11 @@ $orderentry->process_orderentry_files($batch_id,$auto);
 //orderentry by order
 //$orderentry->create_order_entry($order_id,$auto);
 //$orderentry->process_orderentry_files("ORD-".$order_id,$auto);
-*/
+
 
 
 //prints
+/*
 $auto = true;
 $batch_id = "BDO-20150211-151712";
 require_once(dirname(__FILE__).'/printerwriteops.php');
@@ -73,7 +74,7 @@ $printerwrite = new PrinterWriteOps();
 $printerwrite->create_batch_picklists($batch_id,$auto);
 //$printerwrite->create_order_picklist($order_id,null,null,$auto);
 $printerwrite->process_pdf_queue();
-
+*/
 
 /*
 // sample ids
