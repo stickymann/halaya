@@ -185,7 +185,7 @@ class OrderEntryOps
 								$field[17] = sprintf('%s',"");  //unknown, use default value 
 								$field[18] = sprintf('%s',$qty); // ORDERED
 								$field[19] = sprintf('%s',$qty);  // SHIPPED
-								$field[20] = sprintf('%s',"0"); // THIS SHIPMENT 
+								$field[20] = sprintf('%s',$qty); // THIS SHIPMENT 
 								$field[21] = sprintf('%s',"0");  // BACKORDER
 								$field[22] = sprintf('%s',$customer_price);
 								$field[23] = sprintf('%s',number_format(0,2,'.','')); 
