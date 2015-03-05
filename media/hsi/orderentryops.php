@@ -316,9 +316,10 @@ class OrderEntryOps
 		$due_date = strtotime( "+".$payment_terms." days", strtotime($order['cdate']) );
 		$payment_due_by = date("Y-m-d",$due_date);
 		
-		//get salesperson code, first 2 digits
-		$salesperson_code = substr($order['tax_id'],0,2);
-		
+		//get salesperson code, first 2 digits, old format
+		//$salesperson_code = substr($order['tax_id'],0,2);
+		$salesperson_code = $order['tax_id'];
+
 		//change ctime to upload format
 		$ctime = substr( str_replace(":","",$order['ctime']),0,4 );
 			
