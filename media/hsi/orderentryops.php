@@ -182,9 +182,9 @@ class OrderEntryOps
 								$field[14] = sprintf('%s',"N"); //unknown, use default value 
 								$field[15] = sprintf('%s',"Y"); //unknown, use default value 
 								$field[16] = sprintf('%s',"N"); //unknown, use default value 
-								$field[17] = sprintf('%s',"");  //unknown, use default value 
+								$field[17] = sprintf('%s',"\x01");  //SOH character, \x01
 								$field[18] = sprintf('%s',$qty); // ORDERED
-								$field[19] = sprintf('%s',$qty);  // SHIPPED
+								$field[19] = sprintf('%s',"0");  // SHIPPED
 								$field[20] = sprintf('%s',$qty); // THIS SHIPMENT 
 								$field[21] = sprintf('%s',"0");  // BACKORDER
 								$field[22] = sprintf('%s',$customer_price);
@@ -324,8 +324,8 @@ class OrderEntryOps
 		$ctime = substr( str_replace(":","",$order['ctime']),0,4 );
 			
 		$field[0]  = sprintf('"%s"',$auto_order_id);
-		$field[1]  = sprintf('%s',"");                     //Unknown Field
-		$field[2]  = sprintf('%s',"");                     //Unknown Field
+		$field[1]  = sprintf('%s',"\x01");                 //SOH character, \x01
+		$field[2]  = sprintf('%s',"\x01");                 //SOH character, \x01
 		$field[3]  = sprintf('"%s"',$order['customer_id']);     //Customer Code 
 		$field[4]  = sprintf('"%s"',$customer['name']);    //Billing Address (Line 1)
 		$field[5]  = sprintf('"%s"',$customer['contact']); //Billing Address (Line 2)
