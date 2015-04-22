@@ -209,6 +209,7 @@ $xmlrows .= sprintf('<row><order_id>%s</order_id><customer_id>%s</customer_id><t
 				else
 				{
 					$url = $this->appurl.$meta['next'];
+					$url = str_replace("orders?","orders.xml?", $url); 
 					$RESULT .= sprintf("Processing records up to offset : %s<br>",$meta['offset']);
 					$RESULT .= sprintf("Fail list : %s<br>",$meta['faillist']);
 					$RESULT .= sprintf("Records refreshed : %s<br><hr>",$meta['total_inserts']);
