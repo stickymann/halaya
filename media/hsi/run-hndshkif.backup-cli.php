@@ -32,7 +32,7 @@ $curlops = new CurlOps();
 $NOW = date("Ymd-His");
 
 // get relevant directory names
-$approot = rtrim ( $fileops->config['approot'],"/" );
+$approot = rtrim ( $fileops->config['backupdir'],"/" );
 $approot_r = explode("/",$approot);
 $num_of_dirs = count($approot_r);
 $approotlvlup = "";
