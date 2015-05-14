@@ -251,7 +251,6 @@ class OrderEntryOps
 	private function get_customer_price($customer_id,$sku,$unitprice)
 	{
 		//IMPLEMENT BUSINESS RULES HERE!
-		
 		$fittings = $this->config['fittings'];
 		if( $sku >= $fittings['lower'] && $sku <= $fittings['upper'])
 		{ 
@@ -260,30 +259,38 @@ class OrderEntryOps
 			$PriceA			= $PriceDefault * .95; 	//Price1 (01)
 			$PriceB			= $PriceA * .95; 		//PriceBase (05)
 			$PriceC			= $PriceB * .98; 		//PriceALR (07)
+		}
+		else
+		{
+			//Apply discounts
+			$PriceDefault 	= $unitprice; 			//Price2 (02)
+			$PriceA			= $PriceDefault; 		//Price1 (01)
+			$PriceB			= $PriceA * .95; 		//PriceBase (05)
+			$PriceC			= $PriceB * .98; 		//PriceALR (07)
+		}
 		
-			$querystr = sprintf('SELECT customergroup_id FROM %s WHERE customer_id = "%s"',$this->config['tb_customers'],$customer_id);
-			if( $result = $this->dbops->execute_select_query($querystr) )
+		$querystr = sprintf('SELECT customergroup_id FROM %s WHERE customer_id = "%s"',$this->config['tb_customers'],$customer_id);
+		if( $result = $this->dbops->execute_select_query($querystr) )
+		{
+			//get customer group id
+			$customer_group = $result[0]['customergroup_id'];
+			switch( $customer_group )
 			{
-				//get customer group id
-				$customer_group = $result[0]['customergroup_id'];
-				switch( $customer_group )
-				{
-						case "CustPrice1":
-							$unitprice = $PriceA;
-						break;
+				case "CustPrice1":
+					$unitprice = $PriceA;
+				break;
 					
-						case "CustPrice2":
-							$unitprice = $PriceDefault;
-						break;
+				case "CustPrice2":
+					$unitprice = $PriceDefault;
+				break;
 						
-						case "CustBase":
-							$unitprice = $PriceB;
-						break;
+				case "CustBase":
+					$unitprice = $PriceB;
+				break;
 						
-						case "CustALR":
-							$unitprice = $PriceC;
-						break;
-				}
+				case "CustALR":
+					$unitprice = $PriceC;
+				break;
 			}
 		}
 		return round($unitprice,2);
