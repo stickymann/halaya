@@ -288,7 +288,7 @@ class OrderEntryOps
 					$unitprice = $PriceB;
 				break;
 						
-				case "CustALR":
+				case "CustALR.":
 					$unitprice = $PriceC;
 				break;
 			}
