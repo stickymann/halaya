@@ -20,7 +20,7 @@
 <autoid_type>ORDER</autoid_type>
 </orderentry>
 <taxes>
-<tax><code>1</code><value>.15</value></tax>
+<tax><code>1</code><value>.125</value></tax>
 <tax><code>2</code><value>0</value></tax>
 </taxes>	
 <folders>
