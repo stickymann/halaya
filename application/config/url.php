@@ -2,7 +2,7 @@
 
 return [
 
-	'trusted_hosts' => ['192\.168\.1\.100'
+	'trusted_hosts' => ['localhost','192\.168\.1\.10','192\.168\.1\.20','192\.168\.1\.100'
 		// Set up your hostnames here
 		//
 		// Example:

@@ -1,0 +1,216 @@
+find /*SQL8/
+StickyMann
+8b234df2d2404a30
+
+/*Plus 3^/
+TECH USER
+F0F73
+
+/*MySQL*/
+GRANT ALL PRIVILEGES ON *.* TO 'dbuser'@'localhost' IDENTIFIED BY 'dbpass';
+GRANT ALL PRIVILEGES ON *.* TO 'dbuser'@'%' IDENTIFIED BY 'dbpass';
+
+[ my.cnf or my.ini ]
+[mysqld]
+innodb_file_per_table
+innodb_flush_method     = O_DIRECT
+#innodb_log_file_size    = 1G
+#innodb_buffer_pool_size = 4G
+bind address = 0.0.0.0
+
+sql_mode="STRICT_ALL_TABLES"
+event_scheduler=ON
+
+
+SHOW PROCESSLIST;
+SELECT @@GLOBAL.sql_mode;
+
+SET GLOBAL event_scheduler = ON;
+SET @@GLOBAL.sql_mode="STRICT_ALL_TABLES"
+
+mysqldump -uroot -p --opt --all-databases > alldb.sql
+mysqldump -uroot -p --all-databases --skip-lock-tables > alldb.sql
+mysql -u root -p < alldb.sql
+
+Github Login
+sticky
+
+Git
+#Add remote
+git remote add origin https://github.com/stickymann/casinoapp.git
+
+
+#Merge with branch master
+git merge origin/master
+
+#Upload changes to origin from master
+git push origin master
+
+#Get updates from server
+git fetch origin
+
+#Merge with branch master
+git merge origin/master
+
+
+#Log viewing
+git log --pretty=oneline
+git show
+
+#Branching
+git branch <branchname>
+git checkout <branchname>
+
+#To see hidden branches
+git branch -a
+
+#To checkout and start working in a remote branch locally (clone remote branch)
+git checkout -b local_branch origin/remote_branch
+
+#To push to remote branch
+git push origin master
+git push origin local_branch:remote_branch
+
+#Merge local branch from remote branch
+git checkout master
+git fetch origin
+git fetch origin remote_branch:local_branch
+
+#Set upstream tracking
+git branch -f --track my_local_branch origin/my_remote_branch
+# OR:
+git branch --set-upstream my_local_branch origin/my_remote_branch
+##get updates from remote
+git pull
+
+#Commiting
+git add <filename>  //track or stage
+git commit -m 'initial commit' //commit staged files
+git commit -a -m 'initial commit' //stage and commit files
+git commit --amend //re-doing last commit
+git checkout -- <filename> //unmodifing file to last commit
+git reset HEAD <filename> //unstage file
+git reset --hard HEAD~1 //The HEAD~1 means the commit before head.
+git reset --hard <sha1-commit-id> //backup to specific commit
+
+#Tracking and Un-Tracking
+--This will tell git you want to start ignoring the changes to the file
+git update-index --assume-unchanged path/to/file
+--When you want to start keeping track again
+git update-index --no-assume-unchanged path/to/file
+
+#Merging
+git merge <branch>
+
+#Cherry Picking
+git cherry-pick <sha1_id>
+
+cd ../cmlsl
+git checkout master
+git fetch origin
+git merge master origin
+git checkout cmlsl
+git cherry-pick ff17ce69367d2b94393ba34c5dfeedbbe7744017
+git push origin cmlsl:cmlsl
+
+cd ../hndshkif
+git checkout master
+git fetch origin
+git merge master origin
+git checkout hndshkuif
+git cherry-pick ff17ce69367d2b94393ba34c5dfeedbbe7744017
+git push origin hndshkif:hndshkif
+
+#.gitconfig
+[user]
+name = Dunstan Nesbit
+email = dunstan.nesbit@gmail.com
+[giggle]
+main-window-maximized = false
+main-window-geometry = 1006x653+83+80
+main-window-view = FileView
+history-view-vpane-position = 202
+file-view-vpane-position = 268
+#[merge]
+#    tool = mymeld
+#[mergetool "mymeld"]
+#    cmd = /usr/bin/gitmerge $BASE $LOCAL $REMOTE $MERGED
+[merge]
+tool = mymeld
+conflictstyle = diff3
+[mergetool "mymeld"]
+cmd = meld --diff $BASE $LOCAL --diff $BASE $REMOTE --diff $LOCAL $BASE $REMOTE $MERGED
+
+
+#Notes to self about same core multibranch
+1) All common files (core files go to master)
+2) Make subbranches from different customer customizations
+Example: gbiz, cmlsl, soulmap
+3) Before using a sub-branch, always merge it with changes/updates from mastergit branch -a
+4) If changes to core files were separate commit in smaller distinct ones for easier cherry-picking
+git branch -a
+Example:
+
+a) If changes in core files only
+--# git commit -a -m "Some Text Here"
+
+b) If changes in core files only and new files added
+--# git commit -a -m "Some Text Here"  //commit existing files
+--# git add <filename>  // add new filesgit branch -a
+--# git commit -a -m "More Test Here"  //commit new files
+
+c) If changes in core files and custom files
+--# git add <filename>  //core file to staging area
+--# git commit -m "Some Text Here"  // commit core file
+--# git commit -a -m "More Text Here"  //commitgit branch -a remaining/custom of files
+git branch -a
+d) If changes in core files, custom files  and new files added
+--# git add <filename>  //core file to staging area
+--# git commit -m "Commit Core Files"  // commit core file
+--# git add <filename> "  //custom file to staging area
+--# git commit -m "Commit Custom Files"  // commit core file
+--# git commit -a -m "Commit Remaing Files" //commit remaing/new of files
+
+To see hiddi
+
+
+To see git commits only
+git log --format='%H %an' -n 1 | cut -d ' ' -f1
+
+
+
+
+JasperReports
+jasperstarter -f pdf -t mysql -u dbuser -p dbpass -H localhost -n gbiz -i mycust.jasper -o mycust.pdf
+
+
+
+
+
+
+===================================================================
+No resolution found for this problem, decided to port app to Konana 3.3
+Ubuntu/Kohana Config
+
+(1) In /etc/apache2/sites-enabled/000-default
+
+Directory /var/www/>
+   Options Indexes FollowSymLinks MultiViews
+   AllowOverride None
+   Order allow,deny
+   allow from all
+/Directory>
+
+edit 'AllowOverride None' to 'AllowOverride All' and restart your apache webserver .
+
+(2) Enable rewrite module
+ In /etc/apache2/mods-enabled/rewrite.load uncomment (a2enmod rewrite)->
+LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so
+==================================================================
+
+
+To recursively give directories read&execute privileges:
+find /path/to/base/dir -type d -exec chmod 755 {} +
+
+To recursively give files read privileges:
+find /path/to/base/dir -type f -exec chmod 644 {} +
