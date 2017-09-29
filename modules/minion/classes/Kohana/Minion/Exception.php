@@ -1,12 +1,12 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php
 /**
- * Minipn exception
+ * Minion exception
  *
  * @package    Kohana
  * @category   Minion
  * @author     Kohana Team
- * @copyright  (c) 2009-2011 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Minion_Exception extends Kohana_Exception {
 	/**
@@ -15,16 +15,17 @@ class Kohana_Minion_Exception extends Kohana_Exception {
 	 *
 	 * Should this display a stack trace? It's useful.
 	 *
-	 * Should this still log? Maybe not as useful since we'll see the error on the screen.
-	 *
 	 * @uses    Kohana_Exception::text
 	 * @param   Exception   $e
 	 * @return  boolean
 	 */
-	public static function handler(Exception $e)
+	public static function handler($e)
 	{
 		try
 		{
+			// Log the exception
+			Kohana_Exception::log($e);
+
 			if ($e instanceof Minion_Exception)
 			{
 				echo $e->format_for_cli();
@@ -33,7 +34,7 @@ class Kohana_Minion_Exception extends Kohana_Exception {
 			{
 				echo Kohana_Exception::text($e);
 			}
-			
+
 			$exit_code = $e->getCode();
 
 			// Never exit "0" after an exception.
@@ -59,6 +60,7 @@ class Kohana_Minion_Exception extends Kohana_Exception {
 
 	public function format_for_cli()
 	{
-		return Kohana_Exception::text($e);
+		return Kohana_Exception::text($this);
 	}
+
 }

@@ -6,8 +6,8 @@
  * @package    Kohana
  * @category   Configuration
  * @author     Kohana Team
- * @copyright  (c) 2009-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Config_File_Reader implements Kohana_Config_Reader {
 
@@ -39,7 +39,7 @@ class Kohana_Config_File_Reader implements Kohana_Config_Reader {
 	 */
 	public function load($group)
 	{
-		$config = array();
+		$config = [];
 
 		if ($files = Kohana::find_file($this->_directory, $group, NULL, TRUE))
 		{
@@ -53,4 +53,4 @@ class Kohana_Config_File_Reader implements Kohana_Config_Reader {
 		return $config;
 	}
 
-} // End Kohana_Config
+}

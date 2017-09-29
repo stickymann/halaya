@@ -1,12 +1,12 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php
 /**
  * Custom Markdown parser for Kohana documentation.
  *
  * @package    Kohana/Userguide
  * @category   Base
  * @author     Kohana Team
- * @copyright  (c) 2009-2012 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 
@@ -21,22 +21,23 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	public static $image_url = '';
 	
 	/**
-	 * Currently defined heading ids.  
+	 * Currently defined heading ids.
 	 * Used to prevent creating multiple headings with same id.
-	 * @var array
+	 *
+	 * @var  array
 	 */
-	protected $_heading_ids = array();
+	protected $_heading_ids = [];
 	
 	/**
-	 * @var  string   the generated table of contents
+	 * @var  array   the generated table of contents
 	 */
-	protected static $_toc = "";
+	protected static $_toc = [];
 	
 	/**
 	 * Slightly less terrible way to make it so the TOC only shows up when we
 	 * want it to.  set this to true to show the toc.
 	 */
-	public static $show_toc = false;
+	public static $show_toc = FALSE;
 	
 	/**
 	 * Transform some text using [Kodoc_Markdown]
@@ -78,8 +79,8 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 		// Show table of contents for userguide pages
 		$this->document_gamut['doTOC'] = 100;
 
-		// PHP4 makes me sad.
-		parent::MarkdownExtra_Parser();
+		// Call parent constructor.
+		parent::__construct();
 	}
 	
 	/**
@@ -88,25 +89,27 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	 * Heading 1
 	 * =========
 	 *
-	 * @param  array    Matches from regex call
-	 * @return string   Generated html
+	 * @param   array   Matches from regex call
+	 * @return  string  Generated html
 	 */
-	function _doHeaders_callback_setext($matches) 
+	function _doHeaders_callback_setext($matches)
 	{
-		if ($matches[3] == '-' && preg_match('{^- }', $matches[1]))
+		if ($matches[3] == '-' AND preg_match('{^- }', $matches[1]))
 			return $matches[0];
-		$level = $matches[3]{0} == '=' ? 1 : 2;
+		$level = ($matches[3]{0} == '=') ? 1 : 2;
 		$attr  = $this->_doHeaders_attr($id =& $matches[2]);
 		
 		// Only auto-generate id if one doesn't exist
-		if(empty($attr))
+		if (empty($attr))
+		{
 			$attr = ' id="'.$this->make_heading_id($matches[1]).'"';
+		}
 		
 		// Add this header to the page toc
 		$this->_add_to_toc($level,$matches[1],$this->make_heading_id($matches[1]));
 		
 		$block = "<h$level$attr>".$this->runSpanGamut($matches[1])."</h$level>";
-		return "\n" . $this->hashBlock($block) . "\n\n";
+		return "\n".$this->hashBlock($block)."\n\n";
 	}
 	
 	/**
@@ -114,23 +117,25 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	 *
 	 * # Heading 1
 	 *
-	 * @param  array    Matches from regex call
-	 * @return string   Generated html
+	 * @param   array   Matches from regex call
+	 * @return  string  Generated html
 	 */
-	function _doHeaders_callback_atx($matches) 
+	function _doHeaders_callback_atx($matches)
 	{
 		$level = strlen($matches[1]);
 		$attr  = $this->_doHeaders_attr($id =& $matches[3]);
 		
 		// Only auto-generate id if one doesn't exist
-		if(empty($attr))
+		if (empty($attr))
+		{
 			$attr = ' id="'.$this->make_heading_id($matches[2]).'"';
+		}
 		
 		// Add this header to the page toc
 		$this->_add_to_toc($level, $matches[2], $this->make_heading_id(empty($matches[3]) ? $matches[2] : $matches[3]));
 		
 		$block = "<h$level$attr>".$this->runSpanGamut($matches[2])."</h$level>";
-		return "\n" . $this->hashBlock($block) . "\n\n";
+		return "\n".$this->hashBlock($block)."\n\n";
 	}
 
 	
@@ -138,14 +143,14 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	 * Makes a heading id from the heading text
 	 * If any heading share the same name then subsequent headings will have an integer appended
 	 *
-	 * @param  string The heading text
-	 * @return string ID for the heading
+	 * @param   string  The heading text
+	 * @return  string  ID for the heading
 	 */
 	function make_heading_id($heading)
 	{
 		$id = url::title($heading, '-', TRUE);
 		
-		if(isset($this->_heading_ids[$id]))
+		if (isset($this->_heading_ids[$id]))
 		{
 			$id .= '-';
 			
@@ -155,8 +160,8 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 			{
 				$id .= $count;
 			}
-		}		
-		
+		}
+
 		return $id;
 	}
 
@@ -164,9 +169,7 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	{
 		if (preg_match_all('/{{([^\s{}]++)}}/', $text, $matches, PREG_SET_ORDER))
 		{
-			$replace = array();
-
-			$replace = array();
+			$replace = [];
 
 			foreach ($matches as $set)
 			{
@@ -203,7 +206,7 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	 *
 	 *     [filesystem](about.filesystem "Optional title")
 	 *
-	 * @param   string  span text
+	 * @param   string  Span text
 	 * @return  string
 	 */
 	public function doBaseURL($text)
@@ -217,7 +220,7 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	 *
 	 *     ![Install Page](img/install.png "Optional title")
 	 *
-	 * @param   string  span text
+	 * @param   string  Span text
 	 * @return  string
 	 */
 	public function doImageURL($text)
@@ -231,7 +234,7 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	 *
 	 *     [Class_Name], [Class::method] or [Class::$property]
 	 *
-	 * @param   string   span text
+	 * @param   string  Span text
 	 * @return  string
 	 */
 	public function doAPI($text)
@@ -244,7 +247,7 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	 *
 	 *     [!!] Remember the milk!
 	 *
-	 * @param   string  span text
+	 * @param   string  Span text
 	 * @return  string
 	 */
 	public function doNotes($text)
@@ -259,12 +262,12 @@ class Kohana_Kodoc_Markdown extends MarkdownExtra_Parser {
 	
 	protected function _add_to_toc($level, $name, $id)
 	{
-		self::$_toc[] = array(
+		self::$_toc[] = [
 			'level' => $level,
 			'name'  => $name,
-			'id'    => $id);
+			'id'    => $id];
 	}
-	
+
 	public function doTOC($text)
 	{
 		// Only add the toc do userguide pages, not api since they already have one

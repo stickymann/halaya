@@ -1,0 +1,9 @@
+Icon?
+.DS_Store
+.svn
+.idea
+*~
+*.swp
+composer.lock
+koharness_bootstrap.php
+

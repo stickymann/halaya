@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 
 class Kohana_HTTP_Exception_401 extends HTTP_Exception_Expected {
 
@@ -9,14 +9,14 @@ class Kohana_HTTP_Exception_401 extends HTTP_Exception_Expected {
 
 	/**
 	 * Specifies the WWW-Authenticate challenge.
-	 * 
+	 *
 	 * @param  string  $challenge  WWW-Authenticate challenge (eg `Basic realm="Control Panel"`)
 	 */
 	public function authenticate($challenge = NULL)
 	{
 		if ($challenge === NULL)
 			return $this->headers('www-authenticate');
-		
+
 		$this->headers('www-authenticate', $challenge);
 
 		return $this;
@@ -24,7 +24,7 @@ class Kohana_HTTP_Exception_401 extends HTTP_Exception_Expected {
 
 	/**
 	 * Validate this exception contains everything needed to continue.
-	 * 
+	 *
 	 * @throws Kohana_Exception
 	 * @return bool
 	 */
@@ -35,4 +35,5 @@ class Kohana_HTTP_Exception_401 extends HTTP_Exception_Expected {
 
 		return TRUE;
 	}
+
 }

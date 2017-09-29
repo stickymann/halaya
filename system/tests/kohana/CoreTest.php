@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('Kohana bootstrap needs to be included before tests run');
+<?php
 
 /**
  * Tests Kohana Core
@@ -13,11 +13,37 @@
  * @category   Tests
  * @author     Kohana Team
  * @author     Jeremy Bush <contractfrombelow@gmail.com>
- * @copyright  (c) 2008-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_CoreTest extends Unittest_TestCase
 {
+	protected $old_modules = [];
+
+	/**
+	 * Captures the module list as it was before this test
+	 *
+	 * @return null
+	 */
+	// @codingStandardsIgnoreStart
+	public function setUp()
+	// @codingStandardsIgnoreEnd
+	{
+		parent::setUp();
+		$this->old_modules = Kohana::modules();
+	}
+
+	/**
+	 * Restores the module list
+	 *
+	 * @return null
+	 */
+	// @codingStandardsIgnoreStart
+	public function tearDown()
+	// @codingStandardsIgnoreEnd
+	{
+		Kohana::modules($this->old_modules);
+	}
 
 	/**
 	 * Provides test data for test_sanitize()
@@ -26,13 +52,13 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function provider_sanitize()
 	{
-		return array(
+		return [
 			// $value, $result
-			array('foo', 'foo'),
-			array("foo\r\nbar", "foo\nbar"),
-			array("foo\rbar", "foo\nbar"),
-			array("Is your name O\'reilly?", "Is your name O'reilly?")
-		);
+			['foo', 'foo'],
+			["foo\r\nbar", "foo\nbar"],
+			["foo\rbar", "foo\nbar"],
+			["Is your name O\'reilly?", "Is your name O'reilly?"]
+		];
 	}
 
 	/**
@@ -46,7 +72,7 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function test_sanitize($value, $result)
 	{
-		$this->setEnvironment(array('Kohana::$magic_quotes' => TRUE));
+		$this->setEnvironment(['Kohana::$magic_quotes' => TRUE]);
 
 		$this->assertSame($result, Kohana::sanitize($value));
 	}
@@ -80,7 +106,7 @@ class Kohana_CoreTest extends Unittest_TestCase
 	{
 		$this->assertFalse(Kohana::find_file('configy', 'zebra'));
 
-		$this->assertSame(array(), Kohana::find_file('configy', 'zebra', NULL, TRUE));
+		$this->assertSame([], Kohana::find_file('configy', 'zebra', NULL, TRUE));
 	}
 
 	/**
@@ -96,7 +122,7 @@ class Kohana_CoreTest extends Unittest_TestCase
 		$this->assertInternalType('array', $files);
 		$this->assertGreaterThan(3, count($files));
 
-		$this->assertSame(array(), Kohana::list_files('geshmuck'));
+		$this->assertSame([], Kohana::list_files('geshmuck'));
 	}
 
 	/**
@@ -107,11 +133,15 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function test_globals_removes_user_def_globals()
 	{
-		$GLOBALS = array('hackers' => 'foobar','name' => array('','',''), '_POST' => array());
+		$GLOBALS['hackers'] = 'foobar';
+		$GLOBALS['name'] = ['','',''];
+		$GLOBALS['_POST'] = [];
 
 		Kohana::globals();
 
-		$this->assertEquals(array('_POST' => array()), $GLOBALS);
+		$this->assertFalse(isset($GLOBALS['hackers']));
+		$this->assertFalse(isset($GLOBALS['name']));
+		$this->assertTrue(isset($GLOBALS['_POST']));
 	}
 
 	/**
@@ -121,12 +151,12 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function provider_cache()
 	{
-		return array(
+		return [
 			// $value, $result
-			array('foo', 'hello, world', 10),
-			array('bar', NULL, 10),
-			array('bar', NULL, -10),
-		);
+			['foo', 'hello, world', 10],
+			['bar', NULL, 10],
+			['bar', NULL, -10],
+		];
 	}
 
 	/**
@@ -152,38 +182,21 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function provider_message()
 	{
-		return array(
-			// $value, $result
-			array(':field must not be empty', 'validation', 'not_empty'),
-			array(
-				array(
-					'alpha'         => ':field must contain only letters',
-					'alpha_dash'    => ':field must contain only numbers, letters and dashes',
-					'alpha_numeric' => ':field must contain only letters and numbers',
-					'color'         => ':field must be a color',
-					'credit_card'   => ':field must be a credit card number',
-					'date'          => ':field must be a date',
-					'decimal'       => ':field must be a decimal with :param2 places',
-					'digit'         => ':field must be a digit',
-					'email'         => ':field must be a email address',
-					'email_domain'  => ':field must contain a valid email domain',
-					'equals'        => ':field must equal :param2',
-					'exact_length'  => ':field must be exactly :param2 characters long',
-					'in_array'      => ':field must be one of the available options',
-					'ip'            => ':field must be an ip address',
-					'matches'       => ':field must be the same as :param2',
-					'min_length'    => ':field must be at least :param2 characters long',
-					'max_length'    => ':field must not exceed :param2 characters long',
-					'not_empty'     => ':field must not be empty',
-					'numeric'       => ':field must be numeric',
-					'phone'         => ':field must be a phone number',
-					'range'         => ':field must be within the range of :param2 to :param3',
-					'regex'         => ':field does not match the required format',
-					'url'           => ':field must be a url',
-				),
-				'validation', NULL,
-			),
-		);
+		return [
+			['no_message_file', 'anything', 'default', 'default'],
+			['no_message_file', NULL, 'anything', []],
+			['kohana_core_message_tests', 'bottom_only', 'anything', 'inherited bottom message'],
+			['kohana_core_message_tests', 'cfs_replaced', 'anything', 'overriding cfs_replaced message'],
+			['kohana_core_message_tests', 'top_only', 'anything', 'top only message'],
+			['kohana_core_message_tests', 'missing', 'default', 'default'],
+			['kohana_core_message_tests', NULL, 'anything',
+				[
+					'bottom_only'  => 'inherited bottom message',
+					'cfs_replaced' => 'overriding cfs_replaced message',
+					'top_only'     => 'top only message'
+				]
+			],
+		];
 	}
 
 	/**
@@ -191,15 +204,18 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 *
 	 * @test
 	 * @dataProvider provider_message
-	 * @covers Kohana::message
-	 * @param boolean $expected Output for Kohana::message
-	 * @param boolean $file     File to look in for Kohana::message
-	 * @param boolean $key      Key for Kohana::message
+	 * @covers       Kohana::message
+	 * @param string $file     to pass to Kohana::message
+	 * @param string $key      to pass to Kohana::message
+	 * @param string $default  to pass to Kohana::message
+	 * @param string $expected Output for Kohana::message
 	 */
-	public function test_message($expected, $file, $key)
+	public function test_message($file, $key, $default, $expected)
 	{
-		$this->markTestSkipped('This test is incredibly fragile and needs to be re-done');
-		$this->assertEquals($expected, Kohana::message($file, $key));
+		$test_path = realpath(dirname(__FILE__).'/../test_data/message_tests');
+		Kohana::modules(['top' => "$test_path/top_module", 'bottom' => "$test_path/bottom_module"]);
+
+		$this->assertEquals($expected, Kohana::message($file, $key, $default, $expected));
 	}
 
 	/**
@@ -209,9 +225,9 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function provider_error_handler()
 	{
-		return array(
-			array(1, 'Foobar', 'foobar.php', __LINE__),
-		);
+		return [
+			[1, 'Foobar', 'foobar.php', __LINE__],
+		];
 	}
 
 	/**
@@ -248,10 +264,10 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function provider_modules_detects_invalid_modules()
 	{
-		return array(
-			array(array('unittest' => MODPATH.'fo0bar')),
-			array(array('unittest' => MODPATH.'unittest', 'fo0bar' => MODPATH.'fo0bar')),
-		);
+		return [
+			[['unittest' => MODPATH.'fo0bar']],
+			[['unittest' => MODPATH.'unittest', 'fo0bar' => MODPATH.'fo0bar']],
+		];
 	}
 
 	/**
@@ -290,10 +306,10 @@ class Kohana_CoreTest extends Unittest_TestCase
 	 */
 	public function provider_modules_sets_and_returns_valid_modules()
 	{
-		return array(
-			array(array(), array()),
-			array(array('unittest' => MODPATH.'unittest'), array('unittest' => $this->dirSeparator(MODPATH.'unittest/'))),
-		);
+		return [
+			[[], []],
+			[['module' => __DIR__], ['module' => $this->dirSeparator(__DIR__.'/')]],
+		];
 	}
 
 	/**

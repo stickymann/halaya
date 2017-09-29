@@ -1,7 +1,9 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 
-return array(
-	'cookie' => array(
+return [
+
+	'cookie' => [
 		'encrypted' => FALSE,
-	),
-);
+	],
+
+];

@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 
 /**
  * Interface for config readers
@@ -6,14 +6,14 @@
  * @package    Kohana
  * @category   Configuration
  * @author     Kohana Team
- * @copyright  (c) 2008-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 interface Kohana_Config_Reader extends Kohana_Config_Source
 {
-	
+
 	/**
-	 * Tries to load the specificed configuration group
+	 * Tries to load the specified configuration group
 	 *
 	 * Returns FALSE if group does not exist or an array if it does
 	 *
@@ -21,5 +21,5 @@ interface Kohana_Config_Reader extends Kohana_Config_Source
 	 * @return boolean|array
 	 */
 	public function load($group);
-	
+
 }

@@ -1,15 +1,15 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Form helper class. Unless otherwise noted, all generated HTML will be made
  * safe using the [HTML::chars] method. This prevents against simple XSS
- * attacks that could otherwise be trigged by inserting HTML characters into
+ * attacks that could otherwise be triggered by inserting HTML characters into
  * form fields.
  *
  * @package    Kohana
  * @category   Helpers
  * @author     Kohana Team
- * @copyright  (c) 2007-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Form {
 
@@ -28,7 +28,7 @@ class Kohana_Form {
 	 * @param   mixed   $action     form action, defaults to the current request URI, or [Request] class to use
 	 * @param   array   $attributes html attributes
 	 * @return  string
-	 * @uses    Request::instance
+	 * @uses    Request
 	 * @uses    URL::site
 	 * @uses    HTML::attributes
 	 */
@@ -45,7 +45,7 @@ class Kohana_Form {
 			// Allow empty form actions (submits back to the current url).
 			$action = '';
 		}
-		elseif (strpos($action, '://') === FALSE)
+		elseif (strpos($action, '://') === FALSE AND strncmp($action, '//', 2))
 		{
 			// Make the URI absolute
 			$action = URL::site($action);
@@ -230,7 +230,7 @@ class Kohana_Form {
 		$attributes['name'] = $name;
 
 		// Add default rows and cols attributes (required)
-		$attributes += array('rows' => 10, 'cols' => 50);
+		$attributes += ['rows' => 10, 'cols' => 50];
 
 		return '<textarea'.HTML::attributes($attributes).'>'.HTML::chars($body, $double_encode).'</textarea>';
 	}
@@ -265,12 +265,12 @@ class Kohana_Form {
 			if ($selected === NULL)
 			{
 				// Use an empty array
-				$selected = array();
+				$selected = [];
 			}
 			else
 			{
 				// Convert the selected options to an array
-				$selected = array( (string) $selected);
+				$selected = [ (string) $selected];
 			}
 		}
 
@@ -286,10 +286,10 @@ class Kohana_Form {
 				if (is_array($name))
 				{
 					// Create a new optgroup
-					$group = array('label' => $value);
+					$group = ['label' => $value];
 
 					// Create a new list of options
-					$_options = array();
+					$_options = [];
 
 					foreach ($name as $_value => $_name)
 					{
@@ -297,7 +297,7 @@ class Kohana_Form {
 						$_value = (string) $_value;
 
 						// Create a new attribute set for this option
-						$option = array('value' => $_value);
+						$option = ['value' => $_value];
 
 						if (in_array($_value, $selected))
 						{
@@ -320,7 +320,7 @@ class Kohana_Form {
 					$value = (string) $value;
 
 					// Create a new attribute set for this option
-					$option = array('value' => $value);
+					$option = ['value' => $value];
 
 					if (in_array($value, $selected))
 					{
@@ -374,7 +374,7 @@ class Kohana_Form {
 	{
 		if ( ! empty($attributes['src']))
 		{
-			if (strpos($attributes['src'], '://') === FALSE)
+			if (strpos($attributes['src'], '://') === FALSE AND strncmp($attributes['src'], '//', 2))
 			{
 				// Add the base URL
 				$attributes['src'] = URL::base($index).$attributes['src'];
@@ -431,4 +431,4 @@ class Kohana_Form {
 		return '<label'.HTML::attributes($attributes).'>'.$text.'</label>';
 	}
 
-} // End form
+}

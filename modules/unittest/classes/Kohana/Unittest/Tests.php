@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php
 
 /**
  * PHPUnit testsuite for kohana application
@@ -7,11 +7,11 @@
  * @author     Kohana Team
  * @author     BRMatt <matthew@sigswitch.com>
  * @author	   Paul Banks
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Unittest_Tests {
-	static protected $cache = array();
+	static protected $cache = [];
 
 	/**
 	 * Loads test files if they cannot be found by kohana
@@ -41,9 +41,9 @@ class Kohana_Unittest_Tests {
 		restore_exception_handler();
 		restore_error_handler();
 
-		spl_autoload_register(array('Unittest_tests', 'autoload'));
+		spl_autoload_register(['Unittest_tests', 'autoload']);
 
-		Unittest_tests::$cache = (($cache = Kohana::cache('unittest_whitelist_cache')) === NULL) ? array() : $cache;
+		Unittest_tests::$cache = (($cache = Kohana::cache('unittest_whitelist_cache')) === NULL) ? [] : $cache;
 
 	}
 
@@ -184,7 +184,7 @@ class Kohana_Unittest_Tests {
 	static protected function get_config_whitelist()
 	{
 		$config = Kohana::$config->load('unittest');
-		$directories = array();
+		$directories = [];
 
 		if ($config->whitelist['app'])
 		{
@@ -209,7 +209,7 @@ class Kohana_Unittest_Tests {
 			else
 			{
 				// modules are disabled
-				$modules = array();
+				$modules = [];
 			}
 
 			$directories += $modules;

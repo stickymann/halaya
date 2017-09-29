@@ -1,12 +1,12 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Database query builder. See [Query Builder](/database/query/builder) for usage and examples.
  *
  * @package    Kohana/Database
  * @category   Query
  * @author     Kohana Team
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 abstract class Kohana_Database_Query_Builder extends Database_Query {
 
@@ -19,7 +19,7 @@ abstract class Kohana_Database_Query_Builder extends Database_Query {
 	 */
 	protected function _compile_join(Database $db, array $joins)
 	{
-		$statements = array();
+		$statements = [];
 
 		foreach ($joins as $join)
 		{
@@ -80,7 +80,7 @@ abstract class Kohana_Database_Query_Builder extends Database_Query {
 							// Convert "val = NULL" to "val IS NULL"
 							$op = 'IS';
 						}
-						elseif ($op === '!=')
+						elseif ($op === '!=' OR $op === '<>')
 						{
 							// Convert "val != NULL" to "valu IS NOT NULL"
 							$op = 'IS NOT';
@@ -109,6 +109,10 @@ abstract class Kohana_Database_Query_Builder extends Database_Query {
 
 						// Quote the min and max value
 						$value = $min.' AND '.$max;
+					}
+					elseif ($op === 'IN' AND is_array($value) AND count($value) === 0)
+					{
+						$value = '(NULL)';
 					}
 					elseif ((is_string($value) AND array_key_exists($value, $this->_parameters)) === FALSE)
 					{
@@ -150,7 +154,7 @@ abstract class Kohana_Database_Query_Builder extends Database_Query {
 	 */
 	protected function _compile_set(Database $db, array $values)
 	{
-		$set = array();
+		$set = [];
 		foreach ($values as $group)
 		{
 			// Split the set
@@ -180,7 +184,7 @@ abstract class Kohana_Database_Query_Builder extends Database_Query {
 	 */
 	protected function _compile_group_by(Database $db, array $columns)
 	{
-		$group = array();
+		$group = [];
 
 		foreach ($columns as $column)
 		{
@@ -210,7 +214,7 @@ abstract class Kohana_Database_Query_Builder extends Database_Query {
 	 */
 	protected function _compile_order_by(Database $db, array $columns)
 	{
-		$sort = array();
+		$sort = [];
 		foreach ($columns as $group)
 		{
 			list ($column, $direction) = $group;

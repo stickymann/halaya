@@ -1,12 +1,12 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Security helper class.
  *
  * @package    Kohana
  * @category   Security
  * @author     Kohana Team
- * @copyright  (c) 2007-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Security {
 
@@ -28,8 +28,8 @@ class Kohana_Security {
 	 * And then check it when using [Validation]:
 	 *
 	 *     $array->rules('csrf', array(
-	 *         'not_empty'       => NULL,
-	 *         'Security::check' => NULL,
+	 *         array('not_empty'),
+	 *         array('Security::check'),
 	 *     ));
 	 *
 	 * This provides a basic, but effective, method of preventing CSRF attacks.
@@ -48,7 +48,17 @@ class Kohana_Security {
 		if ($new === TRUE OR ! $token)
 		{
 			// Generate a new unique token
-			$token = sha1(uniqid(NULL, TRUE));
+			if (function_exists('openssl_random_pseudo_bytes'))
+			{
+				// Generate a random pseudo bytes token if openssl_random_pseudo_bytes is available
+				// This is more secure than uniqid, because uniqid relies on microtime, which is predictable
+				$token = base64_encode(openssl_random_pseudo_bytes(32));
+			}
+			else
+			{
+				// Otherwise, fall back to a hashed uniqid
+				$token = sha1(uniqid(NULL, TRUE));
+			}
 
 			// Store the new token
 			$session->set(Security::$token_name, $token);
@@ -71,14 +81,39 @@ class Kohana_Security {
 	 */
 	public static function check($token)
 	{
-		return Security::token() === $token;
+		return Security::slow_equals(Security::token(), $token);
+	}
+	
+	
+	
+	/**
+	 * Compare two hashes in a time-invariant manner.
+	 * Prevents cryptographic side-channel attacks (timing attacks, specifically)
+	 * 
+	 * @param string $a cryptographic hash
+	 * @param string $b cryptographic hash
+	 * @return boolean
+	 */
+	public static function slow_equals($a, $b) 
+	{
+		$diff = strlen($a) ^ strlen($b);
+		for($i = 0; $i < strlen($a) AND $i < strlen($b); $i++)
+		{
+			$diff |= ord($a[$i]) ^ ord($b[$i]);
+		}
+		return $diff === 0; 
 	}
 
+
 	/**
+	 * Deprecated for security reasons.
+	 * See https://github.com/kohana/kohana/issues/107
+	 *
 	 * Remove image tags from a string.
 	 *
 	 *     $str = Security::strip_image_tags($str);
 	 *
+	 * @deprecated since version 3.3.6
 	 * @param   string  $str    string to sanitize
 	 * @return  string
 	 */
@@ -97,7 +132,7 @@ class Kohana_Security {
 	 */
 	public static function encode_php_tags($str)
 	{
-		return str_replace(array('<?', '?>'), array('&lt;?', '?&gt;'), $str);
+		return str_replace(['<?', '?>'], ['&lt;?', '?&gt;'], $str);
 	}
 
-} // End security
+}

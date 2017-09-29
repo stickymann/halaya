@@ -1,32 +1,32 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php
 /**
  * Class method documentation generator.
  *
  * @package    Kohana/Userguide
  * @category   Base
  * @author     Kohana Team
- * @copyright  (c) 2009 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Kodoc_Method extends Kodoc {
 
 	/**
-	 * @var  ReflectionMethod   The ReflectionMethod for this class
+	 * @var  ReflectionMethod  The ReflectionMethod for this class
 	 */
 	public $method;
 
 	/**
-	 * @var  array    array of Kodoc_Method_Param
+	 * @var  array  Array of Kodoc_Method_Param
 	 */
 	public $params;
 
 	/**
-	 * @var  array   the things this function can return
+	 * @var  array  The things this function can return
 	 */
-	public $return = array();
+	public $return = [];
 
 	/**
-	 * @var  string  the source code for this function
+	 * @var  string  The source code for this function
 	 */
 	public $source;
 
@@ -60,11 +60,11 @@ class Kohana_Kodoc_Method extends Kodoc {
 
 		if (isset($tags['param']))
 		{
-			$params = array();
+			$params = [];
 
 			foreach ($this->method->getParameters() as $i => $param)
 			{
-				$param = new Kodoc_Method_Param(array($this->method->class, $this->method->name),$i);
+				$param = new Kodoc_Method_Param([$this->method->class, $this->method->name],$i);
 
 				if (isset($tags['param'][$i]))
 				{
@@ -91,7 +91,7 @@ class Kohana_Kodoc_Method extends Kodoc {
 			{
 				if (preg_match('/^(\S*)(?:\s*(.+?))?$/', $return, $matches))
 				{
-					$this->return[] = array($matches[1], isset($matches[2]) ? $matches[2] : '');
+					$this->return[] = [$matches[1], isset($matches[2]) ? $matches[2] : ''];
 				}
 			}
 

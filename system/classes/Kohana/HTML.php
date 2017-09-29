@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * HTML helper class. Provides generic methods for generating various HTML
  * tags and making output HTML safe.
@@ -6,16 +6,15 @@
  * @package    Kohana
  * @category   Helpers
  * @author     Kohana Team
- * @copyright  (c) 2007-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_HTML {
 
 	/**
 	 * @var  array  preferred order of attributes
 	 */
-	public static $attribute_order = array
-	(
+	public static $attribute_order = [
 		'action',
 		'method',
 		'type',
@@ -44,7 +43,7 @@ class Kohana_HTML {
 		'checked',
 		'readonly',
 		'disabled',
-	);
+	];
 
 	/**
 	 * @var  boolean  use strict XHTML mode?
@@ -118,7 +117,7 @@ class Kohana_HTML {
 		}
 		else
 		{
-			if (strpos($uri, '://') !== FALSE)
+			if (strpos($uri, '://') !== FALSE OR strncmp($uri, '//', 2) == 0)
 			{
 				if (HTML::$windowed_urls === TRUE AND empty($attributes['target']))
 				{
@@ -126,9 +125,9 @@ class Kohana_HTML {
 					$attributes['target'] = '_blank';
 				}
 			}
-			elseif ($uri[0] !== '#')
+			elseif ($uri[0] !== '#' AND $uri[0] !== '?')
 			{
-				// Make the URI absolute for non-id anchors
+				// Make the URI absolute for non-fragment and non-query anchors
 				$uri = URL::site($uri, $protocol, $index);
 			}
 		}
@@ -206,7 +205,7 @@ class Kohana_HTML {
 	 */
 	public static function style($file, array $attributes = NULL, $protocol = NULL, $index = FALSE)
 	{
-		if (strpos($file, '://') === FALSE)
+		if (strpos($file, '://') === FALSE AND strncmp($file, '//', 2))
 		{
 			// Add the base URL
 			$file = URL::site($file, $protocol, $index);
@@ -239,7 +238,7 @@ class Kohana_HTML {
 	 */
 	public static function script($file, array $attributes = NULL, $protocol = NULL, $index = FALSE)
 	{
-		if (strpos($file, '://') === FALSE)
+		if (strpos($file, '://') === FALSE AND strncmp($file, '//', 2))
 		{
 			// Add the base URL
 			$file = URL::site($file, $protocol, $index);
@@ -269,7 +268,7 @@ class Kohana_HTML {
 	 */
 	public static function image($file, array $attributes = NULL, $protocol = NULL, $index = FALSE)
 	{
-		if (strpos($file, '://') === FALSE)
+		if (strpos($file, '://') === FALSE AND strncmp($file, '//', 2) AND strncmp($file, 'data:', 5))
 		{
 			// Add the base URL
 			$file = URL::site($file, $protocol, $index);
@@ -292,11 +291,10 @@ class Kohana_HTML {
 	 */
 	public static function attributes(array $attributes = NULL)
 	{
-			
 		if (empty($attributes))
 			return '';
 
-		$sorted = array();
+		$sorted = [];
 		foreach (HTML::$attribute_order as $key)
 		{
 			if (isset($attributes[$key]))
@@ -343,4 +341,4 @@ class Kohana_HTML {
 		return $compiled;
 	}
 
-} // End html
+}

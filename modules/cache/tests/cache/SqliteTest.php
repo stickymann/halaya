@@ -7,8 +7,8 @@ include_once(Kohana::find_file('tests/cache', 'CacheBasicMethodsTest'));
  * @group      kohana.cache
  * @category   Test
  * @author     Kohana Team
- * @copyright  (c) 2009-2012 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_SqliteTest extends Kohana_CacheBasicMethodsTest {
 
@@ -35,7 +35,16 @@ class Kohana_SqliteTest extends Kohana_CacheBasicMethodsTest {
 
 		if ( ! Kohana::$config->load('cache.sqlite'))
 		{
-			$this->markTestIncomplete('Unable to load sqlite configuration');
+			Kohana::$config->load('cache')
+				->set(
+					'sqlite',
+					[
+						'driver'             => 'sqlite',
+						'default_expire'     => 3600,
+						'database'           => 'memory',
+						'schema'             => 'CREATE TABLE caches(id VARCHAR(127) PRIMARY KEY, tags VARCHAR(255), expiration INTEGER, cache TEXT)',
+					]
+				);
 		}
 
 		$this->cache(Cache::instance('sqlite'));

@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Internationalization (i18n) class. Provides language loading and translation
  * methods without dependencies on [gettext](http://php.net/gettext).
@@ -15,8 +15,8 @@
  * @package    Kohana
  * @category   Base
  * @author     Kohana Team
- * @copyright  (c) 2008-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_I18n {
 
@@ -33,7 +33,7 @@ class Kohana_I18n {
 	/**
 	 * @var  array  cache of loaded languages
 	 */
-	protected static $_cache = array();
+	protected static $_cache = [];
 
 	/**
 	 * Get and set the target language.
@@ -53,7 +53,7 @@ class Kohana_I18n {
 		if ($lang)
 		{
 			// Normalize the language
-			I18n::$lang = strtolower(str_replace(array(' ', '_'), '-', $lang));
+			I18n::$lang = strtolower(str_replace([' ', '_'], '-', $lang));
 		}
 
 		return I18n::$lang;
@@ -101,7 +101,7 @@ class Kohana_I18n {
 		}
 
 		// New translation table
-		$table = array();
+		$table = [];
 
 		// Split the language: language, region, locale, etc
 		$parts = explode('-', $lang);
@@ -113,7 +113,7 @@ class Kohana_I18n {
 
 			if ($files = Kohana::find_file('i18n', $path, NULL, TRUE))
 			{
-				$t = array();
+				$t = [];
 				foreach ($files as $file)
 				{
 					// Merge the language strings into the sub table
@@ -134,7 +134,7 @@ class Kohana_I18n {
 		return I18n::$_cache[$lang] = $table;
 	}
 
-} // End I18n
+}
 
 if ( ! function_exists('__'))
 {
@@ -145,7 +145,7 @@ if ( ! function_exists('__'))
 	 *    __('Welcome back, :user', array(':user' => $username));
 	 *
 	 * [!!] The target language is defined by [I18n::$lang].
-	 * 
+	 *
 	 * @uses    I18n::get
 	 * @param   string  $string text to translate
 	 * @param   array   $values values to replace in the translated text

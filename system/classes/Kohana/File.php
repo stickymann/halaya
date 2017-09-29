@@ -1,12 +1,12 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * File helper class.
  *
  * @package    Kohana
  * @category   Helpers
  * @author     Kohana Team
- * @copyright  (c) 2007-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_File {
 
@@ -90,7 +90,7 @@ class Kohana_File {
 		// Load all of the mime types
 		$mimes = Kohana::$config->load('mimes');
 
-		return isset($mimes[$extension]) ? ( (array) $mimes[$extension]) : array();
+		return isset($mimes[$extension]) ? ( (array) $mimes[$extension]) : [];
 	}
 
 	/**
@@ -101,7 +101,7 @@ class Kohana_File {
 	 */
 	public static function exts_by_mime($type)
 	{
-		static $types = array();
+		static $types = [];
 
 		// Fill the static array
 		if (empty($types))
@@ -118,7 +118,7 @@ class Kohana_File {
 
 					if ( ! isset($types[$mime]))
 					{
-						$types[$mime] = array( (string) $ext);
+						$types[$mime] = [ (string) $ext];
 					}
 					elseif ( ! in_array($ext, $types[$mime]))
 					{
@@ -163,16 +163,16 @@ class Kohana_File {
 		// Write files in 8k blocks
 		$block_size = 1024 * 8;
 
-		// Total number of peices
-		$peices = 0;
+		// Total number of pieces
+		$pieces = 0;
 
 		while ( ! feof($file))
 		{
 			// Create another piece
-			$peices += 1;
+			$pieces += 1;
 
 			// Create a new file piece
-			$piece = str_pad($peices, 3, '0', STR_PAD_LEFT);
+			$piece = str_pad($pieces, 3, '0', STR_PAD_LEFT);
 			$piece = fopen($filename.'.'.$piece, 'wb+');
 
 			// Number of bytes read
@@ -195,7 +195,7 @@ class Kohana_File {
 		// Close the file
 		fclose($file);
 
-		return $peices;
+		return $pieces;
 	}
 
 	/**
@@ -214,7 +214,7 @@ class Kohana_File {
 		// Read files in 8k blocks
 		$block_size = 1024 * 8;
 
-		// Total number of peices
+		// Total number of pieces
 		$pieces = 0;
 
 		while (is_file($piece = $filename.'.'.str_pad($pieces + 1, 3, '0', STR_PAD_LEFT)))
@@ -231,11 +231,11 @@ class Kohana_File {
 				fwrite($file, fread($piece, $block_size));
 			}
 
-			// Close the peice
+			// Close the piece
 			fclose($piece);
 		}
 
 		return $pieces;
 	}
 
-} // End file
+}

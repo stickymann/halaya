@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php
 /**
  * Kohana Cache provides a common interface to a variety of caching engines. Tags are
  * supported where available natively to the cache system. Kohana Cache supports multiple
@@ -36,7 +36,7 @@
  * Below is an example of a _memcache_ server configuration.
  *
  *     return array(
- *          'default'       => array(                      // Default group
+ *          'memcache' => array(                           // Name of group
  *                  'driver'         => 'memcache',        // using Memcache driver
  *                  'servers'        => array(             // Available server definitions
  *                         array(
@@ -49,8 +49,12 @@
  *           ),
  *     )
  *
- * In cases where only one cache group is required, if the group is named `default` there is
- * no need to pass the group name when instantiating a cache instance.
+ * In cases where only one cache group is required, set `Cache::$default` (in your bootstrap,
+ * or by extending `Kohana_Cache` class) to the name of the group, and use:
+ *
+ *     $cache = Cache::instance(); // instead of Cache::instance('memcache')
+ *
+ * It will return the cache instance of the group it has been set in `Cache::$default`.
  *
  * #### General cache group configuration settings
  *
@@ -71,8 +75,8 @@
  * @category   Base
  * @version    2.0
  * @author     Kohana Team
- * @copyright  (c) 2009-2012 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 abstract class Kohana_Cache {
 
@@ -86,7 +90,7 @@ abstract class Kohana_Cache {
 	/**
 	 * @var   Kohana_Cache instances
 	 */
-	public static $instances = array();
+	public static $instances = [];
 
 	/**
 	 * Creates a singleton of a Kohana Cache group. If no group is supplied
@@ -107,6 +111,12 @@ abstract class Kohana_Cache {
 	 */
 	public static function instance($group = NULL)
 	{
+        // If there is no group supplied, try to get it from the config
+        if ($group === NULL)
+        {
+            $group = Kohana::$config->load('cache.default');
+        }
+
 		// If there is no group supplied
 		if ($group === NULL)
 		{
@@ -126,7 +136,7 @@ abstract class Kohana_Cache {
 		{
 			throw new Cache_Exception(
 				'Failed to load Kohana Cache group: :group',
-				array(':group' => $group)
+				[':group' => $group]
 			);
 		}
 
@@ -143,7 +153,7 @@ abstract class Kohana_Cache {
 	/**
 	 * @var  Config
 	 */
-	protected $_config = array();
+	protected $_config = [];
 
 	/**
 	 * Ensures singleton pattern is observed, loads the default expiry
@@ -282,19 +292,33 @@ abstract class Kohana_Cache {
 	 */
 	abstract public function delete_all();
 
-	/**
-	 * Replaces troublesome characters with underscores.
-	 *
-	 *     // Sanitize a cache id
-	 *     $id = $this->_sanitize_id($id);
-	 *
-	 * @param   string  $id  id of cache to sanitize
-	 * @return  string
-	 */
-	protected function _sanitize_id($id)
-	{
-		// Change slashes and spaces to underscores
-		return str_replace(array('/', '\\', ' '), '_', $id);
-	}
+    /**
+     * Replaces troublesome characters with underscores and adds prefix to avoid duplicates
+     *
+     *     // Sanitize a cache id
+     *     $id = $this->_sanitize_id($id);
+     *
+     * @param   string  $id  id of cache to sanitize
+     * @return  string
+     */
+    protected function _sanitize_id($id)
+    {
+
+        // adding cache prefix to avoid duplicates
+        $prefix = '';
+        // configuration for the specific cache group
+        if (isset($this->_config['prefix']) AND $this->_config['prefix'] !== NULL)
+        {
+            $prefix = $this->_config['prefix'];
+        }
+        // prefix general configuration cache
+        else
+        {
+            $prefix = Kohana::$config->load('cache.prefix');
+        }
+
+        // sha1 the id makes sure name is not too long and has not any not allowed characters
+        return $prefix.sha1($id);
+    }
 }
 // End Kohana_Cache

@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('Kohana bootstrap needs to be included before tests run');
+<?php
 
 /**
  * Unit tests for request class
@@ -11,8 +11,8 @@
  * @category   Tests
  * @author     Kohana Team
  * @author     BRMatt <matthew@sigswitch.com>
- * @copyright  (c) 2008-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_RequestTest extends Unittest_TestCase
 {
@@ -23,6 +23,7 @@ class Kohana_RequestTest extends Unittest_TestCase
 	// @codingStandardsIgnoreEnd
 	{
 		parent::setUp();
+		Kohana::$config->load('url')->set('trusted_hosts', ['localhost']);
 		$this->_initial_request = Request::$initial;
 		Request::$initial = new Request('/');
 	}
@@ -37,11 +38,11 @@ class Kohana_RequestTest extends Unittest_TestCase
 
 	public function test_initial()
 	{
-		$this->setEnvironment(array(
+		$this->setEnvironment([
 			'Request::$initial' => NULL,
 			'Request::$client_ip' => NULL,
 			'Request::$user_agent' => NULL,
-			'_SERVER' => array(
+			'_SERVER' => [
 				'HTTPS' => NULL,
 				'PATH_INFO' => '/',
 				'HTTP_REFERER' => 'http://example.com/',
@@ -49,10 +50,10 @@ class Kohana_RequestTest extends Unittest_TestCase
 				'REMOTE_ADDR' => '127.0.0.1',
 				'REQUEST_METHOD' => 'GET',
 				'HTTP_X_REQUESTED_WITH' => 'ajax-or-something',
-			),
-			'_GET' => array(),
-			'_POST' => array(),
-		));
+			],
+			'_GET' => [],
+			'_POST' => [],
+		]);
 
 		$request = Request::factory();
 
@@ -68,9 +69,9 @@ class Kohana_RequestTest extends Unittest_TestCase
 
 		$this->assertEquals($request->requested_with(), 'ajax-or-something');
 
-		$this->assertEquals($request->query(), array());
+		$this->assertEquals($request->query(), []);
 
-		$this->assertEquals($request->post(), array());
+		$this->assertEquals($request->post(), []);
 	}
 
 	/**
@@ -81,12 +82,12 @@ class Kohana_RequestTest extends Unittest_TestCase
 	public function test_disable_external_tests()
 	{
 		$this->setEnvironment(
-			array(
+			[
 				'Request::$initial' => NULL,
-			)
+			]
 		);
 
-		$request = new Request('http://www.google.com/', array(), FALSE);
+		$request = new Request('http://www.google.com/', [], FALSE);
 
 		$this->assertEquals(FALSE, $request->is_external());
 	}
@@ -97,10 +98,10 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_create()
 	{
-		return array(
-			array('foo/bar', 'Request_Client_Internal'),
-			array('http://google.com', 'Request_Client_External'),
-		);
+		return [
+			['foo/bar', 'Request_Client_Internal'],
+			['http://google.com', 'Request_Client_External'],
+		];
 	}
 
 	/**
@@ -125,16 +126,15 @@ class Kohana_RequestTest extends Unittest_TestCase
 	{
 		$route = new Route('(<controller>(/<action>(/<id>)))');
 
-		$uri = 'foo/bar/id';
-		$request = Request::factory($uri, NULL, TRUE, array($route));
+		$uri = 'kohana_requesttest_dummy/foobar/some_id';
+		$request = Request::factory($uri, NULL, TRUE, [$route]);
 
 		// We need to execute the request before it has matched a route
-		try
-		{
-			$request->execute();
-		}
-		catch (Exception $e) {}
+		$response = $request->execute();
+		$controller = new Controller_Kohana_RequestTest_Dummy($request, $response);
 
+		$this->assertSame(200, $response->status());
+		$this->assertSame($controller->get_expected_response(), $response->body());
 		$this->assertArrayHasKey('id', $request->param());
 		$this->assertArrayNotHasKey('foo', $request->param());
 		$this->assertEquals($request->uri(), $uri);
@@ -149,18 +149,17 @@ class Kohana_RequestTest extends Unittest_TestCase
 		$this->assertArrayNotHasKey('uri', $params);
 		$this->assertArrayNotHasKey('route', $params);
 
-		$route = new Route('(<uri>)', array('uri' => '.+'));
-		$route->defaults(array('controller' => 'foobar', 'action' => 'index'));
-		$request = Request::factory('foobar', NULL, TRUE, array($route));
+		$route = new Route('(<uri>)', ['uri' => '.+']);
+		$route->defaults(['controller' => 'kohana_requesttest_dummy', 'action' => 'foobar']);
+		$request = Request::factory('kohana_requesttest_dummy', NULL, TRUE, [$route]);
 
 		// We need to execute the request before it has matched a route
-		try
-		{
-			$request->execute();
-		}
-		catch (Exception $e) {}
+		$response = $request->execute();
+		$controller = new Controller_Kohana_RequestTest_Dummy($request, $response);
 
-		$this->assertSame('foobar', $request->param('uri'));
+		$this->assertSame(200, $response->status());
+		$this->assertSame($controller->get_expected_response(), $response->body());
+		$this->assertSame('kohana_requesttest_dummy', $request->param('uri'));
 	}
 
 	/**
@@ -217,7 +216,7 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function test_accept_type()
 	{
-		$this->assertEquals(array('*/*' => 1), Request::accept_type());
+		$this->assertEquals(['*/*' => 1], Request::accept_type());
 	}
 
 	/**
@@ -226,11 +225,11 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_accept_lang()
 	{
-		return array(
-			array('en-us', 1, array('_SERVER' => array('HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5'))),
-			array('en-us', 1, array('_SERVER' => array('HTTP_ACCEPT_LANGUAGE' => 'en-gb'))),
-			array('en-us', 1, array('_SERVER' => array('HTTP_ACCEPT_LANGUAGE' => 'sp-sp;q=0.5')))
-		);
+		return [
+			['en-us', 1, ['_SERVER' => ['HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5']]],
+			['en-us', 1, ['_SERVER' => ['HTTP_ACCEPT_LANGUAGE' => 'en-gb']]],
+			['en-us', 1, ['_SERVER' => ['HTTP_ACCEPT_LANGUAGE' => 'sp-sp;q=0.5']]]
+		];
 	}
 
 	/**
@@ -259,18 +258,28 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_url()
 	{
-		return array(
-			array(
+		return [
+			[
 				'foo/bar',
 				'http',
 				'http://localhost/kohana/foo/bar'
-			),
-			array(
+			],
+			[
 				'foo',
 				'http',
 				'http://localhost/kohana/foo'
-			),
-		);
+			],
+			[
+				'http://www.google.com',
+				'http',
+				'http://www.google.com'
+			],
+			[
+				'0',
+				'http',
+				'http://localhost/kohana/0'
+			]
+		];
 	}
 
 	/**
@@ -290,13 +299,20 @@ class Kohana_RequestTest extends Unittest_TestCase
 			$_SERVER['argc'] = 1;
 		}
 
-		$this->setEnvironment(array(
+		$this->setEnvironment([
 			'Kohana::$base_url'  => '/kohana/',
-			'_SERVER'            => array('HTTP_HOST' => 'localhost', 'argc' => $_SERVER['argc']),
+			'_SERVER'            => ['HTTP_HOST' => 'localhost', 'argc' => $_SERVER['argc']],
 			'Kohana::$index_file' => FALSE,
-		));
+		]);
 
-		$this->assertEquals(Request::factory($uri)->url($protocol), $expected);
+		// issue #3967: inject the route so that we don't conflict with the application's default route
+		$route = new Route('(<controller>(/<action>))');
+		$route->defaults([
+			'controller' => 'welcome',
+			'action'     => 'index',
+		]);
+
+		$this->assertEquals(Request::factory($uri, [], TRUE, [$route])->url($protocol), $expected);
 	}
 
 	/**
@@ -306,20 +322,20 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_set_protocol()
 	{
-		return array(
-			array(
+		return [
+			[
 				'http/1.1',
 				'HTTP/1.1',
-			),
-			array(
+			],
+			[
 				'ftp',
 				'FTP',
-			),
-			array(
+			],
+			[
 				'hTTp/1.0',
 				'HTTP/1.0',
-			),
-		);
+			],
+		];
 	}
 
 	/**
@@ -353,20 +369,20 @@ class Kohana_RequestTest extends Unittest_TestCase
 		// Get the post max size
 		$post_max_size = Num::bytes(ini_get('post_max_size'));
 
-		return array(
-			array(
+		return [
+			[
 				$post_max_size+200000,
 				TRUE
-			),
-			array(
+			],
+			[
 				$post_max_size-20,
 				FALSE
-			),
-			array(
+			],
+			[
 				$post_max_size,
 				FALSE
-			)
-		);
+			]
+		];
 	}
 
 	/**
@@ -397,35 +413,50 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_uri_only_trimed_on_internal()
 	{
-		$old_request = Request::$initial;
-		Request::$initial = new Request(TRUE);
+		// issue #3967: inject the route so that we don't conflict with the application's default route
+		$route = new Route('(<controller>(/<action>))');
+		$route->defaults([
+			'controller' => 'welcome',
+			'action'     => 'index',
+		]);
 
-		$result = array(
-			array(
+		$old_request = Request::$initial;
+		Request::$initial = new Request(TRUE, [], TRUE, [$route]);
+
+		$result = [
+			[
 				new Request('http://www.google.com'),
 				'http://www.google.com'
-			),
-			array(
+			],
+			[
 				new Request('http://www.google.com/'),
 				'http://www.google.com/'
-			),
-			array(
+			],
+			[
 				new Request('foo/bar/'),
 				'foo/bar'
-			),
-			array(
+			],
+			[
 				new Request('foo/bar'),
 				'foo/bar'
-			),
-			array(
+			],
+			[
+				new Request('/0'),
+				'0'
+			],
+			[
+				new Request('0'),
+				'0'
+			],
+			[
 				new Request('/'),
 				'/'
-			),
-			array(
+			],
+			[
 				new Request(''),
 				'/'
-			)
-		);
+			]
+		];
 
 		Request::$initial = $old_request;
 		return $result;
@@ -451,20 +482,20 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_options_set_to_external_client()
 	{
-		$provider = array(
-			array(
-				array(
+		$provider = [
+			[
+				[
 					CURLOPT_PROXYPORT   => 8080,
 					CURLOPT_PROXYTYPE   => CURLPROXY_HTTP,
 					CURLOPT_VERBOSE     => TRUE
-				),
-				array(
+				],
+				[
 					CURLOPT_PROXYPORT   => 8080,
 					CURLOPT_PROXYTYPE   => CURLPROXY_HTTP,
 					CURLOPT_VERBOSE     => TRUE
-				)
-			)
-		);
+				]
+			]
+		];
 
 		return $provider;
 	}
@@ -481,10 +512,10 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function test_options_set_to_external_client($settings, $expected)
 	{
-		$request_client = Request_Client_External::factory(array(), 'Request_Client_Curl');
+		$request_client = Request_Client_External::factory([], 'Request_Client_Curl');
 
 		// Test for empty array
-		$this->assertSame(array(), $request_client->options());
+		$this->assertSame([], $request_client->options());
 
 		// Test that set works as expected
 		$this->assertSame($request_client->options($settings), $request_client);
@@ -505,21 +536,21 @@ class Kohana_RequestTest extends Unittest_TestCase
 	{
 		$x_powered_by = 'Kohana Unit Test';
 		$content_type = 'application/x-www-form-urlencoded';
+		$request = new Request('foo/bar', [], TRUE, []);
 
-		return array(
-			array(
-				$request = Request::factory('foo/bar')
-					->headers(array(
+		return [
+			[
+				$request->headers([
 						'x-powered-by' => $x_powered_by,
 						'content-type' => $content_type
-					)
+					]
 				),
-			array(
-				'x-powered-by' => $x_powered_by,
-				'content-type' => $content_type
-				)
-			)
-		);
+				[
+					'x-powered-by' => $x_powered_by,
+					'content-type' => $content_type
+				]
+			]
+		];
 	}
 
 	/**
@@ -546,24 +577,22 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_headers_set()
 	{
-		return array(
-			array(
-				Request::factory(),
-				array(
+		return [
+			[
+				[
 					'content-type'  => 'application/x-www-form-urlencoded',
 					'x-test-header' => 'foo'
-				),
+				],
 				"Content-Type: application/x-www-form-urlencoded\r\nX-Test-Header: foo\r\n\r\n"
-			),
-			array(
-				Request::factory(),
-				array(
+			],
+			[
+				[
 					'content-type'  => 'application/json',
 					'x-powered-by'  => 'kohana'
-				),
+				],
 				"Content-Type: application/json\r\nX-Powered-By: kohana\r\n\r\n"
-			)
-		);
+			]
+		];
 	}
 
 	/**
@@ -571,13 +600,13 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 * 
 	 * @dataProvider provider_headers_set
 	 *
-	 * @param   Request    request object
 	 * @param   array      header(s) to set to the request object
 	 * @param   string     expected http header
 	 * @return  void
 	 */
-	public function test_headers_set(Request $request, $headers, $expected)
+	public function test_headers_set($headers, $expected)
 	{
+		$request = new Request(TRUE, [], TRUE, []);
 		$request->headers($headers);
 		$this->assertSame($expected, (string) $request->headers());
 	}
@@ -589,45 +618,45 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function provider_query_parameter_parsing()
 	{
-		return array(
-			array(
-				new Request('foo/bar'),
-				array(
+		return [
+			[
+				'foo/bar',
+				[
 					'foo'   => 'bar',
 					'sna'   => 'fu'
-				),
-				array(
+				],
+				[
 					'foo'   => 'bar',
 					'sna'   => 'fu'
-				),
-			),
-			array(
-				new Request('foo/bar?john=wayne&peggy=sue'),
-				array(
+				],
+			],
+			[
+				'foo/bar?john=wayne&peggy=sue',
+				[
 					'foo'   => 'bar',
 					'sna'   => 'fu'
-				),
-				array(
+				],
+				[
 					'john'  => 'wayne',
 					'peggy' => 'sue',
 					'foo'   => 'bar',
 					'sna'   => 'fu'
-				),
-			),
-			array(
-				new Request('http://host.tld/foo/bar?john=wayne&peggy=sue'),
-				array(
+				],
+			],
+			[
+				'http://host.tld/foo/bar?john=wayne&peggy=sue',
+				[
 					'foo'   => 'bar',
 					'sna'   => 'fu'
-				),
-				array(
+				],
+				[
 					'john'  => 'wayne',
 					'peggy' => 'sue',
 					'foo'   => 'bar',
 					'sna'   => 'fu'
-				),
-			),
-		);
+				],
+			],
+		];
 	}
 
 	/**
@@ -635,13 +664,41 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 * 
 	 * @dataProvider provider_query_parameter_parsing
 	 *
-	 * @param   Request   request 
+	 * @param   string    url
 	 * @param   array     query 
 	 * @param   array    expected 
 	 * @return  void
 	 */
-	public function test_query_parameter_parsing(Request $request, $query, $expected)
+	public function test_query_parameter_parsing($url, $query, $expected)
 	{
+		Request::$initial = NULL;
+
+		$request = new Request($url);
+
+		foreach ($query as $key => $value)
+		{
+			$request->query($key, $value);
+		}
+
+		$this->assertSame($expected, $request->query());
+	}
+
+	/**
+	 * Tests that query parameters are parsed correctly
+	 *
+	 * @dataProvider provider_query_parameter_parsing
+	 *
+	 * @param   string    url
+	 * @param   array     query
+	 * @param   array    expected
+	 * @return  void
+	 */
+	public function test_query_parameter_parsing_in_subrequest($url, $query, $expected)
+	{
+		Request::$initial = new Request(TRUE);
+
+		$request = new Request($url);
+
 		foreach ($query as $key => $value)
 		{
 			$request->query($key, $value);
@@ -660,18 +717,18 @@ class Kohana_RequestTest extends Unittest_TestCase
 		$internal_client = new Request_Client_Internal;
 		$external_client = new Request_Client_Stream;
 
-		return array(
-			array(
+		return [
+			[
 				new Request('http://kohanaframework.org'),
 				$internal_client,
 				$internal_client
-			),
-			array(
+			],
+			[
 				new Request('foo/bar'),
 				$external_client,
 				$external_client
-			)
-		);
+			]
+		];
 	}
 
 	/**
@@ -696,10 +753,10 @@ class Kohana_RequestTest extends Unittest_TestCase
 	 */
 	public function test_passes_client_params()
 	{
-		$request = Request::factory('http://example.com/', array(
+		$request = Request::factory('http://example.com/', [
 			'follow' => TRUE,
 			'strict_redirect' => FALSE
-		));
+		]);
 
 		$client = $request->client();
 
@@ -707,14 +764,83 @@ class Kohana_RequestTest extends Unittest_TestCase
 		$this->assertEquals($client->strict_redirect(), FALSE);
 	}
 
+	/**
+	 * Tests correctness request content-length header after calling render
+	 */
+	public function test_content_length_after_render()
+	{
+		$request = Request::factory('https://example.org/post')
+			->client(new Kohana_RequestTest_Header_Spying_Request_Client_External)
+			->method(Request::POST)
+			->post(['aaa' => 'bbb']);
 
+		$request->render();
+
+		$request->execute();
+
+		$headers = $request->client()->get_received_request_headers();
+
+		$this->assertEquals(strlen($request->body()), $headers['content-length']);
+	}
+
+	/**
+	 * Tests correctness request content-length header after calling render
+	 * and changing post
+	 */
+	public function test_content_length_after_changing_post()
+	{
+		$request = Request::factory('https://example.org/post')
+			->client(new Kohana_RequestTest_Header_Spying_Request_Client_External)
+			->method(Request::POST)
+			->post(['aaa' => 'bbb']);
+
+		$request->render();
+
+		$request->post(['one' => 'one', 'two' => 'two', 'three' => 'three']);
+
+		$request->execute();
+
+		$headers = $request->client()->get_received_request_headers();
+
+		$this->assertEquals(strlen($request->body()), $headers['content-length']);
+	}
 
 } // End Kohana_RequestTest
 
+/**
+ * A dummy Request_Client_External implementation, that spies on the headers
+ * of the request
+ */
+class Kohana_RequestTest_Header_Spying_Request_Client_External extends Request_Client_External
+{
+	private $headers;
+
+	protected function _send_message(\Request $request, \Response $response)
+	{
+		$this->headers = $request->headers();
+
+		return $response;
+	}
+
+	public function get_received_request_headers()
+	{
+		return $this->headers;
+	}
+}
+
 class Controller_Kohana_RequestTest_Dummy extends Controller
 {
-	public function action_index()
+	// hard coded dummy response
+	protected $dummy_response = "this is a dummy response";
+
+	public function action_foobar()
 	{
-	
+		$this->response->body($this->dummy_response);
 	}
+
+	public function get_expected_response()
+	{
+		return $this->dummy_response;
+	}
+
 } // End Kohana_RequestTest

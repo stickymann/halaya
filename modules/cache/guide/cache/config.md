@@ -55,7 +55,7 @@ failure_callback | __NO__   | (_[callback](http://www.php.net/manual/en/language
 		'driver'             => 'memcache',
 		'default_expire'     => 3600,
 		'compression'        => FALSE,              // Use Zlib compression 
-		                                            (can cause issues with integers)
+		                                            // (can cause issues with integers)
 		'servers'            => array
 		(
 			'local' => array
@@ -71,7 +71,7 @@ failure_callback | __NO__   | (_[callback](http://www.php.net/manual/en/language
 		'driver'             => 'memcachetag',
 		'default_expire'     => 3600,
 		'compression'        => FALSE,              // Use Zlib compression 
-		                                            (can cause issues with integers)
+		                                            // (can cause issues with integers)
 		'servers'            => array
 		(
 			'local' => array
@@ -90,7 +90,15 @@ failure_callback | __NO__   | (_[callback](http://www.php.net/manual/en/language
 		'driver'             => 'apc',
 		'default_expire'     => 3600,
 	),
+	
+## APCu settings
 
+	'apcu'      => array
+	(
+		'driver'             => 'apcu',
+		'default_expire'     => 3600,
+	),
+	
 ## SQLite settings
 
 	'sqlite'   => array
@@ -124,7 +132,7 @@ failure_callback | __NO__   | (_[callback](http://www.php.net/manual/en/language
 
 The following example demonstrates how to override an existing configuration setting, using the config file in `/application/config/cache.php`.
 
-	<?php defined('SYSPATH') or die('No direct script access.');
+	<?php
 	return array
 	(
 		// Override the default configuration
@@ -150,7 +158,7 @@ The following example demonstrates how to override an existing configuration set
 
 The following example demonstrates how to add a new configuration setting, using the config file in `/application/config/cache.php`.
 
-	<?php defined('SYSPATH') or die('No direct script access.');
+	<?php
 	return array
 	(
 		// Override the default configuration

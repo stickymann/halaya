@@ -1,19 +1,19 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Text helper class. Provides simple methods for working with text.
  *
  * @package    Kohana
  * @category   Helpers
  * @author     Kohana Team
- * @copyright  (c) 2007-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Text {
 
 	/**
 	 * @var  array   number units and text equivalents
 	 */
-	public static $units = array(
+	public static $units = [
 		1000000000 => 'billion',
 		1000000    => 'million',
 		1000       => 'thousand',
@@ -45,7 +45,7 @@ class Kohana_Text {
 		3  => 'three',
 		2  => 'two',
 		1  => 'one',
-	);
+	];
 
 	/**
 	 * Limits a phrase to a given number of words.
@@ -235,17 +235,18 @@ class Kohana_Text {
 	/**
 	 * Uppercase words that are not separated by spaces, using a custom
 	 * delimiter or the default.
-	 * 
-	 *      $str = Text::ucfirst('content-type'); // returns "Content-Type" 
+	 *
+	 *      $str = Text::ucfirst('content-type'); // returns "Content-Type"
 	 *
 	 * @param   string  $string     string to transform
-	 * @param   string  $delimiter  delemiter to use
+	 * @param   string  $delimiter  delimiter to use
+	 * @uses    UTF8::ucfirst
 	 * @return  string
 	 */
 	public static function ucfirst($string, $delimiter = '-')
 	{
 		// Put the keys back the Case-Convention expected
-		return implode($delimiter, array_map('ucfirst', explode($delimiter, $string)));
+		return implode($delimiter, array_map('UTF8::ucfirst', explode($delimiter, $string)));
 	}
 
 	/**
@@ -272,7 +273,7 @@ class Kohana_Text {
 	 * @param   string  $str                    phrase to replace words in
 	 * @param   array   $badwords               words to replace
 	 * @param   string  $replacement            replacement string
-	 * @param   boolean $replace_partial_words  replace words across word boundries (space, period, etc)
+	 * @param   boolean $replace_partial_words  replace words across word boundaries (space, period, etc)
 	 * @return  string
 	 * @uses    UTF8::strlen
 	 */
@@ -293,12 +294,15 @@ class Kohana_Text {
 
 		$regex = '!'.$regex.'!ui';
 
+		// if $replacement is a single character: replace each of the characters of the badword with $replacement
 		if (UTF8::strlen($replacement) == 1)
 		{
-			$regex .= 'e';
-			return preg_replace($regex, 'str_repeat($replacement, UTF8::strlen(\'$1\'))', $str);
+			return preg_replace_callback($regex, function($matches) use ($replacement) {
+				return str_repeat($replacement, UTF8::strlen($matches[1]));
+			}, $str);
 		}
 
+		// if $replacement is not a single character, fully replace the badword with $replacement
 		return preg_replace($regex, $replacement, $str);
 	}
 
@@ -422,7 +426,7 @@ class Kohana_Text {
 			return '';
 
 		// Standardize newlines
-		$str = str_replace(array("\r\n", "\r"), "\n", $str);
+		$str = str_replace(["\r\n", "\r"], "\n", $str);
 
 		// Trim whitespace on each line
 		$str = preg_replace('~^[ \t]+~m', '', $str);
@@ -481,13 +485,13 @@ class Kohana_Text {
 		// IEC prefixes (binary)
 		if ($si == FALSE OR strpos($force_unit, 'i') !== FALSE)
 		{
-			$units = array('B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB');
+			$units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
 			$mod   = 1024;
 		}
 		// SI prefixes (decimal)
 		else
 		{
-			$units = array('B', 'kB', 'MB', 'GB', 'TB', 'PB');
+			$units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
 			$mod   = 1000;
 		}
 
@@ -519,7 +523,7 @@ class Kohana_Text {
 		$number = (int) $number;
 
 		// Uncompiled text version
-		$text = array();
+		$text = [];
 
 		// Last matched unit within the loop
 		$last_unit = NULL;
@@ -531,7 +535,7 @@ class Kohana_Text {
 		{
 			if ($number / $unit >= 1)
 			{
-				// $value = the number of times the number is divisble by unit
+				// $value = the number of times the number is divisible by unit
 				$number -= $unit * ($value = (int) floor($number / $unit));
 				// Temporary var for textifying the current unit
 				$item = '';
@@ -587,35 +591,40 @@ class Kohana_Text {
 	 *
 	 *     echo Text::widont($text);
 	 *
+	 * regex courtesy of the Typogrify project
+	 * @link http://code.google.com/p/typogrify/
+	 *
 	 * @param   string  $str    text to remove widows from
 	 * @return  string
 	 */
 	public static function widont($str)
 	{
-		$str = rtrim($str);
-		$space = strrpos($str, ' ');
-
-		if ($space !== FALSE)
-		{
-			$str = substr($str, 0, $space).'&nbsp;'.substr($str, $space + 1);
-		}
-
-		return $str;
+		// use '%' as delimiter and 'x' as modifier 
+ 		$widont_regex = "%
+			((?:</?(?:a|em|span|strong|i|b)[^>]*>)|[^<>\s]) # must be proceeded by an approved inline opening or closing tag or a nontag/nonspace
+			\s+                                             # the space to replace
+			([^<>\s]+                                       # must be flollowed by non-tag non-space characters
+			\s*                                             # optional white space!
+			(</(a|em|span|strong|i|b)>\s*)*                 # optional closing inline tags with optional white space after each
+			((</(p|h[1-6]|li|dt|dd)>)|$))                   # end with a closing p, h1-6, li or the end of the string
+		%x";
+		return preg_replace($widont_regex, '$1&nbsp;$2', $str);
 	}
 
 	/**
 	 * Returns information about the client user agent.
 	 *
 	 *     // Returns "Chrome" when using Google Chrome
-	 *     $browser = Text::user_agent('browser');
+	 *     $browser = Text::user_agent($agent, 'browser');
 	 *
 	 * Multiple values can be returned at once by using an array:
 	 *
 	 *     // Get the browser and platform with a single call
-	 *     $info = Text::user_agent(array('browser', 'platform'));
+	 *     $info = Text::user_agent($agent, array('browser', 'platform'));
 	 *
 	 * When using an array for the value, an associative array will be returned.
 	 *
+	 * @param   string  $agent  user_agent
 	 * @param   mixed   $value  array or string to return: browser, version, robot, mobile, platform
 	 * @return  mixed   requested information, FALSE if nothing is found
 	 * @uses    Kohana::$config
@@ -624,7 +633,7 @@ class Kohana_Text {
 	{
 		if (is_array($value))
 		{
-			$data = array();
+			$data = [];
 			foreach ($value as $part)
 			{
 				// Add each part to the set
@@ -637,7 +646,7 @@ class Kohana_Text {
 		if ($value === 'browser' OR $value == 'version')
 		{
 			// Extra data will be captured
-			$info = array();
+			$info = [];
 
 			// Load browsers
 			$browsers = Kohana::$config->load('user_agents')->browser;
@@ -649,7 +658,7 @@ class Kohana_Text {
 					// Set the browser name
 					$info['browser'] = $name;
 
-					if (preg_match('#'.preg_quote($search).'[^0-9.]*+([0-9.][0-9.a-z]*)#i', Request::$user_agent, $matches))
+					if (preg_match('#'.preg_quote($search).'[^0-9.]*+([0-9.][0-9.a-z]*)#i', $agent, $matches))
 					{
 						// Set the version number
 						$info['version'] = $matches[1];
@@ -683,4 +692,4 @@ class Kohana_Text {
 		return FALSE;
 	}
 
-} // End text
+}

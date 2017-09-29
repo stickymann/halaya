@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Response wrapper. Created as the result of any [Request] execution
  * or utility method (i.e. Redirect). Implements standard HTTP
@@ -7,8 +7,8 @@
  * @package    Kohana
  * @category   Base
  * @author     Kohana Team
- * @copyright  (c) 2008-2012 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  * @since      3.1.0
  */
 class Kohana_Response implements HTTP_Response {
@@ -26,13 +26,13 @@ class Kohana_Response implements HTTP_Response {
 	 * @param   array    $config Setup the response object
 	 * @return  Response
 	 */
-	public static function factory(array $config = array())
+	public static function factory(array $config = [])
 	{
 		return new Response($config);
 	}
 
 	// HTTP status codes and messages
-	public static $messages = array(
+	public static $messages = [
 		// Informational 1xx
 		100 => 'Continue',
 		101 => 'Switching Protocols',
@@ -84,7 +84,7 @@ class Kohana_Response implements HTTP_Response {
 		504 => 'Gateway Timeout',
 		505 => 'HTTP Version Not Supported',
 		509 => 'Bandwidth Limit Exceeded'
-	);
+	];
 
 	/**
 	 * @var  integer     The response http status
@@ -104,7 +104,7 @@ class Kohana_Response implements HTTP_Response {
 	/**
 	 * @var  array       Cookies to be returned in the response
 	 */
-	protected $_cookies = array();
+	protected $_cookies = [];
 
 	/**
 	 * @var  string      The response protocol
@@ -117,7 +117,7 @@ class Kohana_Response implements HTTP_Response {
 	 * @param   array $config Setup the response object
 	 * @return  void
 	 */
-	public function __construct(array $config = array())
+	public function __construct(array $config = [])
 	{
 		$this->_header = new HTTP_Header;
 
@@ -210,7 +210,7 @@ class Kohana_Response implements HTTP_Response {
 		}
 		else
 		{
-			throw new Kohana_Exception(__METHOD__.' unknown status value : :value', array(':value' => $status));
+			throw new Kohana_Exception(__METHOD__.' unknown status value : :value', [':value' => $status]);
 		}
 	}
 
@@ -270,10 +270,10 @@ class Kohana_Response implements HTTP_Response {
 
 	/**
 	 * Set and get cookies values for this response.
-	 * 
+	 *
 	 *     // Get the cookies set to the response
 	 *     $cookies = $response->cookie();
-	 *     
+	 *
 	 *     // Set a cookie to the response
 	 *     $response->cookie('session', array(
 	 *          'value' => $value,
@@ -298,7 +298,7 @@ class Kohana_Response implements HTTP_Response {
 		if (is_array($key))
 		{
 			reset($key);
-			while (list($_key, $_value) = each($key))
+			foreach ($key as $_key => $_value)
 			{
 				$this->cookie($_key, $_value);
 			}
@@ -307,10 +307,10 @@ class Kohana_Response implements HTTP_Response {
 		{
 			if ( ! is_array($value))
 			{
-				$value = array(
+				$value = [
 					'value' => $value,
 					'expiration' => Cookie::$expiration
-				);
+				];
 			}
 			elseif ( ! isset($value['expiration']))
 			{
@@ -342,7 +342,7 @@ class Kohana_Response implements HTTP_Response {
 	 */
 	public function delete_cookies()
 	{
-		$this->_cookies = array();
+		$this->_cookies = [];
 		return $this;
 	}
 
@@ -455,9 +455,9 @@ class Kohana_Response implements HTTP_Response {
 
 		if ( ! is_resource($file))
 		{
-			throw new Kohana_Exception('Could not read file to send: :file', array(
+			throw new Kohana_Exception('Could not read file to send: :file', [
 				':file' => $download,
-			));
+			]);
 		}
 
 		// Inline or download?
@@ -604,11 +604,14 @@ class Kohana_Response implements HTTP_Response {
 		{
 			if (extension_loaded('http'))
 			{
-				$this->_header['set-cookie'] = http_build_cookie($this->_cookies);
+				$cookies = version_compare(phpversion('http'), '2.0.0', '>=') ?
+					(string) new \http\Cookie($this->_cookies) :
+					http_build_cookie($this->_cookies);
+				$this->_header['set-cookie'] = $cookies;
 			}
 			else
 			{
-				$cookies = array();
+				$cookies = [];
 
 				// Parse each
 				foreach ($this->_cookies as $key => $value)
@@ -708,6 +711,7 @@ class Kohana_Response implements HTTP_Response {
 		// Keep the start in bounds.
 		$start = ($end < $start) ? 0 : max($start, 0);
 
-		return array($start, $end);
+		return [$start, $end];
 	}
-} // End Kohana_Response
+
+}

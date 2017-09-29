@@ -1,10 +1,11 @@
-<?php defined('SYSPATH') or die('No direct script access.');
-
+<?php
+use PHPUnit\Framework\TestSuite;
+use PHPUnit\Framework\TestResult;
 /**
  * A version of the stock PHPUnit testsuite that supports whitelisting and 
  * blacklisting for code coverage filter
  */
-abstract class Kohana_Unittest_TestSuite extends PHPUnit_Framework_TestSuite 
+abstract class Kohana_Unittest_TestSuite extends TestSuite 
 {
 	/**
 	 * Holds the details of files that should be white and blacklisted for
@@ -12,10 +13,10 @@ abstract class Kohana_Unittest_TestSuite extends PHPUnit_Framework_TestSuite
 	 * 
 	 * @var array
 	 */
-	protected $_filter_calls = array(
-		'addFileToBlacklist' => array(),
-		'addDirectoryToBlacklist' => array(),
-		'addFileToWhitelist' => array());
+	protected $_filter_calls = [
+		'addFileToBlacklist' => [],
+		'addDirectoryToBlacklist' => [],
+		'addFileToWhitelist' => []];
 	
 	/**
      * Runs the tests and collects their result in a TestResult.
@@ -28,7 +29,7 @@ abstract class Kohana_Unittest_TestSuite extends PHPUnit_Framework_TestSuite
      * @return PHPUnit_Framework_TestResult
      * @throws InvalidArgumentException
      */
-    public function run(PHPUnit_Framework_TestResult $result = NULL, $filter = FALSE, array $groups = array(), array $excludeGroups = array(), $processIsolation = FALSE)
+    public function run(TestResult $result = NULL)
     {
 		
 		// Get the code coverage filter from the suite's result object
@@ -48,7 +49,7 @@ abstract class Kohana_Unittest_TestSuite extends PHPUnit_Framework_TestSuite
 			}
 		}
 		
-		return parent::run($result, $filter, $groups, $excludeGroups, $processIsolation);
+		return parent::run($result);
 	}
 	
 	/**

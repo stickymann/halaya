@@ -1,24 +1,25 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php
+
 /**
  * Pagination links generator.
  *
- * @package    Kohana/Pagination
+ * @package    Koseven/Pagination
  * @category   Base
- * @author     Kohana Team
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license.html
+ * @author     Koseven Team
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Pagination {
 
 	// Merged configuration settings
-	protected $config = array(
-		'current_page'      => array('source' => 'query_string', 'key' => 'page'),
-		'total_items'       => 0,
-		'items_per_page'    => 10,
-		'view'              => 'pagination/basic',
-		'auto_hide'         => TRUE,
+	protected $config = [
+		'current_page' => ['source' => 'query_string', 'key' => 'page'],
+		'total_items' => 0,
+		'items_per_page' => 10,
+		'view' => 'pagination/basic',
+		'auto_hide' => TRUE,
 		'first_page_in_url' => FALSE,
-	);
+	];
 
 	// Current page number
 	protected $current_page;
@@ -53,15 +54,24 @@ class Kohana_Pagination {
 	// Query offset
 	protected $offset;
 
+	// Request object
+	protected $_request;
+
+	// Route to use for URIs
+	protected $_route;
+
+	// Parameters to use with Route to create URIs
+	protected $_route_params = [];
+
 	/**
 	 * Creates a new Pagination object.
 	 *
 	 * @param   array  configuration
 	 * @return  Pagination
 	 */
-	public static function factory(array $config = array())
+	public static function factory(array $config = [], Request $request = NULL)
 	{
-		return new Pagination($config);
+		return new Pagination($config, $request);
 	}
 
 	/**
@@ -70,10 +80,28 @@ class Kohana_Pagination {
 	 * @param   array  configuration
 	 * @return  void
 	 */
-	public function __construct(array $config = array())
+	public function __construct(array $config = [], Request $request = NULL)
 	{
 		// Overwrite system defaults with application defaults
 		$this->config = $this->config_group() + $this->config;
+
+		// Assing Request
+		if ($request === NULL)
+		{
+			$request = Request::current();
+		}
+
+		$this->_request = $request;
+
+		// Assign default Route
+		$this->_route = $request->route();
+
+		// Assign default route params
+		$this->_route_params = $request->param();
+
+		// Add controller and action to route params for routes with variable controllers and actions
+		$this->_route_params['controller'] = $request->controller();
+		$this->_route_params['action'] = $request->action();
 
 		// Pagination setup
 		$this->setup($config);
@@ -95,7 +123,7 @@ class Kohana_Pagination {
 		$config['group'] = (string) $group;
 
 		// Recursively load requested config groups
-		while (isset($config['group']) AND isset($config_file->$config['group']))
+		while (isset($config['group']) AND isset($config_file->{$config['group']}))
 		{
 			// Temporarily store config group name
 			$group = $config['group'];
@@ -119,7 +147,7 @@ class Kohana_Pagination {
 	 * @param   array   configuration
 	 * @return  object  Pagination
 	 */
-	public function setup(array $config = array())
+	public function setup(array $config = [])
 	{
 		if (isset($config['group']))
 		{
@@ -144,33 +172,34 @@ class Kohana_Pagination {
 			}
 			else
 			{
+				$query_key = $this->config['current_page']['key'];
+
 				switch ($this->config['current_page']['source'])
 				{
 					case 'query_string':
-					case 'mixed':
-						$this->current_page = isset($_GET[$this->config['current_page']['key']])
-							? (int) $_GET[$this->config['current_page']['key']]
+						$this->current_page = ($this->_request->query($query_key) !== NULL)
+							? (int) $this->_request->query($query_key)
 							: 1;
 						break;
 
 					case 'route':
-						$this->current_page = (int) Request::current()->param($this->config['current_page']['key'], 1);
+						$this->current_page = (int) $this->_request->param($query_key, 1);
 						break;
 				}
 			}
 
 			// Calculate and clean all pagination variables
-			$this->total_items        = (int) max(0, $this->config['total_items']);
-			$this->items_per_page     = (int) max(1, $this->config['items_per_page']);
-			$this->total_pages        = (int) ceil($this->total_items / $this->items_per_page);
-			$this->current_page       = (int) min(max(1, $this->current_page), max(1, $this->total_pages));
+			$this->total_items = (int) max(0, $this->config['total_items']);
+			$this->items_per_page = (int) max(1, $this->config['items_per_page']);
+			$this->total_pages = (int) ceil($this->total_items / $this->items_per_page);
+			$this->current_page = (int) min(max(1, $this->current_page), max(1, $this->total_pages));
 			$this->current_first_item = (int) min((($this->current_page - 1) * $this->items_per_page) + 1, $this->total_items);
-			$this->current_last_item  = (int) min($this->current_first_item + $this->items_per_page - 1, $this->total_items);
-			$this->previous_page      = ($this->current_page > 1) ? $this->current_page - 1 : FALSE;
-			$this->next_page          = ($this->current_page < $this->total_pages) ? $this->current_page + 1 : FALSE;
-			$this->first_page         = ($this->current_page === 1) ? FALSE : 1;
-			$this->last_page          = ($this->current_page >= $this->total_pages) ? FALSE : $this->total_pages;
-			$this->offset             = (int) (($this->current_page - 1) * $this->items_per_page);
+			$this->current_last_item = (int) min($this->current_first_item + $this->items_per_page - 1, $this->total_items);
+			$this->previous_page = ($this->current_page > 1) ? $this->current_page - 1 : FALSE;
+			$this->next_page = ($this->current_page < $this->total_pages) ? $this->current_page + 1 : FALSE;
+			$this->first_page = ($this->current_page === 1) ? FALSE : 1;
+			$this->last_page = ($this->current_page >= $this->total_pages) ? FALSE : $this->total_pages;
+			$this->offset = (int) (($this->current_page - 1) * $this->items_per_page);
 		}
 
 		// Chainable method
@@ -197,13 +226,12 @@ class Kohana_Pagination {
 		switch ($this->config['current_page']['source'])
 		{
 			case 'query_string':
-				return URL::site(Request::current()->uri()).URL::query(array($this->config['current_page']['key'] => $page));
+				return URL::site($this->_route->uri($this->_route_params).
+					$this->query([$this->config['current_page']['key'] => $page]));
 
 			case 'route':
-				return URL::site(Request::current()->uri(array($this->config['current_page']['key'] => $page))).URL::query();
-
-			case 'mixed':
-			    return URL::site(Request::detect_uri()).URL::query(array($this->config['current_page']['key'] => $page));
+				return URL::site($this->_route->uri(array_merge($this->_route_params,
+					[$this->config['current_page']['key'] => $page])).$this->query());
 		}
 
 		return '#';
@@ -219,7 +247,7 @@ class Kohana_Pagination {
 	public function valid_page($page)
 	{
 		// Page number has to be a clean integer
-		if ( ! Validate::digit($page))
+		if ( ! Valid::digit($page))
 			return FALSE;
 
 		return $page > 0 AND $page <= $this->total_pages;
@@ -243,7 +271,7 @@ class Kohana_Pagination {
 			$view = $this->config['view'];
 		}
 
-		if ( ! $view instanceof Kohana_View)
+		if ( ! $view instanceof View)
 		{
 			// Load the view file
 			$view = View::factory($view);
@@ -253,6 +281,90 @@ class Kohana_Pagination {
 		return $view->set(get_object_vars($this))->set('page', $this)->render();
 	}
 
+
+	/**
+	 * Request setter / getter
+	 *
+	 * @param	Request
+	 * @return	Request	If used as getter
+	 * @return	$this	Chainable as setter
+	 */
+	public function request(Request $request = NULL)
+	{
+		if ($request === NULL)
+			return $this->_request;
+
+		$this->_request = $request;
+
+		return $this;
+	}
+
+	/**
+	 * Route setter / getter
+	 *
+	 * @param	Route
+	 * @return	Route	Route if used as getter
+	 * @return	$this	Chainable as setter
+	 */
+	public function route(Route $route = NULL)
+	{
+		if ($route === NULL)
+			return $this->_route;
+
+		$this->_route = $route;
+
+		return $this;
+	}
+
+	/**
+	 * Route parameters setter / getter
+	 *
+	 * @param	array	Route parameters to set
+	 * @return	array	Route parameters if used as getter
+	 * @return	$this	Chainable as setter
+	 */
+	public function route_params(array $route_params = NULL)
+	{
+		if ($route_params === NULL)
+			return $this->_route_params;
+
+		$this->_route_params = $route_params;
+
+		return $this;
+	}
+
+	/**
+	 * URL::query() replacement for Pagination use only
+	 *
+	 * @param	array	Parameters to override
+	 * @return	string
+	 */
+	public function query(array $params = NULL)
+	{
+		if ($params === NULL)
+		{
+			// Use only the current parameters
+			$params = $this->_request->query();
+		}
+		else
+		{
+			// Merge the current and new parameters
+			$params = array_merge($this->_request->query(), $params);
+		}
+
+		if (empty($params))
+		{
+			// No query parameters
+			return '';
+		}
+
+		// Note: http_build_query returns an empty string for a params array with only NULL values
+		$query = http_build_query($params, '', '&');
+
+		// Don't prepend '?' to an empty string
+		return ($query === '') ? '' : ('?'.$query);
+	}
+
 	/**
 	 * Renders the pagination links.
 	 *
@@ -260,13 +372,21 @@ class Kohana_Pagination {
 	 */
 	public function __toString()
 	{
-		return $this->render();
+		try
+		{
+			return $this->render();
+		}
+		catch(Exception $e)
+		{
+			Kohana_Exception::handler($e);
+			return '';
+		}
 	}
 
 	/**
 	 * Returns a Pagination property.
 	 *
-	 * @param   string  URI of the request
+	 * @param   string  property name
 	 * @return  mixed   Pagination property; NULL if not found
 	 */
 	public function __get($key)
@@ -283,7 +403,7 @@ class Kohana_Pagination {
 	 */
 	public function __set($key, $value)
 	{
-		$this->setup(array($key => $value));
+		$this->setup([$key => $value]);
 	}
 
-} // End Pagination
+}

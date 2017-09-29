@@ -1,20 +1,20 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Image manipulation support. Allows images to be resized, cropped, etc.
  *
  * @package    Kohana/Image
  * @category   Base
  * @author     Kohana Team
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license.html
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 abstract class Kohana_Image {
 
 	// Resizing constraints
-	const NONE    = 0x01;
-	const WIDTH   = 0x02;
-	const HEIGHT  = 0x03;
-	const AUTO    = 0x04;
+	const NONE = 0x01;
+	const WIDTH = 0x02;
+	const HEIGHT = 0x03;
+	const AUTO = 0x04;
 	const INVERSE = 0x05;
 	const PRECISE = 0x06;
 
@@ -22,7 +22,11 @@ abstract class Kohana_Image {
 	const HORIZONTAL = 0x11;
 	const VERTICAL   = 0x12;
 
+	// PHP image_type_to_mime_type doesn't know WEBP yet
+	const IMAGETYPE_WEBP = -1;
+
 	/**
+	 * @deprecated - provide an image.default_driver value in your configuration instead
 	 * @var  string  default driver: GD, ImageMagick, etc
 	 */
 	public static $default_driver = 'GD';
@@ -44,8 +48,9 @@ abstract class Kohana_Image {
 	{
 		if ($driver === NULL)
 		{
-			// Use the default driver
-			$driver = Image::$default_driver;
+			// Use the driver from configuration file or default one
+			$configured_driver = Kohana::$config->load('image.default_driver');
+			$driver = ($configured_driver) ? $configured_driver : Image::$default_driver;
 		}
 
 		// Set the class name
@@ -105,7 +110,7 @@ abstract class Kohana_Image {
 		if (empty($file) OR empty($info))
 		{
 			throw new Kohana_Exception('Not an image or invalid image: :file',
-				array(':file' => Debug::path($file)));
+				[':file' => Debug::path($file)]);
 		}
 
 		// Store the image information
@@ -618,7 +623,7 @@ abstract class Kohana_Image {
 			if ( ! is_writable($file))
 			{
 				throw new Kohana_Exception('File must be writable: :file',
-					array(':file' => Debug::path($file)));
+					[':file' => Debug::path($file)]);
 			}
 		}
 		else
@@ -629,7 +634,7 @@ abstract class Kohana_Image {
 			if ( ! is_dir($directory) OR ! is_writable($directory))
 			{
 				throw new Kohana_Exception('Directory must be writable: :directory',
-					array(':directory' => Debug::path($directory)));
+					[':directory' => Debug::path($directory)]);
 			}
 		}
 
@@ -662,6 +667,21 @@ abstract class Kohana_Image {
 		}
 
 		return $this->_do_render($type, $quality);
+	}
+
+	/**
+	 * Returns the image mime type
+	 * Adds support for webp image type, which is not known by php
+	 *
+	 * @param   string    $type     image type: png, jpg, gif, etc
+	 * @return  string
+	 */
+	protected function image_type_to_mime_type($type)
+	{
+		if ($type === self::IMAGETYPE_WEBP)
+			return 'image/webp';
+
+		return image_type_to_mime_type($type);
 	}
 
 	/**
@@ -758,4 +778,4 @@ abstract class Kohana_Image {
 	 */
 	abstract protected function _do_render($type, $quality);
 
-} // End Image
+}

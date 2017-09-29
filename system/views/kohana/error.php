@@ -1,4 +1,13 @@
 <?php
+//when exceptions where thrown we where getting a ErrorException [ Fatal Error ]: Call to undefined function __()
+//since i18n was not loaded yet. nasty but works...
+if (!function_exists('__'))
+{
+    function __($message,$variables = NULL)
+    {
+	return is_array($variables) ? strtr($message, $variables):$message;
+    }
+}
 
 // Unique error identifier
 $error_id = uniqid('error');
@@ -48,7 +57,7 @@ function koggle(elem)
 }
 </script>
 <div id="kohana_error">
-	<h1><span class="type"><?php echo $class ?> [ <?php echo $code ?> ]:</span> <span class="message"><?php echo HTML::chars($message) ?></span></h1>
+	<h1><span class="type"><?php echo $class ?> [ <?php echo $code ?> ]:</span> <span class="message"><?php echo htmlspecialchars( (string) $message, ENT_QUOTES | ENT_IGNORE, Kohana::$charset, TRUE); ?></span></h1>
 	<div id="<?php echo $error_id ?>" class="content">
 		<p><span class="file"><?php echo Debug::path($file) ?> [ <?php echo $line ?> ]</span></p>
 		<?php echo Debug::source($file, $line) ?>
@@ -110,14 +119,14 @@ function koggle(elem)
 				<?php endforeach ?>
 			</table>
 		</div>
-		<?php foreach (array('_SESSION', '_GET', '_POST', '_FILES', '_COOKIE', '_SERVER') as $var): ?>
+		<?php foreach (['_SESSION', '_GET', '_POST', '_FILES', '_COOKIE', '_SERVER'] as $var): ?>
 		<?php if (empty($GLOBALS[$var]) OR ! is_array($GLOBALS[$var])) continue ?>
 		<h3><a href="#<?php echo $env_id = $error_id.'environment'.strtolower($var) ?>" onclick="return koggle('<?php echo $env_id ?>')">$<?php echo $var ?></a></h3>
 		<div id="<?php echo $env_id ?>" class="collapsed">
 			<table cellspacing="0">
 				<?php foreach ($GLOBALS[$var] as $key => $value): ?>
 				<tr>
-					<td><code><?php echo HTML::chars($key) ?></code></td>
+					<td><code><?php echo htmlspecialchars( (string) $key, ENT_QUOTES, Kohana::$charset, TRUE); ?></code></td>
 					<td><pre><?php echo Debug::dump($value) ?></pre></td>
 				</tr>
 				<?php endforeach ?>

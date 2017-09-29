@@ -1,24 +1,31 @@
+dist: trusty
 language: php
 
+# list any PHP version you want to test against
 php:
-  - 5.3
+  # aliased to a recent 5.6.x version
+  # - 5.6   PHPUnit 6.0 is supported on PHP 7.0 and PHP 7.1.
+  # aliased to a recent 7.0 version
+  - 7.0
+  # # aliased to a recent 7.1 version
+  - 7.1
 
 before_install:
-  - "git submodule update --init --recursive"
+  # Update phpunit
+  - sudo rm -r $HOME/.phpenv/versions/$TRAVIS_PHP_VERSION/bin/phpunit
+  - wget https://phar.phpunit.de/phpunit.phar
+  - sudo mkdir $HOME/.phpenv/versions/$TRAVIS_PHP_VERSION/bin/phpunit
+  - sudo mv phpunit.phar $HOME/.phpenv/versions/$TRAVIS_PHP_VERSION/bin/phpunit
+  - sudo chmod +x $HOME/.phpenv/versions/$TRAVIS_PHP_VERSION/bin/phpunit
 
+# execute any number of scripts before the test run, custom env's are available as variables
 before_script:
-  - "pear channel-discover pear.phing.info"
-  - "pear install phing/phing"
-  - "phpenv rehash"
-  - "composer install"
+  - sudo chmod -R 755 modules/ application/ system/
 
-script: "phing test"
+script: 
+  # - set -e # don't stop on failure
+  - php $HOME/.phpenv/versions/$TRAVIS_PHP_VERSION/bin/phpunit/phpunit.phar --bootstrap=modules/unittest/bootstrap.php modules/unittest/tests.php
 
+# configure notifications (email, IRC, campfire etc)
 notifications:
-  irc:
-    channels:
-      - "irc.freenode.org#kohana"
-    template:
-      - "%{repository}/%{branch} (%{commit}) - %{author}: %{message}"
-      - "Build details: %{build_url}"
   email: false

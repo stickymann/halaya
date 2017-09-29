@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Number helper class. Provides additional formatting methods that for working
  * with numbers.
@@ -6,8 +6,8 @@
  * @package    Kohana
  * @category   Helpers
  * @author     Kohana Team
- * @copyright  (c) 2009-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Num {
 
@@ -19,8 +19,7 @@ class Kohana_Num {
 	/**
 	 * @var  array  Valid byte units => power of 2 that defines the unit's size
 	 */
-	public static $byte_units = array
-	(
+	public static $byte_units = [
 		'B'   => 0,
 		'K'   => 10,
 		'Ki'  => 10,
@@ -54,7 +53,7 @@ class Kohana_Num {
 		'Yi'  => 80,
 		'YB'  => 80,
 		'YiB' => 80,
-	);
+	];
 
 	/**
 	 * Returns the English ordinal suffix (th, st, nd, etc) of a number.
@@ -215,9 +214,9 @@ class Kohana_Num {
 
 		// Verify the size format and store the matching parts
 		if ( ! preg_match($pattern, $size, $matches))
-			throw new Kohana_Exception('The byte unit size, ":size", is improperly formatted.', array(
+			throw new Kohana_Exception('The byte unit size, ":size", is improperly formatted.', [
 				':size' => $size,
-			));
+			]);
 
 		// Find the float value of the size
 		$size = (float) $matches[1];
@@ -231,4 +230,4 @@ class Kohana_Num {
 		return $bytes;
 	}
 
-} // End num
+}

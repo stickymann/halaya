@@ -1,22 +1,26 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Support for image manipulation using [GD](http://php.net/GD).
  *
  * @package    Kohana/Image
  * @category   Drivers
  * @author     Kohana Team
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license.html
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Image_GD extends Image {
 
-	// Is GD bundled or separate?
-	protected static $_bundled;
+	// Which GD functions are available?
+	const IMAGEROTATE = 'imagerotate';
+	const IMAGECONVOLUTION = 'imageconvolution';
+	const IMAGEFILTER = 'imagefilter';
+	const IMAGELAYEREFFECT = 'imagelayereffect';
+	protected static $_available_functions = [];
 
 	/**
-	 * Checks if GD is enabled and bundled. Bundled GD is required for some
-	 * methods to work. Exceptions will be thrown from those methods when GD is
-	 * not bundled.
+	 * Checks if GD is enabled and verify that key methods exist, some of which require GD to
+	 * be bundled with PHP.  Exceptions will be thrown from those methods when GD is not
+	 * bundled.
 	 *
 	 * @return  boolean
 	 */
@@ -26,19 +30,15 @@ class Kohana_Image_GD extends Image {
 		{
 			throw new Kohana_Exception('GD is either not installed or not enabled, check your configuration');
 		}
-
-		if (defined('GD_BUNDLED'))
+		$functions = [
+			Image_GD::IMAGEROTATE,
+			Image_GD::IMAGECONVOLUTION,
+			Image_GD::IMAGEFILTER,
+			Image_GD::IMAGELAYEREFFECT
+		];
+		foreach ($functions as $function)
 		{
-			// Get the version via a constant, available in PHP 5.
-			Image_GD::$_bundled = GD_BUNDLED;
-		}
-		else
-		{
-			// Get the version information
-			$info = gd_info();
-
-			// Extract the bundled status
-			Image_GD::$_bundled = (bool) preg_match('/\bbundled\b/i', $info['GD Version']);
+			Image_GD::$_available_functions[$function] = function_exists($function);
 		}
 
 		if (defined('GD_VERSION'))
@@ -61,7 +61,7 @@ class Kohana_Image_GD extends Image {
 		if ( ! version_compare($version, '2.0.1', '>='))
 		{
 			throw new Kohana_Exception('Image_GD requires GD version :required or greater, you have :version',
-				array('required' => '2.0.1', ':version' => $version));
+				['required' => '2.0.1', ':version' => $version]);
 		}
 
 		return Image_GD::$_checked = TRUE;
@@ -102,12 +102,15 @@ class Kohana_Image_GD extends Image {
 			case IMAGETYPE_PNG:
 				$create = 'imagecreatefrompng';
 			break;
+			case self::IMAGETYPE_WEBP:
+				$create = 'imagecreatefromwebp';
+			break;
 		}
 
 		if ( ! isset($create) OR ! function_exists($create))
 		{
 			throw new Kohana_Exception('Installed GD does not support :type images',
-				array(':type' => image_type_to_extension($this->type, FALSE)));
+				[':type' => image_type_to_extension($this->type, FALSE)]);
 		}
 
 		// Save function for future use
@@ -246,10 +249,10 @@ class Kohana_Image_GD extends Image {
 	 */
 	protected function _do_rotate($degrees)
 	{
-		if ( ! Image_GD::$_bundled)
+		if (empty(Image_GD::$_available_functions[Image_GD::IMAGEROTATE]))
 		{
 			throw new Kohana_Exception('This method requires :function, which is only available in the bundled version of GD',
-				array(':function' => 'imagerotate'));
+				[':function' => 'imagerotate']);
 		}
 
 		// Loads image if not yet loaded
@@ -328,10 +331,10 @@ class Kohana_Image_GD extends Image {
 	 */
 	protected function _do_sharpen($amount)
 	{
-		if ( ! Image_GD::$_bundled)
+		if (empty(Image_GD::$_available_functions[Image_GD::IMAGECONVOLUTION]))
 		{
 			throw new Kohana_Exception('This method requires :function, which is only available in the bundled version of GD',
-				array(':function' => 'imageconvolution'));
+				[':function' => 'imageconvolution']);
 		}
 
 		// Loads image if not yet loaded
@@ -341,12 +344,11 @@ class Kohana_Image_GD extends Image {
 		$amount = round(abs(-18 + ($amount * 0.08)), 2);
 
 		// Gaussian blur matrix
-		$matrix = array
-		(
-			array(-1,   -1,    -1),
-			array(-1, $amount, -1),
-			array(-1,   -1,    -1),
-		);
+		$matrix = [
+			[-1, -1, -1],
+			[-1, $amount, -1],
+			[-1, -1, -1],
+		];
 
 		// Perform the sharpen
 		if (imageconvolution($this->_image, $matrix, $amount - 8, 0))
@@ -367,10 +369,10 @@ class Kohana_Image_GD extends Image {
 	 */
 	protected function _do_reflection($height, $opacity, $fade_in)
 	{
-		if ( ! Image_GD::$_bundled)
+		if (empty(Image_GD::$_available_functions[Image_GD::IMAGEFILTER]))
 		{
 			throw new Kohana_Exception('This method requires :function, which is only available in the bundled version of GD',
-				array(':function' => 'imagefilter'));
+				[':function' => 'imagefilter']);
 		}
 
 		// Loads image if not yet loaded
@@ -448,10 +450,10 @@ class Kohana_Image_GD extends Image {
 	 */
 	protected function _do_watermark(Image $watermark, $offset_x, $offset_y, $opacity)
 	{
-		if ( ! Image_GD::$_bundled)
+		if (empty(Image_GD::$_available_functions[Image_GD::IMAGELAYEREFFECT]))
 		{
 			throw new Kohana_Exception('This method requires :function, which is only available in the bundled version of GD',
-				array(':function' => 'imagelayereffect'));
+				[':function' => 'imagelayereffect']);
 		}
 
 		// Loads image if not yet loaded
@@ -554,7 +556,7 @@ class Kohana_Image_GD extends Image {
 		{
 			// Reset the image type and mime type
 			$this->type = $type;
-			$this->mime = image_type_to_mime_type($type);
+			$this->mime = $this->image_type_to_mime_type($type);
 		}
 
 		return TRUE;
@@ -585,7 +587,7 @@ class Kohana_Image_GD extends Image {
 		{
 			// Reset the image type and mime type
 			$this->type = $type;
-			$this->mime = image_type_to_mime_type($type);
+			$this->mime = $this->image_type_to_mime_type($type);
 		}
 
 		return ob_get_clean();
@@ -611,6 +613,7 @@ class Kohana_Image_GD extends Image {
 		switch (strtolower($extension))
 		{
 			case 'jpg':
+			case 'jpe':
 			case 'jpeg':
 				// Save a JPG file
 				$save = 'imagejpeg';
@@ -632,13 +635,20 @@ class Kohana_Image_GD extends Image {
 				// Use a compression level of 9 (does not affect quality!)
 				$quality = 9;
 			break;
+			case 'webp':
+				// Save a WEBP file
+				$save = 'imagewebp';
+				$type = self::IMAGETYPE_WEBP;
+
+				$quality = 80;
+			break;
 			default:
 				throw new Kohana_Exception('Installed GD does not support :type images',
-					array(':type' => $extension));
+					[':type' => $extension]);
 			break;
 		}
 
-		return array($save, $type);
+		return [$save, $type];
 	}
 
 	/**
@@ -662,4 +672,4 @@ class Kohana_Image_GD extends Image {
 		return $image;
 	}
 
-} // End Image_GD
+}

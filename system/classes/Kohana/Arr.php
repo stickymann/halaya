@@ -1,12 +1,12 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Array helper.
  *
  * @package    Kohana
  * @category   Helpers
  * @author     Kohana Team
- * @copyright  (c) 2007-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Arr {
 
@@ -158,7 +158,7 @@ class Kohana_Arr {
 			{
 				// Handle wildcards
 
-				$values = array();
+				$values = [];
 				foreach ($array as $arr)
 				{
 					if ($value = Arr::path($arr, implode('.', $keys)))
@@ -207,8 +207,13 @@ class Kohana_Arr {
 			$delimiter = Arr::$delimiter;
 		}
 
-		// Split the keys by delimiter
-		$keys = explode($delimiter, $path);
+		// The path has already been separated into keys
+		$keys = $path;
+		if ( ! is_array($path))
+		{
+			// Split the keys by delimiter
+			$keys = explode($delimiter, $path);
+		}
 
 		// Set current $array to inner-most array path
 		while (count($keys) > 1)
@@ -223,7 +228,7 @@ class Kohana_Arr {
 
 			if ( ! isset($array[$key]))
 			{
-				$array[$key] = array();
+				$array[$key] = [];
 			}
 
 			$array = & $array[$key];
@@ -246,9 +251,9 @@ class Kohana_Arr {
 	public static function range($step = 10, $max = 100)
 	{
 		if ($step < 1)
-			return array();
+			return [];
 
-		$array = array();
+		$array = [];
 		for ($i = $step; $i <= $max; $i += $step)
 		{
 			$array[$i] = $i;
@@ -274,7 +279,13 @@ class Kohana_Arr {
 	 */
 	public static function get($array, $key, $default = NULL)
 	{
-		return isset($array[$key]) ? $array[$key] : $default;
+		if ($array instanceof ArrayObject) {
+			// This is a workaround for inconsistent implementation of isset between PHP and HHVM
+			// See https://github.com/facebook/hhvm/issues/3437
+			return $array->offsetExists($key) ? $array->offsetGet($key) : $default;
+		} else {
+			return isset($array[$key]) ? $array[$key] : $default;
+		}
 	}
 
 	/**
@@ -283,7 +294,7 @@ class Kohana_Arr {
 	 *
 	 *     // Get the values "username", "password" from $_POST
 	 *     $auth = Arr::extract($_POST, array('username', 'password'));
-	 *     
+	 *
 	 *     // Get the value "level1.level2a" from $data
 	 *     $data = array('level1' => array('level2a' => 'value 1', 'level2b' => 'value 2'));
 	 *     Arr::extract($data, array('level1.level2a', 'password'));
@@ -295,7 +306,7 @@ class Kohana_Arr {
 	 */
 	public static function extract($array, array $paths, $default = NULL)
 	{
-		$found = array();
+		$found = [];
 		foreach ($paths as $path)
 		{
 			Arr::set_path($found, $path, Arr::path($array, $path, $default));
@@ -318,7 +329,7 @@ class Kohana_Arr {
 	 */
 	public static function pluck($array, $key)
 	{
-		$values = array();
+		$values = [];
 
 		foreach ($array as $row)
 		{
@@ -382,7 +393,7 @@ class Kohana_Arr {
 		{
 			if (is_array($val))
 			{
-				$array[$key] = Arr::map($callbacks, $array[$key]);
+				$array[$key] = Arr::map($callbacks, $array[$key], $keys);
 			}
 			elseif ( ! is_array($keys) OR in_array($key, $keys))
 			{
@@ -571,7 +582,7 @@ class Kohana_Arr {
 			$command = explode('::', $command, 2);
 		}
 
-		return array($command, $params);
+		return [$command, $params];
 	}
 
 	/**
@@ -595,7 +606,7 @@ class Kohana_Arr {
 	{
 		$is_assoc = Arr::is_assoc($array);
 
-		$flat = array();
+		$flat = [];
 		foreach ($array as $key => $value)
 		{
 			if (is_array($value))
@@ -617,4 +628,4 @@ class Kohana_Arr {
 		return $flat;
 	}
 
-} // End arr
+}

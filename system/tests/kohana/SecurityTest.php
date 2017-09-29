@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('Kohana bootstrap needs to be included before tests run');
+<?php
 
 /**
  * Tests Kohana_Security
@@ -19,9 +19,9 @@ class Kohana_SecurityTest extends Unittest_TestCase
 	 */
 	public function provider_encode_php_tags()
 	{
-		return array(
-			array("&lt;?php echo 'helloo'; ?&gt;", "<?php echo 'helloo'; ?>"),
-		);
+		return [
+			["&lt;?php echo 'helloo'; ?&gt;", "<?php echo 'helloo'; ?>"],
+		];
 	}
 
 	/**
@@ -43,9 +43,9 @@ class Kohana_SecurityTest extends Unittest_TestCase
 	 */
 	public function provider_strip_image_tags()
 	{
-		return array(
-			array('foo', '<img src="foo" />'),
-		);
+		return [
+			['foo', '<img src="foo" />'],
+		];
 	}
 
 	/**
@@ -67,22 +67,11 @@ class Kohana_SecurityTest extends Unittest_TestCase
 	 */
 	public function provider_csrf_token()
 	{
-		// Unfortunately this data provider has to use the session in order to 
-		// generate its data. If headers have already been sent then this method
-		// throws an error, even if the test is does not run.  If we return an 
-		// empty array then this also causes an error, so the only way to get 
-		// around it is to return an array of misc data and have the test skip 
-		// if headers have been sent. It's annoying this hack has to be 
-		// implemented, but the security code isn't exactly brilliantly 
-		// implemented. Ideally we'd be able to inject a session instance
-		if (headers_sent())
-			return array(array('', '', 0));
-
-		$array = array();
+		$array = [];
 		for ($i = 0; $i <= 4; $i++)
 		{
 			Security::$token_name = 'token_'.$i;
-			$array[] = array(Security::token(TRUE), Security::check(Security::token(FALSE)), $i);
+			$array[] = [Security::token(TRUE), Security::check(Security::token(FALSE)), $i];
 		}
 		return $array;
 	}
@@ -96,10 +85,7 @@ class Kohana_SecurityTest extends Unittest_TestCase
 	 */
 	public function test_csrf_token($expected, $input, $iteration)
 	{
-		if (headers_sent()) {
-			$this->markTestSkipped('Headers have already been sent, session not available');
-		}
-
+		//@todo: the Security::token tests need to be reviewed to check how much of the logic they're actually covering
 		Security::$token_name = 'token_'.$iteration;
 		$this->assertSame(TRUE, $input);
 		$this->assertSame($expected, Security::token(FALSE));

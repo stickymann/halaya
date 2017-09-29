@@ -53,7 +53,7 @@ define('DOCROOT', realpath(dirname(__FILE__).'/../../').DIRECTORY_SEPARATOR);
  * When using a legacy application with PHP >= 5.3, it is recommended to disable
  * deprecated notices. Disable with: E_ALL & ~E_DEPRECATED
  */
-error_reporting(E_ALL | E_STRICT);
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 /**
  * End of standard configuration! Changing any of the code below should only be
@@ -121,5 +121,17 @@ if (($ob_len = ob_get_length()) !== FALSE)
 	}
 }
 
-// Enable the unittest module
-Kohana::modules(Kohana::modules() + array('unittest' => MODPATH.'unittest'));
+// Enable the unittest module if it is not already loaded - use the absolute path
+$modules = Kohana::modules();
+$unittest_path = realpath(__DIR__).DIRECTORY_SEPARATOR;
+if ( ! in_array($unittest_path, $modules)) {
+	$modules['unittest'] = $unittest_path;
+	Kohana::modules($modules);
+}
+
+// Encryption is supported by a module, add it to the module list
+$encrypt_path = MODPATH.'encrypt';
+if ( ! in_array($encrypt_path, $modules)) {
+	$modules['encrypt'] = $encrypt_path;
+	Kohana::modules($modules);
+}

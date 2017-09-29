@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Inflector helper class. Inflection is changing the form of a word based on
  * the context it is used in. For example, changing a word into a plural form.
@@ -8,15 +8,15 @@
  * @package    Kohana
  * @category   Helpers
  * @author     Kohana Team
- * @copyright  (c) 2007-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Inflector {
 
 	/**
 	 * @var  array  cached inflections
 	 */
-	protected static $cache = array();
+	protected static $cache = [];
 
 	/**
 	 * @var  array  uncountable words
@@ -70,7 +70,7 @@ class Kohana_Inflector {
 	 *
 	 * [!!] Special inflections are defined in `config/inflector.php`.
 	 *
-	 * @param   string  $str    word to singularize
+	 * @param   string  $str    word to make singular
 	 * @param   integer $count  count of thing
 	 * @return  string
 	 * @uses    Inflector::uncountable
@@ -183,6 +183,10 @@ class Kohana_Inflector {
 		{
 			$str = Inflector::$irregular[$str];
 		}
+		elseif (in_array($str, Inflector::$irregular))
+		{
+			// Do nothing
+		}
 		elseif (preg_match('/[sxz]$/', $str) OR preg_match('/[^aeioudgkprt]h$/', $str))
 		{
 			$str .= 'es';
@@ -197,7 +201,7 @@ class Kohana_Inflector {
 			$str .= 's';
 		}
 
-		// Convert to uppsecase if nessasary
+		// Convert to uppercase if necessary
 		if ($is_uppercase)
 		{
 			$str = strtoupper($str);
@@ -266,4 +270,4 @@ class Kohana_Inflector {
 		return preg_replace('/[_-]+/', ' ', trim($str));
 	}
 
-} // End Inflector
+}

@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Request. Uses the [Route] class to determine what
  * [Controller] to send the request to.
@@ -6,8 +6,8 @@
  * @package    Kohana
  * @category   Base
  * @author     Kohana Team
- * @copyright  (c) 2008-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Request implements HTTP_Request {
 
@@ -24,7 +24,7 @@ class Kohana_Request implements HTTP_Request {
 	/**
 	 * @var  string  trusted proxy server IPs
 	 */
-	public static $trusted_proxies = array('127.0.0.1', 'localhost', 'localhost.localdomain');
+	public static $trusted_proxies = ['127.0.0.1', 'localhost', 'localhost.localdomain'];
 
 	/**
 	 * @var  Request  main request instance
@@ -38,7 +38,7 @@ class Kohana_Request implements HTTP_Request {
 
 	/**
 	 * Creates a new request object for the given URI. New requests should be
-	 * created using the [Request::instance] or [Request::factory] methods.
+	 * Created using the [Request::factory] method.
 	 *
 	 *     $request = Request::factory($uri);
 	 *
@@ -54,19 +54,12 @@ class Kohana_Request implements HTTP_Request {
 	 * @uses    Route::all
 	 * @uses    Route::matches
 	 */
-	public static function factory($uri = TRUE, $client_params = array(), $allow_external = TRUE, $injected_routes = array())
+	public static function factory($uri = TRUE, $client_params = [], $allow_external = TRUE, $injected_routes = [])
 	{
 		// If this is the initial request
 		if ( ! Request::$initial)
 		{
-			if (isset($_SERVER['SERVER_PROTOCOL']))
-			{
-				$protocol = $_SERVER['SERVER_PROTOCOL'];
-			}
-			else
-			{
-				$protocol = HTTP::$protocol;
-			}
+			$protocol = HTTP::$protocol;
 
 			if (isset($_SERVER['REQUEST_METHOD']))
 			{
@@ -79,7 +72,10 @@ class Kohana_Request implements HTTP_Request {
 				$method = HTTP_Request::GET;
 			}
 
-			if ( ! empty($_SERVER['HTTPS']) AND filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN))
+			if (( ! empty($_SERVER['HTTPS']) AND filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN))
+			   OR (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+			   	   AND $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+			       AND in_array($_SERVER['REMOTE_ADDR'], Request::$trusted_proxies))
 			{
 				// This request is secure
 				$secure = TRUE;
@@ -146,7 +142,7 @@ class Kohana_Request implements HTTP_Request {
 				$uri = Request::detect_uri();
 			}
 
-			$cookies = array();
+			$cookies = [];
 
 			if (($cookie_keys = array_keys($_COOKIE)))
 			{
@@ -351,7 +347,7 @@ class Kohana_Request implements HTTP_Request {
 		if ($accepts === NULL)
 		{
 			// Parse the HTTP_ACCEPT header
-			$accepts = Request::_parse_accept($_SERVER['HTTP_ACCEPT'], array('*/*' => 1.0));
+			$accepts = Request::_parse_accept($_SERVER['HTTP_ACCEPT'], ['*/*' => 1.0]);
 		}
 
 		if (isset($type))
@@ -466,13 +462,19 @@ class Kohana_Request implements HTTP_Request {
 
 		foreach ($routes as $name => $route)
 		{
+			// Use external routes for reverse routing only
+			if ($route->is_external())
+			{
+				continue;
+			}
+
 			// We found something suitable
 			if ($params = $route->matches($request))
 			{
-				return array(
+				return [
 					'params' => $params,
 					'route' => $route,
-				);
+				];
 			}
 		}
 
@@ -611,22 +613,22 @@ class Kohana_Request implements HTTP_Request {
 	/**
 	 * @var  array   parameters from the route
 	 */
-	protected $_params = array();
+	protected $_params = [];
 
 	/**
 	 * @var array    query parameters
 	 */
-	protected $_get = array();
+	protected $_get = [];
 
 	/**
 	 * @var array    post parameters
 	 */
-	protected $_post = array();
+	protected $_post = [];
 
 	/**
 	 * @var array    cookies to send with the request
 	 */
-	protected $_cookies = array();
+	protected $_cookies = [];
 
 	/**
 	 * @var Kohana_Request_Client
@@ -635,7 +637,7 @@ class Kohana_Request implements HTTP_Request {
 
 	/**
 	 * Creates a new request object for the given URI. New requests should be
-	 * created using the [Request::instance] or [Request::factory] methods.
+	 * Created using the [Request::factory] method.
 	 *
 	 *     $request = new Request($uri);
 	 *
@@ -651,12 +653,12 @@ class Kohana_Request implements HTTP_Request {
 	 * @uses    Route::all
 	 * @uses    Route::matches
 	 */
-	public function __construct($uri, $client_params = array(), $allow_external = TRUE, $injected_routes = array())
+	public function __construct($uri, $client_params = [], $allow_external = TRUE, $injected_routes = [])
 	{
-		$client_params = is_array($client_params) ? $client_params : array();
+		$client_params = is_array($client_params) ? $client_params : [];
 
 		// Initialise the header
-		$this->_header = new HTTP_Header(array());
+		$this->_header = new HTTP_Header([]);
 
 		// Assign injected routes
 		$this->_routes = $injected_routes;
@@ -665,21 +667,17 @@ class Kohana_Request implements HTTP_Request {
 		$split_uri = explode('?', $uri);
 		$uri = array_shift($split_uri);
 
-		// Initial request has global $_GET already applied
-		if (Request::$initial !== NULL)
+		if ($split_uri)
 		{
-			if ($split_uri)
-			{
-				parse_str($split_uri[0], $this->_get);
-			}
+			parse_str($split_uri[0], $this->_get);
 		}
 
 		// Detect protocol (if present)
 		// $allow_external = FALSE prevents the default index.php from
 		// being able to proxy external pages.
-		if ( ! $allow_external OR strpos($uri, '://') === FALSE)
+		if ( ! $allow_external OR (strpos($uri, '://') === FALSE AND strncmp($uri, '//', 2)))
 		{
-			// Remove trailing slashes from the URI
+			// Remove leading and trailing slashes from the URI
 			$this->_uri = trim($uri, '/');
 
 			// Apply the client
@@ -730,7 +728,7 @@ class Kohana_Request implements HTTP_Request {
 		if ($uri === NULL)
 		{
 			// Act as a getter
-			return empty($this->_uri) ? '/' : $this->_uri;
+			return ($this->_uri === '') ? '/' : $this->_uri;
 		}
 
 		// Act as a setter
@@ -744,7 +742,6 @@ class Kohana_Request implements HTTP_Request {
 	 *
 	 *     echo URL::site($this->request->uri(), $protocol);
 	 *
-	 * @param   array    $params    URI parameters
 	 * @param   mixed    $protocol  protocol string or Request object
 	 * @return  string
 	 * @since   3.0.7
@@ -752,7 +749,13 @@ class Kohana_Request implements HTTP_Request {
 	 */
 	public function url($protocol = NULL)
 	{
-		// Create a URI with the current route and convert it to a URL
+		if ($this->is_external())
+		{
+			// If it's an external request return the URI
+			return $this->uri();
+		}
+
+		// Create a URI with the current route, convert to a URL and returns
 		return URL::site($this->uri(), $protocol);
 	}
 
@@ -974,17 +977,17 @@ class Kohana_Request implements HTTP_Request {
 
 		if ( ! $this->_route instanceof Route)
 		{
-			return HTTP_Exception::factory(404, 'Unable to find a route to match the URI: :uri', array(
+			return HTTP_Exception::factory(404, 'Unable to find a route to match the URI: :uri', [
 				':uri' => $this->_uri,
-			))->request($this)
+			])->request($this)
 				->get_response();
 		}
 
 		if ( ! $this->_client instanceof Request_Client)
 		{
-			throw new Request_Exception('Unable to execute :uri without a Kohana_Request_Client', array(
+			throw new Request_Exception('Unable to execute :uri without a Kohana_Request_Client', [
 				':uri' => $this->_uri,
-			));
+			]);
 		}
 
 		return $this->_client->execute($this);
@@ -1223,8 +1226,9 @@ class Kohana_Request implements HTTP_Request {
 		}
 		else
 		{
-			$this->headers('content-type', 'application/x-www-form-urlencoded');
 			$body = http_build_query($post, NULL, '&');
+			$this->body($body)
+				->headers('content-type', 'application/x-www-form-urlencoded; charset='.Kohana::$charset);
 		}
 
 		// Set the content length
@@ -1239,7 +1243,7 @@ class Kohana_Request implements HTTP_Request {
 		// Prepare cookies
 		if ($this->_cookies)
 		{
-			$cookie_string = array();
+			$cookie_string = [];
 
 			// Parse each
 			foreach ($this->_cookies as $key => $value)
@@ -1328,4 +1332,4 @@ class Kohana_Request implements HTTP_Request {
 		return $this;
 	}
 
-} // End Request
+}

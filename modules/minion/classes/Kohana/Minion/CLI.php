@@ -1,10 +1,10 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php
 
 class Kohana_Minion_CLI {
 
 	public static $wait_msg = 'Press any key to continue...';
 
-	protected static $foreground_colors = array(
+	protected static $foreground_colors = [
 		'black'        => '0;30',
 		'dark_gray'    => '1;30',
 		'blue'         => '0;34',
@@ -21,8 +21,8 @@ class Kohana_Minion_CLI {
 		'yellow'       => '1;33',
 		'light_gray'   => '0;37',
 		'white'        => '1;37',
-	);
-	protected static $background_colors = array(
+	];
+	protected static $background_colors = [
 		'black'      => '40',
 		'red'        => '41',
 		'green'      => '42',
@@ -31,7 +31,7 @@ class Kohana_Minion_CLI {
 		'magenta'    => '45',
 		'cyan'       => '46',
 		'light_gray' => '47',
-	);
+	];
 
 	/**
 	 * Returns one or more command-line options. Options are specified using
@@ -51,10 +51,10 @@ class Kohana_Minion_CLI {
 		$options = func_get_args();
 
 		// Found option values
-		$values = array();
+		$values = [];
 
 		// Skip the first option, it is always the file executed
-		for ($i = 1; $i < $_SERVER['argc']; $i++)
+		for ($i = 1; $i < $_SERVER['argc']; ++$i)
 		{
 			if ( ! isset($_SERVER['argv'][$i]))
 			{
@@ -170,7 +170,7 @@ class Kohana_Minion_CLI {
 			// Create temporary file
 			file_put_contents($vbscript, 'wscript.echo(InputBox("'.addslashes($text).'"))');
 
-			$password = shell_exec('cscript //nologo '.escapeshellarg($command));
+			$password = shell_exec('cscript //nologo '.escapeshellarg($vbscript));
 
 			// Remove temporary file.
 			unlink($vbscript);
@@ -242,7 +242,7 @@ class Kohana_Minion_CLI {
 	 */
 	public static function wait($seconds = 0, $countdown = false)
 	{
-		if ($countdown === true)
+		if ($countdown === TRUE)
 		{
 			$time = $seconds;
 
@@ -250,7 +250,7 @@ class Kohana_Minion_CLI {
 			{
 				fwrite(STDOUT, $time.'... ');
 				sleep(1);
-				$time--;
+				--$time;
 			}
 
 			Minion_CLI::write();
@@ -278,31 +278,24 @@ class Kohana_Minion_CLI {
 	 * @copyright  2010 - 2011 Fuel Development Team
 	 * @link       http://fuelphp.com
 	 * @param string $text the text to color
-	 * @param atring $foreground the foreground color
+	 * @param string $foreground the foreground color
 	 * @param string $background the background color
 	 * @return string the color coded string
 	 */
 	public static function color($text, $foreground, $background = null)
 	{
-
 		if (Kohana::$is_windows)
-		{
 			return $text;
-		}
 
-		if (!array_key_exists($foreground, Minion_CLI::$foreground_colors))
-		{
+		if ( ! array_key_exists($foreground, Minion_CLI::$foreground_colors))
 			throw new Kohana_Exception('Invalid CLI foreground color: '.$foreground);
-		}
 
-		if ($background !== null and !array_key_exists($background, Minion_CLI::$background_colors))
-		{
+		if ($background !== NULL AND ! array_key_exists($background, Minion_CLI::$background_colors))
 			throw new Kohana_Exception('Invalid CLI background color: '.$background);
-		}
 
 		$string = "\033[".Minion_CLI::$foreground_colors[$foreground]."m";
 
-		if ($background !== null)
+		if ($background !== NULL)
 		{
 			$string .= "\033[".Minion_CLI::$background_colors[$background]."m";
 		}

@@ -1,9 +1,9 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 /**
  * Wrapper for configuration arrays. Multiple configuration readers can be
  * attached to allow loading configuration from files, database, etc.
  *
- * Configuration directives cascade across config sources in the same way that 
+ * Configuration directives cascade across config sources in the same way that
  * files cascade across the filesystem.
  *
  * Directives from sources high in the sources list will override ones from those
@@ -12,16 +12,16 @@
  * @package    Kohana
  * @category   Configuration
  * @author     Kohana Team
- * @copyright  (c) 2009-2012 Kohana Team
- * @license    http://kohanaframework.org/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Config {
 
 	// Configuration readers
-	protected $_sources = array();
+	protected $_sources = [];
 
 	// Array of config groups
-	protected $_groups = array();
+	protected $_groups = [];
 
 	/**
 	 * Attach a configuration reader. By default, the reader will be added as
@@ -49,7 +49,7 @@ class Kohana_Config {
 		}
 
 		// Clear any cached _groups
-		$this->_groups = array();
+		$this->_groups = [];
 
 		return $this;
 	}
@@ -74,9 +74,9 @@ class Kohana_Config {
 	}
 
 	/**
-	 * Load a configuration group. Searches all the config sources, merging all the 
-	 * directives found into a single config group.  Any changes made to the config 
-	 * in this group will be mirrored across all writable sources.  
+	 * Load a configuration group. Searches all the config sources, merging all the
+	 * directives found into a single config group.  Any changes made to the config
+	 * in this group will be mirrored across all writable sources.
 	 *
 	 *     $array = $config->load($name);
 	 *
@@ -118,7 +118,7 @@ class Kohana_Config {
 			return $this->_groups[$group];
 		}
 
-		$config = array();
+		$config = [];
 
 		// We search from the "lowest" source and work our way up
 		$sources = array_reverse($this->_sources);
@@ -146,7 +146,7 @@ class Kohana_Config {
 
 	/**
 	 * Copy one configuration group to all of the other writers.
-	 * 
+	 *
 	 *     $config->copy($name);
 	 *
 	 * @param   string  $group  configuration group name
@@ -181,7 +181,7 @@ class Kohana_Config {
 			{
 				continue;
 			}
-			
+
 			// Copy each value in the config
 			$source->write($group, $key, $value);
 		}
@@ -189,4 +189,4 @@ class Kohana_Config {
 		return $this;
 	}
 
-} // End Kohana_Config
+}

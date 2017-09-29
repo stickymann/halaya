@@ -1,18 +1,18 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php
 
 /**
  * The group wrapper acts as an interface to all the config directives
  * gathered from across the system.
  *
- * This is the object returned from Kohana_Config::load 
+ * This is the object returned from Kohana_Config::load
  *
  * Any modifications to configuration items should be done through an instance of this object
  *
  * @package    Kohana
  * @category   Configuration
  * @author     Kohana Team
- * @copyright  (c) 2012 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (c) Kohana Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Config_Group extends ArrayObject {
 
@@ -31,14 +31,14 @@ class Kohana_Config_Group extends ArrayObject {
 	protected $_group_name = '';
 
 	/**
-	 * Constructs the group object.  Kohana_Config passes the config group 
+	 * Constructs the group object.  Kohana_Config passes the config group
 	 * and its config items to the object here.
 	 *
 	 * @param Kohana_Config  $instance "Owning" instance of Kohana_Config
 	 * @param string         $group    The group name
 	 * @param array          $config   Group's config
 	 */
-	public function __construct(Kohana_Config $instance, $group, array $config = array())
+	public function __construct(Kohana_Config $instance, $group, array $config = [])
 	{
 		$this->_parent_instance = $instance;
 		$this->_group_name      = $group;
@@ -77,7 +77,7 @@ class Kohana_Config_Group extends ArrayObject {
 	{
 		return $this->_group_name;
 	}
-	
+
 	/**
 	 * Get a variable from the configuration or return the default value.
 	 *
@@ -110,7 +110,7 @@ class Kohana_Config_Group extends ArrayObject {
 
 	/**
 	 * Overrides ArrayObject::offsetSet()
-	 * This method is called when config is changed via 
+	 * This method is called when config is changed via
 	 *
 	 *     $config->var = 'asd';
 	 *
@@ -127,4 +127,5 @@ class Kohana_Config_Group extends ArrayObject {
 
 		return parent::offsetSet($key, $value);
 	}
+
 }
