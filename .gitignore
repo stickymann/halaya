@@ -1,4 +1,10 @@
 # Project files
+# halaya folders
+application/logs
+autodefs/
+SQLVersionControl/
+application/config/database.php
+
 .idea
 nbproject
 *.iml
