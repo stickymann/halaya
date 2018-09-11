@@ -7,7 +7,7 @@
 <password>dbpass</password>
 </database>
 <handshake>
-<appurl>https://app.handshake-app.com/</appurl>
+<appurl>https://app.handshake.com</appurl>
 <apiversion>api/v2/</apiversion>
 <apikey>893e06694c33c9fe762247f533f41b4bc5a47e11</apikey>
 <!--valid values: YES,NO  -->
