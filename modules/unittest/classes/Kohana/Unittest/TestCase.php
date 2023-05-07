@@ -1,8 +1,16 @@
 <?php
+
 use PHPUnit\Framework\TestCase;
+
 /**
  * A version of the stock PHPUnit testcase that includes some extra helpers
  * and default settings
+ *
+ * @package    Kohana/UnitTest
+ * @author     Kohana Team
+ * @copyright  (c) 2007-2012 Kohana Team
+ * @copyright  (c) 2016-2018 Koseven Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 abstract class Kohana_Unittest_TestCase extends TestCase {
 	
@@ -30,6 +38,8 @@ abstract class Kohana_Unittest_TestCase extends TestCase {
 	 *
 	 * Extending classes that have their own setUp() should call
 	 * parent::setUp()
+	 * 
+	 * @codeCoverageIgnore
 	 */
 	public function setUp()
 	{
@@ -43,6 +53,8 @@ abstract class Kohana_Unittest_TestCase extends TestCase {
 	 *
 	 * Extending classes that have their own tearDown()
 	 * should call parent::tearDown()
+	 * 
+	 * @codeCoverageIgnore
 	 */
 	public function tearDown()
 	{
@@ -78,6 +90,7 @@ abstract class Kohana_Unittest_TestCase extends TestCase {
 	 * * Static Variable
 	 * * Config option
 	 *
+	 * @codeCoverageIgnore
 	 * @param array $environment List of environment to set
 	 */
 	public function setEnvironment(array $environment)

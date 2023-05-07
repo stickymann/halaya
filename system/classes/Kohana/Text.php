@@ -23,7 +23,7 @@ class Kohana_Text {
 		70 => 'seventy',
 		60 => 'sixty',
 		50 => 'fifty',
-		40 => 'fourty',
+		40 => 'forty',
 		30 => 'thirty',
 		20 => 'twenty',
 		19 => 'nineteen',
@@ -211,7 +211,7 @@ class Kohana_Text {
 		for ($i = 0; $i < $length; $i++)
 		{
 			// Select a random character from the pool and add it to the string
-			$str .= $pool[mt_rand(0, $max)];
+			$str .= $pool[random_int(0, $max)];
 		}
 
 		// Make sure alnum strings contain at least one letter and one digit
@@ -220,12 +220,12 @@ class Kohana_Text {
 			if (ctype_alpha($str))
 			{
 				// Add a random digit
-				$str[mt_rand(0, $length - 1)] = chr(mt_rand(48, 57));
+				$str[random_int(0, $length - 1)] = chr(random_int(48, 57));
 			}
 			elseif (ctype_digit($str))
 			{
 				// Add a random letter
-				$str[mt_rand(0, $length - 1)] = chr(mt_rand(65, 90));
+				$str[random_int(0, $length - 1)] = chr(random_int(65, 90));
 			}
 		}
 

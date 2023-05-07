@@ -53,7 +53,7 @@ class Kohana_Kodoc_Method extends Kodoc {
 
 		list($this->description, $tags) = Kodoc::parse($comment);
 
-		if ($file = $this->class->getFileName())
+		if (($file = $this->class->getFileName()) AND empty($this->class->getTraitNames()))
 		{
 			$this->source = Kodoc::source($file, $this->method->getStartLine(), $this->method->getEndLine());
 		}

@@ -127,12 +127,12 @@ function invoice_details(&$pdf,$page_config)
 			$unitprice =  ($extended/$row->qty); 
 			
 			$html .= '<tr>';
-			$html .= sprintf('<td width="78">%s</td>',$row->product_id);
-			$html .= sprintf('<td width="245" >%s<br></td>',$description);
-			$html .= sprintf('<td width="30" align="center">%s</td>',$row->taxable);
-			$html .= sprintf('<td width="31" align="center">%s</td>',$row->qty);
-			$html .= sprintf('<td width="68" align="right">%s</td>',number_format($unitprice, 2, '.', ','));
-			$html .= sprintf('<td width="68" align="right">%s</td>',number_format($extended, 2, '.', ','));
+			$html .= sprintf('<td width="102">%s</td>',$row->product_id);
+			$html .= sprintf('<td width="305" >%s<br></td>',$description);
+			$html .= sprintf('<td width="40" align="center">%s</td>',$row->taxable);
+			$html .= sprintf('<td width="40" align="center">%s</td>',$row->qty);
+			$html .= sprintf('<td width="83" align="right">%s</td>',number_format($unitprice, 2, '.', ','));
+			$html .= sprintf('<td width="87" align="right">%s</td>',number_format($extended, 2, '.', ','));
 			$html .= '</tr>';
 		}
 		$html .= '</table>';
@@ -173,7 +173,7 @@ function invoice_info(&$pdf, $page_config)
 	if($phone_work != ""  && $phone_work != "0") { $phone .= ', '.$phone_work;}	
 	$HTML_HDR_L=<<<_HTML_
 	<table width="350" border=0 cellspacing=0 cellpadding=2 >
-		<tr valign=top><td width="85"><b>Customer Name :</b> </td><td>$fullname</td></tr>
+		<tr valign=top><td width="100"><b>Customer Name :</b> </td><td>$fullname</td></tr>
 		<tr valign=top><td><b>Address :</b> </td><td>$address</td></tr>
 		<tr valign=top><td><b>Phone :</b> </td><td>$phone</td></tr>
 	</table>
@@ -185,7 +185,7 @@ _HTML_;
 	//bgcolor="red"
 	$HTML_HDR_R=<<<_HTML_
 	<table width="400" border=0 cellspacing=0 cellpadding=2 >
-		<tr valign=top><td width="65"><b>Quot. No. :</b> </td><td>$id</td></tr>
+		<tr valign=top><td width="70"><b>Quot. No. :</b> </td><td>$id</td></tr>
 		<tr valign=top><td><b>Order Id :</b> </td><td>$order_id</td></tr>
 		<tr valign=top><td><b>Quot. Date :</b> </td><td>$quotation_date</td></tr>
 		<tr valign=top><td><b>Agent :</b> </td><td>$inputter</td></tr>
@@ -317,12 +317,12 @@ function invoice_summary(&$pdf, $page_config)
 Valid for 30 days from the date of this quote.<br>
 Please feel free to contact us if you have any questions about our quote.<br>
 <br>
-<table width="400" border="0" cellspacing="0" cellpadding="2" >
+<table width="500" border="0" cellspacing="0" cellpadding="2" >
 <tr>
-	<td td width="100">Authorized Signature<br></td><td>___________________________________</td>
+	<td td width="130">Authorized Signature<br></td><td>___________________________________</td>
 </tr>
 <tr>
-	<td>Name (Print)</td><td>___________________________________<br></td>
+	<td>Name (Print)</td><td>___________________________________<br> </td>
 </tr>
 </table>
 </div>
@@ -333,7 +333,7 @@ _HTML_;
 	$HTML_HDR_R=<<<_HTML_
 	<div>
 	<table width="220" border="0" cellspacing="0" cellpadding="1" >
-		<tr valign=bottom><td width="100" style="font-size: 11pt; font-weight: bold;">Sub Total :</td><td style="font-size: 11pt; text-align:right;">$sub_total</td></tr>
+		<tr valign=bottom><td width="155" style="font-size: 11pt; font-weight: bold;">Sub Total :</td><td style="font-size: 11pt; text-align:right;">$sub_total</td></tr>
 		<tr valign=bottom><td style="font-size: 11pt; font-weight: bold;">Tax Total :</td><td style="font-size: 11pt; text-align:right;">$tax_total</td></tr>
 		<tr valign=bottom><td style="font-size: 12pt; font-weight: bold;">Grand Total :</td><td style="font-size: 11pt; text-align:right; font-weight: bold;">$order_total</td></tr>
 	</table>

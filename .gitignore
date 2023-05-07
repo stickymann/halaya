@@ -12,8 +12,8 @@ out
 gen
 
 # Kohana template
-application/cache/*
-application/logs/*
+#application/cache/*
+#application/logs/*
 
 # Composer
 /vendor/

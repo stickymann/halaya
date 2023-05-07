@@ -254,6 +254,7 @@ abstract class Kohana_Controller_Userguide extends Controller_Template {
 			$this->response->body(file_get_contents($file));
 
 			// Set the proper headers to allow caching
+			$this->response->headers('content-length', filesize($file));
 			$this->response->headers('content-type',  File::mime_by_ext($ext));
 			$this->response->headers('last-modified', date('r', filemtime($file)));
 		}

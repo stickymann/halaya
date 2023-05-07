@@ -34,6 +34,11 @@ class Kohana_Auth_File extends Auth {
 	 */
 	protected function _login($username, $password, $remember)
 	{
+		if ($remember)
+		{
+			throw new Kohana_Exception('File based auth does not support remember');
+		}
+
 		if (is_string($password))
 		{
 			// Create a hashed password

@@ -1,9 +1,9 @@
 <?php
+
 /**
  * Invalid Task Exception
  *
- * @package    Kohana
- * @category   Minion
+ * @package    Kohana/Minion
  * @author     Kohana Team
  * @copyright  (c) Kohana Team
  * @license    https://koseven.ga/LICENSE.md

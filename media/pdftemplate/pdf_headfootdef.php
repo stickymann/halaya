@@ -24,7 +24,7 @@ class SITEPDF extends TCPDF {
 		// Set font
 		$this->SetFont('helvetica', 'I', 8);
 		// Page number
-		if ($this->pagegroups > 0) 
+		if ( count($this->pagegroups) > 0) 
 		{			
 			$this->Cell(0, 10, 'Page '.$this->getPageNumGroupAlias().'/'.$this->getPageGroupAlias(), 0, false, 'R', 0, '', 0, false, 'T', 'M');
 		} 
@@ -59,6 +59,7 @@ class TESTPDF extends TCPDF {
 		$this->SetFont('helvetica', 'I', 8);
 		// Page number
 		$this->Cell(0, 10, 'Page '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
-	}
+	
+    }
 }
 ?>

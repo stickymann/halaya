@@ -11,12 +11,12 @@ class Model_Auth_User_Token extends ORM {
 
 	// Relationships
 	protected $_belongs_to = [
-		'user' => ['model' => 'User'],
+		'user' => ['model' => 'User']
 	];
 	
 	protected $_created_column = [
 		'column' => 'created',
-		'format' => TRUE,
+		'format' => TRUE
 	];
 
 	/**
@@ -28,7 +28,7 @@ class Model_Auth_User_Token extends ORM {
 	{
 		parent::__construct($id);
 
-		if (mt_rand(1, 100) === 1)
+		if (random_int(1, 100) === 1)
 		{
 			// Do garbage collection
 			$this->delete_expired();

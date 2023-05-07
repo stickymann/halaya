@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @package    Kohana/ORM
+ * @author     Koseven Team
+ * @copyright  (c) 2016-2018 Koseven Team
+ * @license    https://koseven.ga/LICENSE.md
+ */
 class Kohana_ORM_Behavior_LocalBehavior extends ORM_Behavior {
 
 	/**
@@ -13,15 +19,15 @@ class Kohana_ORM_Behavior_LocalBehavior extends ORM_Behavior {
 	 *
 	 * @param   mixed $callback Callback to execute
 	 */  
-  protected function __construct($callback)
-  {
-    $this->_callback = $callback;
-  }
-  
+	protected function __construct($callback)
+	{
+		$this->_callback = $callback;
+	}
+	
 	/**
 	 * Constructs a new model and loads a record if given
 	 *
-   * @param   ORM   $model The model
+	 * @param   ORM   $model The model
 	 * @param   mixed $id    Parameter for find or object to load
 	 */
 	public function on_construct($model, $id)
@@ -36,23 +42,23 @@ class Kohana_ORM_Behavior_LocalBehavior extends ORM_Behavior {
 		return TRUE;
 	}
 
-  /**
-   * The model is updated
-   */
-  public function on_update($model)
-  {
+	/**
+	 * The model is updated
+	 */
+	public function on_update($model)
+	{
 		$params = ['update'];
 		call_user_func_array($this->_callback, $params);
-  }
-  
-  /**
-   * A new model is created
-   *
-   * @param   ORM   $model The model
-   */
-  public function on_create($model)
-  {
+	}
+	
+	/**
+	 * A new model is created
+	 *
+	 * @param   ORM   $model The model
+	 */
+	public function on_create($model)
+	{
 		$params = ['create'];
 		call_user_func_array($this->_callback, $params);
-  }
+	}
 }

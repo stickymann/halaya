@@ -26,9 +26,6 @@ class Kohana_Feed {
 		// Make limit an integer
 		$limit = (int) $limit;
 
-		// Disable error reporting while opening the feed
-		$error_level = error_reporting(0);
-
 		// Allow loading by filename or raw XML string
 		if (Valid::url($feed))
 		{
@@ -39,14 +36,15 @@ class Kohana_Feed {
 		elseif (is_file($feed))
 		{
 			// Get file contents
-			$feed = file_get_contents($feed);
+			$feed = @file_get_contents($feed);
+
+			// Feed could not be loaded
+			if ($feed === FALSE)
+				return [];
 		}
 
 		// Load the feed
-		$feed = simplexml_load_string($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
-
-		// Restore error reporting
-		error_reporting($error_level);
+		$feed = @simplexml_load_string($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
 
 		// Feed could not be loaded
 		if ($feed === FALSE)

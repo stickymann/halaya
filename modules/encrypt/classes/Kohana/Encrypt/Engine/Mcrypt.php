@@ -17,8 +17,7 @@
  *    data is written in binary form. By default, the "nofb" mode is used,
  *    which produces short output with high entropy.
  *
- * @package    Kohana
- * @category   Security
+ * @package    Kohana/Encrypt
  * @author     Kohana Team
  * @copyright  (c) Kohana Team
  * @license    https://koseven.ga/LICENSE.md
@@ -69,7 +68,7 @@ class Kohana_Encrypt_Engine_Mcrypt extends Kohana_Encrypt_Engine {
 			// Shorten the key to the maximum size
 			$this->_key = substr($this->_key, 0, $size);
 		}
-		else if (version_compare(PHP_VERSION, '5.6.0', '>='))
+		else
 		{
 			$this->_key = $this->_normalize_key($this->_key, $this->_cipher, $this->_mode);
 		}

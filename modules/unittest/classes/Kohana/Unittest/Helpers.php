@@ -1,7 +1,11 @@
 <?php
 
 /**
- * Unit testing helpers
+ * @package    Kohana/UnitTest
+ * @author     Kohana Team
+ * @copyright  (c) 2007-2012 Kohana Team
+ * @copyright  (c) 2016-2018 Koseven Team
+ * @license    https://koseven.ga/LICENSE.md
  */
 class Kohana_Unittest_Helpers {
 	/**
@@ -92,6 +96,7 @@ class Kohana_Unittest_Helpers {
 	 * * Static Variable
 	 * * Config option
 	 *
+	 * @codeCoverageIgnore
 	 * @param array $environment List of environment to set
 	 */
 	public function set_environment(array $environment)
@@ -159,6 +164,7 @@ class Kohana_Unittest_Helpers {
 	/**
 	 * Restores the environment to the original state
 	 *
+	 * @codeCoverageIgnore
 	 * @chainable
 	 * @return Kohana_Unittest_Helpers $this 
 	 */

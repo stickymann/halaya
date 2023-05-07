@@ -66,9 +66,6 @@ class Kohana_Request_Client_Internal extends Request_Client {
 		// Change the current request to this request
 		Request::$current = $request;
 
-		// Is this the initial request
-		$initial_request = ($request === Request::$initial);
-
 		try
 		{
 			if ( ! class_exists($prefix.$controller))

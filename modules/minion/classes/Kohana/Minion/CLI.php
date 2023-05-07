@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @package    Kohana/Minion
+ * @author     Kohana Team
+ * @copyright  (c) 2015 Kohana Team
+ * @copyright  (c) 2016-2018 Koseven Team
+ * @license    https://koseven.ga/LICENSE.md
+ */
 class Kohana_Minion_CLI {
 
 	public static $wait_msg = 'Press any key to continue...';

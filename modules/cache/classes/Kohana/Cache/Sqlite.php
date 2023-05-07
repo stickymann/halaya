@@ -103,14 +103,8 @@ class Kohana_Cache_Sqlite extends Cache implements Cache_Tagging, Cache_GarbageC
 		// Otherwise return cached object
 		else
 		{
-			// Disable notices for unserializing
-			$ER = error_reporting(~E_NOTICE);
-
 			// Return the valid cache data
-			$data = unserialize($result->cache);
-
-			// Turn notices back on
-			error_reporting($ER);
+			$data = @unserialize($result->cache);
 
 			// Return the resulting data
 			return $data;
@@ -277,13 +271,7 @@ class Kohana_Cache_Sqlite extends Cache implements Cache_Tagging, Cache_GarbageC
 
 		while ($row = $statement->fetchObject())
 		{
-			// Disable notices for unserializing
-			$ER = error_reporting(~E_NOTICE);
-
-			$result[$row->id] = unserialize($row->cache);
-
-			// Turn notices back on
-			error_reporting($ER);
+			$result[$row->id] = @unserialize($row->cache);
 		}
 
 		return $result;

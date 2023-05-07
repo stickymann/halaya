@@ -99,7 +99,14 @@ class Kohana_Request implements HTTP_Request {
 				$requested_with = $_SERVER['HTTP_X_REQUESTED_WITH'];
 			}
 
-			if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])
+			if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])
+				AND isset($_SERVER['REMOTE_ADDR'])
+				AND in_array($_SERVER['REMOTE_ADDR'], Request::$trusted_proxies)) {
+
+				// If using CloudFlare, client IP address is sent with this header
+				Request::$client_ip = $_SERVER['HTTP_CF_CONNECTING_IP'];
+			}
+			elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])
 			    AND isset($_SERVER['REMOTE_ADDR'])
 			    AND in_array($_SERVER['REMOTE_ADDR'], Request::$trusted_proxies))
 			{
@@ -120,7 +127,7 @@ class Kohana_Request implements HTTP_Request {
 				// client is using a proxy server.
 				$client_ips = explode(',', $_SERVER['HTTP_CLIENT_IP']);
 
-				Request::$client_ip = array_shift($client_ips);
+				Request::$client_ip = trim(end($client_ips));
 
 				unset($client_ips);
 			}
@@ -460,7 +467,7 @@ class Kohana_Request implements HTTP_Request {
 		$routes = (empty($routes)) ? Route::all() : $routes;
 		$params = NULL;
 
-		foreach ($routes as $name => $route)
+		foreach ($routes as $route)
 		{
 			// Use external routes for reverse routing only
 			if ($route->is_external())
@@ -1186,7 +1193,7 @@ class Kohana_Request implements HTTP_Request {
 		if ($content === NULL)
 		{
 			// Act as a getter
-			return $this->_body;
+			return $this->_body ?? '';
 		}
 
 		// Act as a setter
@@ -1226,7 +1233,7 @@ class Kohana_Request implements HTTP_Request {
 		}
 		else
 		{
-			$body = http_build_query($post, NULL, '&');
+			$body = http_build_query($post, '', '&');
 			$this->body($body)
 				->headers('content-type', 'application/x-www-form-urlencoded; charset='.Kohana::$charset);
 		}

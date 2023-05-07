@@ -139,7 +139,6 @@ class Kohana_Database_Query_Builder_Insert extends Database_Query_Builder {
 		if (is_array($this->_values))
 		{
 			// Callback for quoting values
-			$quote = [$db, 'quote'];
 
 			$groups = [];
 			foreach ($this->_values as $group)
@@ -167,7 +166,7 @@ class Kohana_Database_Query_Builder_Insert extends Database_Query_Builder {
 
 		$this->_sql = $query;
 
-		return parent::compile($db);;
+		return parent::compile($db);
 	}
 
 	public function reset()

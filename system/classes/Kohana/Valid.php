@@ -97,26 +97,26 @@ class Kohana_Valid {
 		return ($value === $required);
 	}
 
-        /**
-         * Validates e-mail address
-         * @link  http://www.iamcal.com/publish/articles/php/parsing_email/
-         * @link  http://www.w3.org/Protocols/rfc822/
-         * 
-         * @param String $email E-mail address
-         * @param bool $strict Strict e-mail checking
-         * @return bool
-         */
-        public static function email(String $email, bool $strict = FALSE): bool
+    /**
+     * Validates e-mail address
+     * @link  http://www.iamcal.com/publish/articles/php/parsing_email/
+     * @link  http://www.w3.org/Protocols/rfc822/
+     * 
+     * @param  string  $email   e-mail address
+     * @param  bool    $strict  strict e-mail checking
+     * @return boolean
+     */
+    public static function email($email, $strict = FALSE)
+    {
+        if ($strict)
         {
-            if ($strict)
-            {
-                return filter_var(filter_var($email, FILTER_SANITIZE_STRING), FILTER_VALIDATE_EMAIL) !== FALSE;
-            }
-            else
-            {
-                return filter_var($email, FILTER_VALIDATE_EMAIL) !== FALSE;
-            }
+            return filter_var(filter_var($email, FILTER_SANITIZE_STRING), FILTER_VALIDATE_EMAIL) !== FALSE;
         }
+        else
+        {
+            return filter_var($email, FILTER_VALIDATE_EMAIL) !== FALSE;
+        }
+    }
 
 	/**
 	 * Validate the domain of an email address by checking if the domain has a

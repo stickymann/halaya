@@ -1,5 +1,7 @@
 <?php
+
 use PHPUnit\DbUnit\TestCase;
+
 /**
  * TestCase for testing a database
  *
