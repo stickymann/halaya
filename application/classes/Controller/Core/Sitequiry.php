@@ -123,7 +123,6 @@ class Controller_Core_Sitequiry extends Controller_Include
 		$this->htmlhead->add($this->insert_head_script());
 		$labels = ""; $fields = "";
 		$pagebody = new Controller_Core_Sitehtml();
-		
 		if($this->enqparam['showfilter'] == 1)
 		{
 			$field = $this->enqparam['fieldnames']; $label = $this->enqparam['labels'];
@@ -135,7 +134,7 @@ class Controller_Core_Sitequiry extends Controller_Include
 			$count = 1;
 			foreach($this->enqparam['filterfields'] as $key => $value)
 			{
-				$labels .= sprintf('<td>%s</td>',$label[$key]);
+				$labels .= sprintf('<td><label for="%s">%s</label></td>',$field[$key],$label[$key]);
 				$fields .= sprintf('<td><input type="text" id="%s" size="12"></td>',$field[$key]);
 				if(($count % 7) == 0)
 				{

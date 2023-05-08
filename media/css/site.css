@@ -190,7 +190,8 @@ label.valid {display: block; width: 16px; height: 16px;}
 /*NEW ENQUIRY STYLES*/
 #ne {border:3px solid #000066; color: #000;  font-family: verdana, arial, helvetica, sans-serif; font-size: 8pt; font-weight: normal; background-color: #ffffff; padding: 5px; margin:0; border-radius:5px; -webkit-border-radius:5px;}
 #enq_display {border:0px solid #000; width: 100%; color: #000;  font-family: verdana, arial, helvetica; font-size: 8pt; font-weight: normal; background-color: #ffffff; padding: 0px; margin:0; overflow:none;} 
-#ne_ff  {border:0px solid red; color: #0000;  font-family: verdana, arial, helvetica, sans-serif; font-size: .9em; font-weight: normal; background-color: #ffffff; padding: 0px; border-radius:5px; -webkit-border-radius:2px;}
+#ne_ff  {border:0px solid #000; color: red;  font-family: verdana, arial, helvetica, sans-serif; font-size: .9em; font-weight: normal; background-color: #ffffff; padding: 0px; border-radius:5px; -webkit-border-radius:2px;}
+#ne_ff label {border:0px solid #000; color: #000;  font-family: verdana, arial, helvetica, sans-serif; font-size: 1em; font-weight: normal; background-color: transparent; padding: 0px; border-radius:5px; -webkit-border-radius:2px;}
 #ne_ff fieldset {border:1px solid #000; background-color: #ebf2f9;}
 #ne_ff legend {
 	border:0px solid #000; color: #fff; background-color: #000066; font-weight: bold; font-size: 1.2em; padding: 5px; margin: 0;
@@ -200,7 +201,7 @@ label.valid {display: block; width: 16px; height: 16px;}
 	background-image: -ms-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
 	background-image: -o-linear-gradient(bottom, rgb(28,105,161) 30%, rgb(52,128,209) 51%, rgb(68,209,252) 90%);
 }
-#ne_ff input[type=text] {border:solid 1px #000; color: #000000; background-color: #ffffff; font-family:  verdana,arial, helvetica, display:block; border-radius:1px; -moz-border-radius:1px; -webkit-border-radius:1px; margin:0 0 0 0px; padding:1px;}
+#ne_ff input[type=text] {border:solid 1px #000; color: #000; background-color: #ffffff; font-family:  verdana,arial, helvetica, display:block; border-radius:1px; -moz-border-radius:1px; -webkit-border-radius:1px; margin:0 0 0 0px; padding:1px;}
 #enqhdr {width:100%; color: #000000; background-color: #ffffff; font-family: verdana, arial, helvetica, sans-serif; font-size: 13pt; font-weight:  bold; margin: 0px 0px 0px 0px;  padding: 5px 0px 5px 0px; text-align: center; clear: both;}
 #ne_shd {
 	width: 100%; color: #ffffff; font-size: 1.3em; font-weight: bold; background-color:#000066;  margin: 0; padding: 5px; text-align: left; clear: both;

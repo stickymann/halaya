@@ -88,11 +88,22 @@ abstract class Controller_Include extends Controller
 		{
 			$this->js[$key] = $this->randomize($value);
 		}
+        
+        $this->randomnumber	= sprintf('?version=%s',$rs->get_random_number());
+		foreach($this->css as $key => $value)
+		{
+            $this->css[$key] = $this->randomcssver($value);
+		}
 	}
 	
 	public function randomize($str)
 	{
 		return $str.$this->randomstring;
+	}
+    
+    public function randomcssver($str)
+	{
+		return $str.$this->randomnumber;
 	}
 
 	public function get_htmlhead_title()

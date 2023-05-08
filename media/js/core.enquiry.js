@@ -126,7 +126,7 @@ var enquiry = new function()
 		param1 = 'option=filterform&param_id=' + param_id + '&controller=' + controller +  '&user=' + user  + '&enqtype='+ enqtype + '&loadfixedvals=1&rochk=0';
 		param2 = 'option=enqctrl&param_id=' + param_id + '&controller=' + controller + '&user=' + user;
 		setTimeout('window.siteutils.runQuery(param1,"filterform","html")',500);
-		window.siteutils.runQuery(param2,"radios","html");
+        window.siteutils.runQuery(param2,"radios","html");
 	}
 }
 

@@ -13,20 +13,32 @@
 class Controller_Core_Siterandstr extends Controller
 {
 	private $randstr = '';
+    private $randnum = '';
 	
 	public function __construct($length=10)
 	{
 		$this->randstr_gen($length);
+        $this->randnum_gen();
 	}
 
 	public function get_random_string()
 	{
 		return $this->randstr;
 	}
+    
+    public function get_random_number()
+	{
+		return $this->randnum;
+	}
 
 	public function get_new_random_string($length=10)
 	{
-		$this->randstr_gen($length);
+		$this->randnum_gen($length);
+		return $this->randnum;
+	}
+    public function get_new_random_number()
+	{
+		$this->randstr_gen();
 		return $this->randstr;
 	}
 	
@@ -45,6 +57,11 @@ class Controller_Core_Siterandstr extends Controller
 		}  
 		$this->randstr = $random;
 	}
-
+    
+    function randnum_gen()
+	{
+        $this->randnum = rand(1,1000000000);
+    }
+    
 } //End Core_Siterandstr
 

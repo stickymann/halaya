@@ -125,6 +125,13 @@ git push origin hndshkif:hndshkif
 [user]
 name = Dunstan Nesbit
 email = dunstan.nesbit@gmail.com
+[color]        
+ui = false
+branch = false
+diff = false
+interactive = false
+status = false
+log = false
 [giggle]
 main-window-maximized = false
 main-window-geometry = 1006x653+83+80
@@ -162,8 +169,10 @@ b) If changes in core files only and new files added
 c) If changes in core files and custom files
 --# git add <filename>  //core file to staging area
 --# git commit -m "Some Text Here"  // commit core file
---# git commit -a -m "More Text Here"  //commitgit branch -a remaining/custom of files
+--# git commit -a -m "More Text Here"  //commit
+git branch -a remaining/custom of files
 git branch -a
+
 d) If changes in core files, custom files  and new files added
 --# git add <filename>  //core file to staging area
 --# git commit -m "Commit Core Files"  // commit core file
