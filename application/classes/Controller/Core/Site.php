@@ -2288,7 +2288,7 @@ _text_;
 	public static function strtotitlecase($str)
 	{
 		$str = strtolower($str);
-		return preg_replace('/\b(\w)/e', 'strtoupper("$1")', $str);
+		return ucwords($str);
 	} 
 
 	/*formless functions*/
