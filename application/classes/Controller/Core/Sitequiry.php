@@ -14,6 +14,7 @@ class Controller_Core_Sitequiry extends Controller_Include
 {
 	public $template = 'site.view';
     public $enqparam = array();
+    public $sqlfiles_r = array();
 	public $model;
 
 	public function __construct($controller)
@@ -25,7 +26,11 @@ class Controller_Core_Sitequiry extends Controller_Include
 		parent::__construct();
 		$this->model = new Model_EnqDB();
 		$this->sitemodel = new Model_SiteDB();
-		$this->controller = $controller;
+		$fq = new Controller_Core_Dbvwsql();
+        
+        $this->sqlfiles_r = $fq->get_sqlfiles();
+//print_r($this->sqlfiles_r);
+        $this->controller = $controller;
 		$this->viewable =  false;
 		$this->printable = false;
 		$this->template->head = '';
@@ -207,18 +212,33 @@ _HTML_;
 			$this->template->content = new View($view);
 			$sql_offset = $pagenum - 1;
 
-			if($request['lkvals'] == ",")
+			$use_sqlfile = FALSE;
+            $vw_sql = "";
+            if( array_key_exists(trim($table), $this->sqlfiles_r) )
+            {
+                 $use_sqlfile = TRUE;
+                 $vw_sql = file_get_contents($this->sqlfiles_r[$table]);
+            }
+            if($request['lkvals'] == ",")
 			{
 				//$querystr = sprintf('select %s from %s',$idfield,$table);
-				$countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s',$idfield,$table);
-				$paging = Pagination::factory(array
+				if( $use_sqlfile ) {
+                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM (%s) as vw',$idfield,$vw_sql);
+                } else {
+                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s',$idfield,$table);
+                }
+                $paging = Pagination::factory(array
 				(
 					'total_items' => $this->model->count_records($countstr),
 					'items_per_page' => 1
 				));
-				$querystr = sprintf('SELECT %s FROM %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$paging->items_per_page,$sql_offset);
+                if( $use_sqlfile ) {
+                    $querystr = sprintf('SELECT %s FROM (%s) as vw LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$vw_sql,$paging->items_per_page,$sql_offset);
+                } else {
+                    $querystr = sprintf('SELECT %s FROM %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$paging->items_per_page,$sql_offset);
+                }
 				$this->template->content->enquiryrecords =  $this->model->browse($querystr);
-			}
+			} 
 			else
 			{
 				$fields = $request['fields'];
@@ -241,15 +261,23 @@ _HTML_;
 				$filter = substr_replace($filter, '', -5);
 						
 				//$querystr = sprintf('select %s from %s %s %s',join(',',$this->enqparam['fieldnames']),$table,$where,$filter);
-				$countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s %s %s',$idfield,$table,$where,$filter);
-				$paging = Pagination::factory( array
+				if( $use_sqlfile ) {
+                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM (%s) as vw %s %s',$idfield,$vw_sql,$where,$filter);
+                }  else {
+                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s %s %s',$idfield,$table,$where,$filter);
+                }
+                $paging = Pagination::factory( array
 				(
 					'total_items' => $this->model->count_records($countstr),
 					'items_per_page' => 1
 				));
-				$querystr = sprintf('SELECT %s FROM %s %s %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$where,$filter,$paging->items_per_page,$sql_offset);
 				$paging->sql_offset = $sql_offset;
-				$this->template->content->enquiryrecords =  $this->model->browse($querystr);
+                if( $use_sqlfile ) {
+                    $querystr = sprintf('SELECT %s FROM (%s) as vw %s %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$vw_sql,$where,$filter,$paging->items_per_page,$sql_offset);
+                } else {
+                    $querystr = sprintf('SELECT %s FROM %s %s %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$where,$filter,$paging->items_per_page,$sql_offset);
+                }
+                $this->template->content->enquiryrecords =  $this->model->browse($querystr);
 			}
    
 			// Render the page links

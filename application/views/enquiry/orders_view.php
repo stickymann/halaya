@@ -391,9 +391,10 @@ function print_to_screen($enquiryrecords,$pagination,$labels,$config,$param)
 		$section6 = delivery_note($item,$param);
 		
 		$num = rand(0,999999);
-		$num = str_pad($num, 6, "0", STR_PAD_LEFT);
-		$invoice_id		= 'INV'.date("YmdHis").$num;
-		$quotation_id	= 'QTE'.date("YmdHis").$num;
+        $num = str_pad($num, 6, "0", STR_PAD_LEFT);
+		$date = date("YmdHis");
+        $invoice_id		= sprintf('INV%s%s',$date,$num);
+		$quotation_id	= sprintf('QTE%s%s',$date,$num);
 		$refreshurl		= sprintf('<a href="%s" title="Refresh Page"><img src="%s" align="middle";></a>',$config['refresh_url'],$config['refresh_icon']);
 		$totalrecords	= sprintf('<b>Total :</b> %s ',$config['total_items']);
 		$pager			= sprintf('%s',$pagination);
@@ -460,16 +461,16 @@ _HTML_;
 		$arr['datatype']		= "xml";
 		$arr['idname']			= $config['idname'];
 		
-		if( $pdf->delete_from_pdf_table($arr) )
+        if( $pdf->delete_from_pdf_table($arr) )
 		{
 			//wait for deletions
 		}
-		
-		$pdf->insert_into_pdf_table_no_delete($arr);
+        
+        $pdf->insert_into_pdf_table_no_delete($arr);
 		$arr['pdf_id']			= $quotation_id;
 		$arr['pdf_template']	= "QUOTATION";
 		$pdf->insert_into_pdf_table_no_delete($arr);
-	}
+    }
 }
 ?>
 

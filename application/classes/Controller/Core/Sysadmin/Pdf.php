@@ -80,10 +80,31 @@ class Controller_Core_Sysadmin_Pdf extends Controller_Core_Site
 				$filename ="/tmp/".$row->pdf_id.".pdf";
 				if(file_exists($filename)){ unlink($filename); }
 			}		
-
-			$querystr = sprintf('delete from %s where inputter = "%s" and authorizer = "%s" and record_status="HLD" and current_no="0"',$this->param['tb_inau'],$pdfdata['idname'],$pdfdata['idname']);
-			$result = $this->param['primarymodel']->execute_delete_query($querystr);
-			return $result;
+			//$querystr = sprintf('delete from %s where inputter = "%s" and authorizer = "%s" and record_status="HLD" and current_no="0"',$this->param['tb_inau'],$pdfdata['idname'],$pdfdata['idname']);
+/*
+ * The following code is a work arounf for the bug 
+ * that was found when using Chrome 
+ * (speciallity version 112.0.5615.165).
+ * The bug does not not occur in any versions of Firefox.
+ * The bug - apparently Chrome runs doule insert two(2)
+ * inoice and quptation pdf records in pdfs_is for a total
+ * of four(4) records when there only be two(2). It then 
+ * deletes the valis two(2) i.e. the ones linked from the 
+ * enquiry page. Hence those records are not found when 
+ * the link is clicked.
+ */ 
+$max_id = 0;
+$querystr = sprintf('select max(id) as id from %s where inputter = "%s" and authorizer = "%s" and record_status="HLD" and current_no="0"',$this->param['tb_inau'],$pdfdata['idname'],$pdfdata['idname']);
+if($max_r = $this->param['primarymodel']->execute_select_query($querystr))
+{
+    $max_r = (array) $max_r[0];
+    var_dump($max_r);
+    $max_id =  (int) $max_r['id'] - 4;
+}
+$querystr = sprintf('delete from %s where inputter = "%s" and authorizer = "%s" and record_status="HLD" and current_no="0" and id <= %s',$this->param['tb_inau'],$pdfdata['idname'],$pdfdata['idname'],$max_id);
+             //$result = $this->param['primarymodel']->execute_delete_query($querystr);
+            $result = $this->param['primarymodel']->execute_delete_query($querystr);
+            return $result;
 		}
 		return false;
 	}

@@ -18,7 +18,7 @@ return array
 			 *
 			 * Ports and sockets may be appended to the hostname.
 			 */
-			'hostname'   => '192.168.1.10',
+			'hostname'   => 'localhost',
 			'database'   => 'halaya',
 			'username'   => 'dbuser',
 			'password'   => 'dbpass',

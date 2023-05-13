@@ -35,9 +35,8 @@ class Controller_Core_Pdfbuilder extends Controller
 		$pdf_id = $this->request->param('opt');
 		$querystr = sprintf('SELECT pdf_template,data FROM pdfs_is WHERE pdf_id = "%s"',$pdf_id);
 		$result = $this->db->execute_select_query($querystr);
-		$template_id = $result[0]->pdf_template;
+        $template_id = $result[0]->pdf_template;
 		$data		 = $result[0]->data;
-		
 		$querystr  = sprintf('SELECT * FROM %s WHERE template_id = "%s"',$this->pdft->param['tb_live'],$template_id);
 		$result	= $this->db->execute_select_query($querystr);
 		if($result)

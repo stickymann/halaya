@@ -123,13 +123,13 @@ function invoice_details(&$pdf,$page_config)
 			$extended = ($row->qty*$row->unit_price) - $discount;
 
 			$html .= '<tr>';
-			$html .= sprintf('<td width="78">%s</td>',$row->product_id);
-			$html .= sprintf('<td width="190" >%s<br></td>',$description);
-			$html .= sprintf('<td width="30" align="center">%s</td>',$row->taxable);
-			$html .= sprintf('<td width="31" align="center">%s</td>',$row->qty);
-			$html .= sprintf('<td width="68" align="right">%s</td>',number_format($row->unit_price, 2, '.', ','));
-			$html .= sprintf('<td width="55" align="right">%s</td>',number_format($discount, 2, '.', ','));
-			$html .= sprintf('<td width="68" align="right">%s</td>',number_format($extended, 2, '.', ','));
+			$html .= sprintf('<td width="102">%s</td>',$row->product_id);
+			$html .= sprintf('<td width="233" >%s<br></td>',$description);
+			$html .= sprintf('<td width="40" align="center">%s</td>',$row->taxable);
+			$html .= sprintf('<td width="40" align="center">%s</td>',$row->qty);
+			$html .= sprintf('<td width="85" align="right">%s</td>',number_format($row->unit_price, 2, '.', ','));
+			$html .= sprintf('<td width="67" align="right">%s</td>',number_format($discount, 2, '.', ','));
+			$html .= sprintf('<td width="87" align="right">%s</td>',number_format($extended, 2, '.', ','));
 			$html .= '</tr>';
 		}
 		$html .= '</table>';
@@ -171,7 +171,7 @@ function invoice_info(&$pdf, $page_config)
 	
 	$HTML_HDR_L=<<<_HTML_
 	<table width="350" border=0 cellspacing=0 cellpadding=2 >
-		<tr valign=top><td width="85"><b>Customer Name :</b> </td><td>$fullname</td></tr>
+		<tr valign=top><td width="100"><b>Customer Name :</b> </td><td>$fullname</td></tr>
 		<tr valign=top><td><b>Address :</b> </td><td>$address</td></tr>
 		<tr valign=top><td><b>Phone :</b> </td><td>$phone</td></tr>
 		<tr valign=top><td><b>Status :</b> </td><td>$order_status</td></tr>
@@ -187,7 +187,7 @@ _HTML_;
 	//bgcolor="red"
 	$HTML_HDR_R=<<<_HTML_
 	<table width="400" border=0 cellspacing=0 cellpadding=2 >
-		<tr valign=top><td width="65"><b>Invoice No. :</b> </td><td>$id</td></tr>
+		<tr valign=top><td width="80"><b>Invoice No. :</b> </td><td>$id</td></tr>
 		<tr valign=top><td><b>Order Id :</b> </td><td>$order_id</td></tr>
 		<tr valign=top><td><b>Credit Order :</b> </td><td>$is_co $credit_customer_id</td></tr>
 		<tr valign=top><td><b>Invoice Date :</b> </td><td>$invoice_date</td></tr>
@@ -332,9 +332,9 @@ function invoice_summary(&$pdf, $page_config)
 I agree to the terms and conditions as set out on overleaf<br>
 (Please read carefully before signing)<br>
 <br>
-<table width="400" border="0" cellspacing="0" cellpadding="2" >
+<table width="500" border="0" cellspacing="0" cellpadding="2" >
 <tr>
-	<td td width="100">Customer Signature<br></td><td>___________________________________</td>
+	<td width="100">Customer Signature<br></td><td>___________________________________</td>
 </tr>
 <tr>
 	<td>Customer Name</td><td>___________________________________<br>(Print)</td>
@@ -348,13 +348,13 @@ _HTML_;
 	$HTML_HDR_R=<<<_HTML_
 	<div>
 	<table width="220" border="0" cellspacing="0" cellpadding="1" >
-		<tr valign=bottom><td width="100" style="font-size: 10pt; font-weight: bold;">Sub Total :</td><td style="font-size: 10pt; text-align:right;">$sub_total</td></tr>
+		<tr valign=bottom><td width="155" style="font-size: 10pt; font-weight: bold;">Sub Total :</td><td style="font-size: 10pt; text-align:right;">$sub_total</td></tr>
 		<tr valign=bottom><td style="font-size: 10pt; font-weight: bold;">Tax Total :</td><td style="font-size: 10pt; text-align:right;">$tax_total</td></tr>
 		<tr valign=bottom><td style="font-size: 11pt; font-weight: bold;">Grand Total :</td><td style="font-size: 11pt; text-align:right; font-weight: bold;">$order_total</td></tr>
 	</table>
 	<hr>
 	<table width="220" border="0" cellspacing="0" cellpadding="1" >
-		<tr valign=bottom><td width="28%" style="font-size: 8pt;">Discount Total :</td><td width="68%" style="font-size: 8pt; text-align:right;">$discount_total</td></tr>
+		<tr valign=bottom><td width="35%" style="font-size: 8pt;">Discount Total :</td><td width="85%" style="font-size: 8pt; text-align:right;">$discount_total</td></tr>
 		<tr valign=bottom><td style="font-size: 8pt;">Payment Total :</td><td style="font-size: 8pt; text-align:right;">$payment_total</td></tr>
 		<tr valign=bottom><td style="font-size: 8pt;">Balance : </td><td style="font-size: 8pt; text-align:right;">$balance</td></tr>
 		<tr valign=bottom><td style="font-size: 8pt;">Payments : </td><td style="font-size: 6pt; text-align:right;">$payment_type</td></tr>
