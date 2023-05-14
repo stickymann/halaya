@@ -19,7 +19,7 @@ return array
 			 * Ports and sockets may be appended to the hostname.
 			 */
 			'hostname'   => 'localhost',
-			'database'   => 'giz2k15',
+			'database'   => 'gbiz2k15',
 			'username'   => 'dbuser',
 			'password'   => 'dbpass',
 			'persistent' => FALSE,
