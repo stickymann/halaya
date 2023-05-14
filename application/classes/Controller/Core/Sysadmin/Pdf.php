@@ -98,7 +98,6 @@ $querystr = sprintf('select max(id) as id from %s where inputter = "%s" and auth
 if($max_r = $this->param['primarymodel']->execute_select_query($querystr))
 {
     $max_r = (array) $max_r[0];
-    var_dump($max_r);
     $max_id =  (int) $max_r['id'] - 4;
 }
 $querystr = sprintf('delete from %s where inputter = "%s" and authorizer = "%s" and record_status="HLD" and current_no="0" and id <= %s',$this->param['tb_inau'],$pdfdata['idname'],$pdfdata['idname'],$max_id);

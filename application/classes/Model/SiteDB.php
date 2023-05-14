@@ -22,6 +22,8 @@ class Model_SiteDB extends Model
 		$this->set_ns_totalrows($value=0);
 		//set no time out for large queries
 		set_time_limit(0);
+        $fq = new Controller_Core_Dbvwsql();
+        $this->sqlfiles_r = $fq->get_sqlfiles();
 	}
 
 	public function set_db_err_msg($string='')
@@ -1159,5 +1161,17 @@ _SQL_;
 		}
 		return $count;
 	}
+    
+    public function set_vw_table($table)
+    {
+        $vw_sql = "";
+        if( array_key_exists(trim($table), $this->sqlfiles_r) )
+        {
+            $use_sqlfile = TRUE;
+            $vw_sql = file_get_contents($this->sqlfiles_r[$table]);
+            $table = sprintf('(%s) as vw', $vw_sql);
+        }
+        return $table;
+    }
 
 } // End Site

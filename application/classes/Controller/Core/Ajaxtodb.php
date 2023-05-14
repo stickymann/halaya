@@ -214,10 +214,12 @@ class Controller_Core_Ajaxtodb extends Controller
 
 			case 'popout':
 				$fields		= $_REQUEST['fields'];
-				$table		= $_REQUEST['table'];
-				$idfield	= $_REQUEST['idfield'];
+   	   		    $table		= $_REQUEST['table'];
+                $table = $this->sitedb->set_vw_table($table);
+                $idfield	= $_REQUEST['idfield'];
 				$querystr = sprintf('select %s from %s order by %s asc %s;',$fields,$table,$idfield,$limit);
-				/*
+
+                /*
 				// PDO equivalent
 				// $stmt = $appdb->query($querystr);
 				// $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -229,6 +231,7 @@ class Controller_Core_Ajaxtodb extends Controller
 			case 'poplist':
 				$fields		= $_REQUEST['fields'];
 				$table		= $_REQUEST['table'];
+                $table = $this->sitedb->set_vw_table($table);
 				$idfield	= $_REQUEST['idfield'];
 				$querystr = sprintf('select %s from %s order by %s asc %s;',$fields,$table,$idfield,$limit);
 				//$stmt = $appdb->query($querystr);
@@ -240,7 +243,8 @@ class Controller_Core_Ajaxtodb extends Controller
 			case 'pofilter':
 				$fields		= $_REQUEST['fields'];
 				$table		= $_REQUEST['table'];
-				$lkvals		= $_REQUEST['lkvals'];
+                $table = $this->sitedb->set_vw_table($table);
+                $lkvals		= $_REQUEST['lkvals'];
 				$idfield	= $_REQUEST['idfield'];
 				$like = "";
 				$lkarr = array_combine(preg_split('/,/',$fields),preg_split('/,/',$lkvals));
@@ -1614,5 +1618,5 @@ _SCRIPT_;
 			return "FAIL";
 		}
 	}
-
+ 
 } // End Core_Ajaxtodb

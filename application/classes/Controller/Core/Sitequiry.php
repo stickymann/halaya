@@ -26,10 +26,6 @@ class Controller_Core_Sitequiry extends Controller_Include
 		parent::__construct();
 		$this->model = new Model_EnqDB();
 		$this->sitemodel = new Model_SiteDB();
-		$fq = new Controller_Core_Dbvwsql();
-        
-        $this->sqlfiles_r = $fq->get_sqlfiles();
-//print_r($this->sqlfiles_r);
         $this->controller = $controller;
 		$this->viewable =  false;
 		$this->printable = false;
@@ -206,37 +202,23 @@ _HTML_;
 
 			/*from enquirydefs*/
 			$table = $this->enqparam['tablename'];
-			$idfield = $this->enqparam['idfield'];
+            $table = $this->sitemodel->set_vw_table($table);
+            $idfield = $this->enqparam['idfield'];
 			$orderarr = array($idfield => 'ASC');
 			$view = $this->enqparam['view']; 
 			$this->template->content = new View($view);
 			$sql_offset = $pagenum - 1;
 
-			$use_sqlfile = FALSE;
-            $vw_sql = "";
-            if( array_key_exists(trim($table), $this->sqlfiles_r) )
-            {
-                 $use_sqlfile = TRUE;
-                 $vw_sql = file_get_contents($this->sqlfiles_r[$table]);
-            }
             if($request['lkvals'] == ",")
 			{
 				//$querystr = sprintf('select %s from %s',$idfield,$table);
-				if( $use_sqlfile ) {
-                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM (%s) as vw',$idfield,$vw_sql);
-                } else {
-                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s',$idfield,$table);
-                }
+                $countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s',$idfield,$table);
                 $paging = Pagination::factory(array
 				(
 					'total_items' => $this->model->count_records($countstr),
 					'items_per_page' => 1
 				));
-                if( $use_sqlfile ) {
-                    $querystr = sprintf('SELECT %s FROM (%s) as vw LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$vw_sql,$paging->items_per_page,$sql_offset);
-                } else {
-                    $querystr = sprintf('SELECT %s FROM %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$paging->items_per_page,$sql_offset);
-                }
+                $querystr = sprintf('SELECT %s FROM %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$paging->items_per_page,$sql_offset);
 				$this->template->content->enquiryrecords =  $this->model->browse($querystr);
 			} 
 			else
@@ -261,22 +243,14 @@ _HTML_;
 				$filter = substr_replace($filter, '', -5);
 						
 				//$querystr = sprintf('select %s from %s %s %s',join(',',$this->enqparam['fieldnames']),$table,$where,$filter);
-				if( $use_sqlfile ) {
-                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM (%s) as vw %s %s',$idfield,$vw_sql,$where,$filter);
-                }  else {
-                    $countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s %s %s',$idfield,$table,$where,$filter);
-                }
+				$countstr = sprintf('SELECT COUNT(%s) AS counter FROM %s %s %s',$idfield,$table,$where,$filter);
                 $paging = Pagination::factory( array
 				(
 					'total_items' => $this->model->count_records($countstr),
 					'items_per_page' => 1
 				));
 				$paging->sql_offset = $sql_offset;
-                if( $use_sqlfile ) {
-                    $querystr = sprintf('SELECT %s FROM (%s) as vw %s %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$vw_sql,$where,$filter,$paging->items_per_page,$sql_offset);
-                } else {
-                    $querystr = sprintf('SELECT %s FROM %s %s %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$where,$filter,$paging->items_per_page,$sql_offset);
-                }
+                $querystr = sprintf('SELECT %s FROM %s %s %s LIMIT %s OFFSET %s',join(',',$this->enqparam['fieldnames']),$table,$where,$filter,$paging->items_per_page,$sql_offset);
                 $this->template->content->enquiryrecords =  $this->model->browse($querystr);
 			}
    
