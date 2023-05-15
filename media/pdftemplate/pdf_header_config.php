@@ -19,14 +19,14 @@ function get_pdf_header_config()
     * string   taxreg   tax/vat registration number   
     **/
     'logo'      => 'media/pdftemplate/images/default.logo.pdfheader.png',
-    'org'       => 'Model System.',
-    'street'    => 'Some Street',
-    'area'      => 'Somewhere',
+    'org'       => 'GPS Rescue Ltd.',
+    'street'    => '55 Maloney Street',
+    'area'      => 'Petit Bourg',
     'country'   => 'Trinidad, W.I.',
-	 'tel'      => '555-5555',
-     'email'    => 'modsys@mailserver.com',
-     'website'  => 'www.modsys.com',
-     'facebook' => 'www.facebook.com/modsys',
-     'taxreg'   => 'xxxxxx'
+	 'tel'      => '675-8000, 222-5888, 685-4477',
+     'email'    => 'gpsrescue@gmail.com',
+     'website'  => 'www.gpsrescuett.com',
+     'facebook' => 'www.facebook.com/gpsrescue',
+     'taxreg'   => '179127'
   );
 }  
