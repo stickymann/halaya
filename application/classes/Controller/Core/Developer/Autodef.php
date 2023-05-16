@@ -537,7 +537,8 @@ _HTML_;
 	{
 		$WRITEPATH = ""; 
 		$this->defs = array(); 
-		$files = ""; $tabledef_sql = ""; $formdef_sql = ""; $paramdef_sql = ""; $menudef_sql = "";
+		$files = array(); 
+        $tabledef_sql = ""; $formdef_sql = ""; $paramdef_sql = ""; $menudef_sql = "";
 		$this->defs['table']	= false; $this->defs['form']	= false; $this->defs['param']	= false; 
 		$this->defs['menu']		= false; $this->defs['update']	= false; $this->defs['mvc']		= false;
 		$current_date = date("Y-m-d H:m:s");
